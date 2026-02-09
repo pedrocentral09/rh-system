@@ -1,0 +1,8 @@
+﻿[dotenv@17.2.4] injecting env (11) from .env -- tip: ÔÜÖ´©Å  load multiple .env files with { path: ['.env.local', '.env'] }
+--- Debugging Firebase Admin SDK ---
+Total users in Firebase: 4
+- financeiro@centralgestora.com.br (UID: Teqad9UjoSNBB8ylLepAgR1Gxlg2)
+- pedrocentral09@gmail.com (UID: UpvulKtB6CaBP5hvvv3zPqDVYQE3)
+- admin@rh.com (UID: c4hZ5l0HzShPyxbSMfHRUXnH42J3)
+- dpessoal@centralgestora.com.br (UID: kJ2NWRl3u6TbEu8jBUA6MBrCIrQ2)
+Ô£à User admin@rh.com exists in Firebase.

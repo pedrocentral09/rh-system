@@ -1,0 +1,885 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- MODULE: CORE ---
+
+// enum UserRole {
+//   ADMIN
+//   HR_MANAGER
+//   EMPLOYEE
+//   CANDIDATE
+// }
+
+model User {
+  id          String  @id @default(uuid())
+  firebaseUid String  @unique // Link to Firebase Auth
+  email       String  @unique
+  name        String?
+  role        String  @default("EMPLOYEE") // Legacy role field, keeping for compatibility
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Future relations to other modules (Loose coupling via ID references is preferred, 
+  // but Prisma relations can be used if in same DB for integrity)
+  employee  Employee?
+  auditLogs AuditLog[]
+
+  // Dynamic Role Relation
+  roleId  String?
+  roleDef Role?   @relation(fields: [roleId], references: [id])
+
+  // Store Access Control
+  storeAccess UserStoreAccess[]
+
+  @@map("core_users") // Table prefix to organize DB
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  permissions String // JSON string: { "module": ["read", "write", "delete"] }
+  description String?
+  isSystem    Boolean @default(false) // If true, cannot be deleted
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("core_roles")
+}
+
+model UserStoreAccess {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+  @@map("core_user_store_access")
+}
+
+// --- MODULE: PERSONNEL (Cadastro de Pessoal) ---
+
+// enum Gender {
+//   MALE
+//   FEMALE
+//   OTHER
+// }
+
+// enum EmployeeStatus {
+//   ACTIVE
+//   INACTIVE
+//   TERMINATED
+//   ON_LEAVE
+// }
+
+model Employee {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  cpf           String   @unique
+  rg            String
+  dateOfBirth   DateTime
+  gender        String
+  maritalStatus String
+
+  // Documents (Additional)
+  pis        String?
+  ctps       String?
+  voterTitle String?
+
+  // Contact
+  phone    String? // Celular
+  landline String? // Telefone Fixo
+  photoUrl String?
+
+  // Emergency Contact
+  emergencyContactName         String?
+  emergencyContactPhone        String?
+  emergencyContactRelationship String?
+
+  hireDate   DateTime?
+  jobTitle   String?
+  jobRoleId  String?
+  jobRole    JobRole? @relation(fields: [jobRoleId], references: [id])
+  department String?
+
+  status String @default("ACTIVE")
+
+  // Address (Embed vs Relation? Relation is safer for updates)
+  address           Address?
+  bankData          BankData?
+  contract          Contract?
+  healthData        HealthData?
+  legalGuardian     LegalGuardian?
+  documents         Document[]
+  workScales        WorkScale[]
+  timeRecords       TimeRecord[]
+  timeSheetClosings TimeSheetClosing[]
+  vacationPeriods   VacationPeriod[]
+  vacationRequests  VacationRequest[]
+
+  // System Access
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transferHistory   TransferHistory[]
+  employmentHistory EmploymentHistory[]
+
+  // Payroll & Disciplinary
+  payslips            Payslip[]
+  disciplinaryRecords DisciplinaryRecord[]
+
+  onboardingProcesses OnboardingProcess[]
+
+  @@index([status])
+  @@index([department])
+  @@index([email])
+  @@map("personnel_employees")
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+
+  @@map("personnel_addresses")
+}
+
+model BankData {
+  id         String   @id @default(uuid())
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  bankName      String
+  agency        String
+  accountNumber String
+  accountType   String
+  pixKey        String?
+
+  @@map("personnel_bank_data")
+}
+
+model LegalGuardian {
+  id         String   @id @default(uuid())
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  name         String
+  cpf          String
+  rg           String
+  phone        String
+  relationship String // Parentesco (Mãe, Pai, Tutor...)
+
+  @@map("personnel_legal_guardians")
+}
+
+model HealthData {
+  id         String   @id @default(uuid())
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  asoType      String // Admissional, Periódico...
+  lastAsoDate  DateTime
+  periodicity  Int // Meses
+  observations String?
+
+  @@map("personnel_health_data")
+}
+
+// enum ContractType {
+//   CLT
+//   PJ
+//   INTERN
+//   TEMPORARY
+// }
+
+// enum WorkShift {
+//   MORNING
+//   AFTERNOON
+//   NIGHT
+//   ROTATING
+//   FULL_TIME
+// }
+
+model Contract {
+  id         String   @id @default(uuid())
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  // Professional
+  // registrationCompany String // DEPRECATED: Use companyId
+  // store             String // DEPRECATED: Use storeId
+
+  companyId String? // Optional during migration
+  company   Company? @relation(fields: [companyId], references: [id]) // Relation to Legal Entity
+
+  storeId String? // Optional during migration
+  store   Store?  @relation(fields: [storeId], references: [id]) // Relation to Physical Location
+
+  jobRoleId     String?
+  jobRole       JobRole? @relation(fields: [jobRoleId], references: [id])
+
+  sector        String? // Legacy string field
+  sectorId      String?
+  sectorDef     Sector?  @relation(fields: [sectorId], references: [id])
+  baseSalary    Decimal
+  contractType  String
+  
+  workShift     String?   @default("FULL_TIME") // Keeping for legacy/migration safety if needed, or remove? Better to keep as optional legacy.
+  workShiftId   String?
+  workShiftDef  ShiftType? @relation(fields: [workShiftId], references: [id])
+  
+  admissionDate DateTime
+
+  // Experience Contract
+  isExperienceContract Boolean @default(false)
+  experienceDays       Int?
+  isExperienceExtended Boolean @default(false)
+
+  // Benefits
+  transportVoucherValue Decimal?
+  mealVoucherValue      Decimal? // VA - Alimentação
+  foodVoucherValue      Decimal? // VR - Refeição
+
+  hasFamilySalary Boolean @default(false)
+  familySalaryDependents Int       @default(0)
+
+  terminationDate        DateTime? // Date of employee termination
+  terminationReason      String?   // Legacy reason string
+  terminationReasonId    String?
+  terminationReasonDef   TerminationReason? @relation(fields: [terminationReasonId], references: [id])
+
+  // Adicionais / Benefits Flags and Values
+  // Insalubridade
+  hasInsalubrity   Boolean  @default(false)
+  insalubrityLevel Int      @default(0) // 10, 20, 40 etc as percentage? Or Enum? User image shows "% Por". Let's store percentage.
+  insalubrityBase  Decimal? // The percentage value (e.g., 20.00)
+
+  // Periculosidade
+  hasDangerousness  Boolean  @default(false)
+  dangerousnessBase Decimal? // e.g. 30.00
+
+  // Cargo de Confiança
+  hasTrustPosition  Boolean  @default(false)
+  trustPositionBase Decimal? // e.g. 40.00
+
+  // Quebra de Caixa
+  hasCashHandling  Boolean  @default(false)
+  cashHandlingBase Decimal? // e.g. 10.00
+
+  // Bonus
+  monthlyBonus  Decimal?
+  otherBenefits String?
+
+  @@map("personnel_contracts")
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type     String // RG, CPF, CNH, Comprovante...
+  fileUrl  String
+  fileName String
+
+  // Signature System (Added for RH Excepcional)
+  status        String    @default("PENDING") // PENDING, SIGNED, EXPIRED
+  signatureHash String?   // SHA-256 hash
+  signatureDate DateTime?
+  signatureIp   String?
+
+  uploadedAt DateTime @default(now())
+
+  @@map("personnel_documents")
+}
+
+model TransferHistory {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  previousStore String
+  newStore      String
+  reason        String
+  notes         String?
+
+  createdAt DateTime @default(now())
+  createdBy String? // User ID
+
+  @@map("personnel_transfer_history")
+}
+
+// --- MODULE: CONFIGURATION ---
+
+model CompanySettings {
+  key       String   @id
+  value     String // Stores JSON stringified value
+  updatedAt DateTime @updatedAt
+  updatedBy String? // UserId
+
+  @@map("config_company")
+}
+
+model AuditLog {
+  id         String  @id @default(uuid())
+  action     String // CREATE, UPDATE, DELETE, LOGIN, EXPORT
+  module     String // core, personnel, payroll, configuration
+  resource   String // Employee, User, Store, etc.
+  resourceId String?
+
+  oldData String? // JSON string
+  newData String? // JSON string
+
+  ipAddress String?
+  userAgent String?
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
+
+  timestamp DateTime @default(now())
+
+  @@map("config_audit_logs")
+}
+
+model Company {
+  id   String @id @default(uuid())
+  name String // Razão Social
+  tradingName String? // Nome Fantasia
+  cnpj String @unique
+  stateRegistration String? // Inscrição Estadual
+  municipalRegistration String? // Inscrição Municipal
+  
+  phone       String?
+  email       String?
+  responsible String? // Pessoa responsável
+
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+
+  contracts Contract[]
+  stores    Store[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("core_companies")
+}
+
+model Store {
+  id   String  @id @default(uuid())
+  name String // Razão Social da Unidade
+  tradingName String? // Nome Fantasia da Unidade
+  code String? // Código Interno (ex: LJ01)
+  cnpj String? // CNPJ Próprio se houver
+
+  stateRegistration String?
+  municipalRegistration String?
+  
+  phone       String?
+  email       String?
+  responsible String?
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+
+  contracts Contract[]
+  storeAccess UserStoreAccess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("core_stores")
+}
+
+// --- MODULE: AUXILIARY TABLES ---
+
+model JobRole {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  cbo         String? // Código Brasileiro de Ocupações
+  description String?
+
+  employees Employee[]
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_job_roles")
+}
+
+model Sector {
+  id   String @id @default(uuid())
+  name String @unique
+
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_sectors")
+}
+
+model TerminationReason {
+  id   String @id @default(uuid())
+  name String @unique
+
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_termination_reasons")
+}
+
+// --- MODULE: SCALES (Escalas) ---
+
+model ShiftType {
+  id            String @id @default(uuid())
+  name          String // ex: "Manhã A", "Intermediário"
+  startTime     String // "08:00"
+  endTime       String // "18:00"
+  breakDuration Int    @default(60) // Minutes
+
+  workScales WorkScale[]
+  contracts  Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("time_shift_types")
+}
+
+model WorkScale {
+  id   String   @id @default(uuid())
+  date DateTime
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  shiftTypeId String? // If null = Day Off (Folga)
+  shiftType   ShiftType? @relation(fields: [shiftTypeId], references: [id])
+
+  @@unique([employeeId, date]) // One scale entry per employee per day
+  @@map("time_work_scales")
+}
+
+model EmploymentHistory {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  role            String
+  department      String
+  store           String
+  admissionDate   DateTime
+  terminationDate DateTime
+  reason          String // Motivo do desligamento
+
+  details String? // JSON snapshot of the full contract/benefits at that time
+
+  createdAt DateTime @default(now())
+
+  @@map("personnel_employment_history")
+}
+
+// --- MODULE: TIME TRACKING (Ponto) ---
+
+model TimeClockFile {
+  id         String   @id @default(uuid())
+  fileName   String
+  fileHash   String   @unique // To prevent duplicate imports
+  store      String?
+  uploadDate DateTime @default(now())
+  status     String   @default("PROCESSING") // PROCESSING, DONE, ERROR
+  errorLog   String?
+
+  records TimeRecord[]
+
+  @@map("time_clock_files")
+}
+
+model TimeRecord {
+  id String @id @default(cuid())
+
+  // From File (Optional for manual entries)
+  fileId String?
+  file   TimeClockFile? @relation(fields: [fileId], references: [id])
+
+  // Parsed/Manual Data
+  pis        String // PIS or CPF
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+
+  date         DateTime
+  time         String // HH:mm
+  nsr          String?
+  originalLine String? // Null for manual
+
+  // Manual Adjustment Fields
+  isManual      Boolean @default(false)
+  justification String?
+
+  createdAt DateTime @default(now())
+
+  @@index([employeeId, date])
+  @@map("time_records")
+}
+
+model TimeSheetClosing {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  month Int // Reference Month (1-12)
+  year  Int // Reference Year
+
+  startDate DateTime // Actual start based on cutoff
+  endDate   DateTime // Actual end based on cutoff
+
+  totalBalance Decimal // In Hours (e.g. 10.5 or -2.0)
+
+  status String  @default("CLOSED") // CLOSED, ARCHIVED
+  pdfUrl String? // Storage URL
+
+  closedBy String? // User ID
+  closedAt DateTime @default(now())
+
+  @@unique([employeeId, month, year])
+  @@map("time_sheet_closings")
+}
+
+// --- MODULE: VACATIONS (Férias) ---
+
+model VacationPeriod {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  startDate DateTime // Início do Periodo Aquisitivo (ex: 2023-01-01)
+  endDate   DateTime // Fim do Periodo Aquisitivo (ex: 2023-12-31)
+  limitDate DateTime // Data limite para gozo (Periodo Concessivo - ex: 2024-11-30)
+
+  vested Boolean @default(false) // Adquiriu o direito? (12 meses completos)
+  status String  @default("OPEN") // OPEN, CLOSED, EXPIRED, PAID
+
+  requests VacationRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vacations_periods")
+}
+
+model VacationRequest {
+  id String @id @default(uuid())
+
+  periodId String
+  period   VacationPeriod @relation(fields: [periodId], references: [id])
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  startDate DateTime // Data início das férias
+  endDate   DateTime // Data fim das férias
+  daysCount Int // Dias corridos
+
+  soldDays Int @default(0) // Dias de abono pecuniário (venda)
+
+  status String @default("DRAFT") // DRAFT, PENDING, APPROVED, REJECTED, COMPLETED
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vacations_requests")
+}
+
+// --- MODULE: PAYROLL (Folha de Pagamento) ---
+
+model PayrollPeriod {
+  id     String @id @default(uuid())
+  month  Int
+  year   Int
+  status String @default("OPEN") // OPEN, PROCESSING, CLOSED, PAID
+
+  payslips Payslip[]
+  imports  PayrollImport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([month, year])
+  @@map("payroll_periods")
+}
+
+model PayrollEvent {
+  id          String  @id @default(uuid())
+  code        String  @unique // ex: 001 (Salario), 900 (INSS)
+  name        String
+  type        String // EARNING, DEDUCTION, NEUTRAL
+  description String?
+  isSystem    Boolean @default(false)
+
+  payslipItems PayslipItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payroll_events")
+}
+
+model Payslip {
+  id       String        @id @default(uuid())
+  periodId String
+  period   PayrollPeriod @relation(fields: [periodId], references: [id])
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  grossSalary Decimal @default(0)
+  netSalary   Decimal @default(0)
+
+  totalAdditions  Decimal @default(0)
+  totalDeductions Decimal @default(0)
+
+  items PayslipItem[]
+
+  status String @default("DRAFT") // DRAFT, CALCULATED, APPROVED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([periodId, employeeId])
+  @@map("payroll_payslips")
+}
+
+model PayslipItem {
+  id        String  @id @default(uuid())
+  payslipId String
+  payslip   Payslip @relation(fields: [payslipId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   PayrollEvent @relation(fields: [eventId], references: [id])
+
+  name String // Snapshot of event name
+  type String // Snapshot of type
+
+  reference Decimal? // Qtde (ex: 50% extra) or Days
+  value     Decimal // The final calculated value
+
+  createdAt DateTime @default(now())
+
+  @@map("payroll_payslip_items")
+}
+
+model PayrollImport {
+  id       String        @id @default(uuid())
+  filename String
+  periodId String
+  period   PayrollPeriod @relation(fields: [periodId], references: [id])
+
+  type   String // CONVENIO_PHARMACY, PLR, QUEBRA_CAIXA
+  status String // PENDING, PROCESSED
+
+  processedCount Int     @default(0)
+  totalValue     Decimal @default(0)
+
+  uploadedAt DateTime @default(now())
+
+  @@map("payroll_imports")
+}
+
+// --- MODULE: DISCIPLINARY (Gestão Disciplinar) ---
+
+model DisciplinaryRecord {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type     String // VERBAL_WARNING, WRITTEN_WARNING, SUSPENSION, FEEDBACK
+  severity String // LOW, MEDIUM, HIGH, CRITICAL
+
+  date        DateTime // Date of occurrence
+  reason      String // Title/Reason
+  description String // Full details
+
+  // For Suspension
+  daysSuspended Int?      @default(0)
+  startDate     DateTime? // Start of suspension
+  returnDate    DateTime? // End of suspension
+
+  documents String? // JSON fields for attached proofs (URLs)
+
+  payrollStatus String @default("PENDING") // PENDING, PROCESSED, IGNORED (if suspension deducted)
+
+  managerId String? // Who reported
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("disciplinary_records")
+}
+
+// --- MODULE: RECRUITMENT (ATS) ---
+
+model JobOpening {
+  id           String  @id @default(uuid())
+  title        String
+  department   String
+  description  String // Rich Text or Markdown
+  requirements String?
+
+  status String @default("DRAFT") // DRAFT, OPEN, CLOSED, ON_HOLD
+  type   String @default("CLT") // CLT, PJ, ESTAGIO
+
+  salaryRangeMin Decimal?
+  salaryRangeMax Decimal?
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recruitment_jobs")
+}
+
+model Candidate {
+  id        String  @id @default(uuid())
+  name      String
+  email     String  @unique
+  phone     String?
+  linkedin  String?
+  resumeUrl String? // Storage URL
+
+  notes String?
+
+  applications        JobApplication[]
+  onboardingProcesses OnboardingProcess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recruitment_candidates")
+}
+
+model JobApplication {
+  id String @id @default(uuid())
+
+  jobId String
+  job   JobOpening @relation(fields: [jobId], references: [id])
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  status String @default("NEW") // NEW, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED
+  rating Int? // 1 to 5 stars
+
+  feedback String?
+
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, candidateId]) // Candidate can apply only once per job
+  @@map("recruitment_applications")
+}
+
+// --- MODULE: ONBOARDING ---
+
+model OnboardingTemplate {
+  id    String @id @default(uuid())
+  title String
+  items String // JSON: ["Email", "Setup Machine", "Badge"]
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("onboarding_templates")
+}
+
+model OnboardingProcess {
+  id String @id @default(uuid())
+
+  employeeId String? // Can be linked to an existing employee
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+
+  candidateId String? // Or linked to a candidate before they are an employee
+  candidate   Candidate? @relation(fields: [candidateId], references: [id])
+
+  status    String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  startDate DateTime @default(now())
+
+  tasks OnboardingTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("onboarding_processes")
+}
+
+model OnboardingTask {
+  id String @id @default(uuid())
+
+  processId String
+  process   OnboardingProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+
+  status String @default("PENDING") // PENDING, DONE, SKIPPED
+
+  assignedTo String? // Role (e.g. "IT", "HR") or UserId
+  dueDate    DateTime?
+
+  completedAt DateTime?
+  completedBy String? // UserId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("onboarding_tasks")
+}
