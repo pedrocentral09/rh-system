@@ -4,10 +4,19 @@ if (!admin.apps.length) {
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
     const privateKeyRaw = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
-    // Handle both literal "\n" and real newlines
-    const privateKey = privateKeyRaw
-        ? privateKeyRaw.replace(/\\n/g, '\n').replace(/"/g, '') // Remove quotes if present
-        : undefined;
+
+    let privateKey = privateKeyRaw;
+    if (privateKey) {
+        // Remove surrounding quotes if present
+        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+            privateKey = privateKey.slice(1, -1);
+        }
+        // Replace literal \n with real newlines
+        privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
+    console.log('DEBUG: Private Key Processed Length:', privateKey?.length);
+    console.log('DEBUG: Starts with:', privateKey?.substring(0, 30));
 
     if (projectId && clientEmail && privateKey) {
         try {
