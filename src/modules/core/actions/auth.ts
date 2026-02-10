@@ -115,7 +115,7 @@ export async function devLoginAction() {
 
     cookieStore.set('hr_session', user.id, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Always false since this action throws in production
         expires,
         sameSite: 'lax',
         path: '/',
