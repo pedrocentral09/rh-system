@@ -56,7 +56,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
             type: 'EMPLOYEE',
             id: emp.id,
             title: emp.name,
-            subtitle: emp.jobTitle,
+            subtitle: emp.jobTitle || undefined,
             url: `/dashboard/personnel?open=${emp.id}`, // Assuming we can open details via URL param or similar
             icon: 'bust_in_silhouette'
         });

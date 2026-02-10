@@ -24,6 +24,22 @@ export default async function VacationsPage() {
                     <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Gestão de Férias</h1>
                     <p className="text-slate-500 dark:text-slate-400">Visão geral de solicitações e períodos de férias.</p>
                 </div>
+                <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hidden lg:block">
+                    <div className="flex items-center gap-4 text-xs">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                            <span className="text-slate-600 dark:text-slate-400">Aberto (Pronto)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                            <span className="text-slate-600 dark:text-slate-400">Aquisitivo (Trabalhando)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                            <span className="text-slate-600 dark:text-slate-400">Vencido</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

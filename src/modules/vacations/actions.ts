@@ -34,10 +34,21 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
 
         // Loop from admission year to now
         let cursor = new Date(admission);
+        cursor.setHours(0, 0, 0, 0);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const checkLimit = new Date(today);
+        checkLimit.setFullYear(checkLimit.getFullYear() + 1); // Check periods up to 1 year ahead
+
         let safety = 0;
 
-        while (isBefore(cursor, checkDate) && safety < 50) {
-            const periodEnd = addYears(cursor, 1);
+        while (isBefore(cursor, checkLimit) && safety < 50) {
+            const nextAnniversary = addYears(cursor, 1);
+            const periodEnd = new Date(nextAnniversary);
+            periodEnd.setDate(periodEnd.getDate() - 1); // 1 year minus 1 day (e.g. 01/01 to 31/12)
+            periodEnd.setHours(23, 59, 59, 999);
 
             // Check if period exists
             const exists = await prisma.vacationPeriod.findFirst({
@@ -65,7 +76,7 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
                 });
             }
 
-            cursor = periodEnd;
+            cursor = nextAnniversary;
             safety++;
         }
 

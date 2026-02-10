@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { loginAction } from '@/modules/core/actions/auth';
+import { loginAction, devLoginAction } from '@/modules/core/actions/auth';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -63,19 +63,20 @@ export function LoginForm() {
             <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Email</label>
+                        <label className="text-sm font-medium">E-mail</label>
                         <Input
                             type="email"
-                            placeholder="admin@company.com"
+                            placeholder="exemplo@empresa.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Password</label>
+                        <label className="text-sm font-medium">Senha</label>
                         <Input
                             type="password"
+                            placeholder="Sua senha secreta"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -83,9 +84,17 @@ export function LoginForm() {
                     </div>
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? 'Logging in...' : 'Sign In'}
+                        {loading ? 'Entrando...' : 'Entrar no Sistema'}
                     </Button>
                 </form>
+
+                <div className="mt-6">
+                    <form action={devLoginAction}>
+                        <Button variant="outline" className="w-full border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue" type="submit">
+                            🔧 Modo Desenvolvedor: Entrar como Admin
+                        </Button>
+                    </form>
+                </div>
             </CardContent>
         </Card>
     );

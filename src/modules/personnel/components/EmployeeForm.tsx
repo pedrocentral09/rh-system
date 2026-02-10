@@ -1,11 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createEmployee, updateEmployee } from '../actions';
+import { getCompanies } from '../../configuration/actions/companies';
+import { getStores } from '../../configuration/actions/stores';
+import { getJobRoles, getSectors } from '../../configuration/actions/auxiliary';
+import { getShiftTypes } from '../../scales/actions';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Tabs } from '@/shared/components/ui/tabs';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 interface EmployeeFormProps {
     onSuccess?: () => void;
@@ -51,6 +56,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [activeTab, setActiveTab] = useState('personal');
+    const [currentId, setCurrentId] = useState<string | null>(employeeId || null);
 
     // Form States for masked inputs
     const [cpf, setCpf] = useState(initialData?.cpf || '');
@@ -60,10 +67,46 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
     const [zipCode, setZipCode] = useState(initialData?.address?.zipCode || '');
     const [addressFields, setAddressFields] = useState({
         street: initialData?.address?.street || '',
+        number: initialData?.address?.number || '',
+        complement: initialData?.address?.complement || '',
         neighborhood: initialData?.address?.neighborhood || '',
         city: initialData?.address?.city || '',
         state: initialData?.address?.state || ''
     });
+    const [isCepLoading, setIsCepLoading] = useState(false);
+
+    const [companiesList, setCompaniesList] = useState<any[]>([]);
+    const [storesList, setStoresList] = useState<any[]>([]);
+    const [jobRolesList, setJobRolesList] = useState<any[]>([]);
+    const [sectorsList, setSectorsList] = useState<any[]>([]);
+    const [shiftsList, setShiftsList] = useState<any[]>([]);
+
+    useEffect(() => {
+        const loadRefs = async () => {
+            try {
+                console.log('Loading references...');
+                const [compRes, storeRes, roleRes, sectorRes, shiftRes] = await Promise.all([
+                    getCompanies(),
+                    getStores(),
+                    getJobRoles(),
+                    getSectors(),
+                    getShiftTypes()
+                ]);
+
+                console.log('Refs loaded:', { compRes, storeRes, roleRes, sectorRes, shiftRes });
+
+                if (compRes.success) setCompaniesList(compRes.data || []);
+                if (storeRes.success) setStoresList(storeRes.data || []);
+                if (roleRes.success) setJobRolesList(roleRes.data || []);
+                if (sectorRes.success) setSectorsList(sectorRes.data || []);
+                if (shiftRes.success) setShiftsList(shiftRes.data || []);
+            } catch (error) {
+                console.error('Error loading refs:', error);
+                toast.error('Erro ao carregar dados do formulário');
+            }
+        };
+        loadRefs();
+    }, []);
 
     // Documents State
     const [uploadedFiles, setUploadedFiles] = useState<any[]>(initialData?.documents || []);
@@ -186,69 +229,123 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
     const handleZipCodeBlur = async () => {
         const cleanCep = zipCode.replace(/\D/g, '');
         if (cleanCep.length === 8) {
+            setIsCepLoading(true);
             try {
                 const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
                 const data = await response.json();
                 if (!data.erro) {
                     setAddressFields(prev => ({
                         ...prev,
-                        street: data.logradouro,
-                        neighborhood: data.bairro,
-                        city: data.localidade,
-                        state: data.uf
+                        street: data.logradouro || '',
+                        neighborhood: data.bairro || '',
+                        city: data.localidade || '',
+                        state: data.uf || ''
                     }));
+                    toast.success("Endereço encontrado!");
+                } else {
+                    toast.error("CEP não encontrado.");
                 }
             } catch (error) {
                 console.error("Erro ao buscar CEP", error);
+                toast.error("Falha ao buscar CEP. Verifique sua conexão.");
+            } finally {
+                setIsCepLoading(false);
             }
         }
     };
 
 
 
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    async function handleSaveStep(event: React.MouseEvent<HTMLButtonElement> | React.FormEvent<HTMLFormElement>) {
+        if (event.type === 'submit') event.preventDefault();
+
+        const form = (event.currentTarget as any).form || event.currentTarget;
+        const formData = new FormData(form);
+
+        // Validation per tab
+        console.log('--- handleSaveStep ---');
+        console.log('activeTab:', activeTab);
+        console.log('currentId:', currentId);
+
+        const tabRequiredFields: Record<string, string[]> = {
+            personal: ['name', 'cpf', 'rg', 'dateOfBirth', 'gender', 'phone'],
+            address: ['zipCode', 'city', 'state', 'street', 'number', 'neighborhood'],
+            contract: ['companyId', 'jobRoleId', 'sectorId', 'storeId', 'hireDate', 'baseSalary', 'workShiftId'],
+            bank: ['bankName', 'accountType', 'agency', 'accountNumber'],
+            health: ['asoType', 'lastAsoDate'],
+            legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianPhone', 'guardianRelationship'] : []
+        };
+
+        const missingFields = tabRequiredFields[activeTab]?.filter(field => !formData.get(field));
+        console.log('missingFields:', missingFields);
+        console.log('formData entries:', Array.from(formData.entries()));
+
+        if (missingFields?.length) {
+            toast.error(`Preencha os campos obrigatórios: ${missingFields.join(', ')}`);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setSuccess(false);
 
-        const formData = new FormData(event.currentTarget);
-
-        // Append Documents as JSON
-        if (uploadedFiles.length > 0) {
-            formData.append('documents', JSON.stringify(uploadedFiles));
-        }
-
-        let result;
-        if (employeeId) {
-            result = await updateEmployee(employeeId, formData);
-        } else {
-            result = await createEmployee(formData);
-        }
-
-        if (result.success) {
-            setSuccess(true);
-            if (!employeeId) {
-                (event.target as HTMLFormElement).reset();
-                setCpf('');
-                setPhone('');
-                setLandline('');
-                setPhotoPreview(null);
-                setZipCode('');
-                setAddressFields({ street: '', neighborhood: '', city: '', state: '' });
+        try {
+            // Append Documents as JSON
+            if (uploadedFiles.length > 0) {
+                formData.append('documents', JSON.stringify(uploadedFiles));
             }
-            if (onSuccess) {
-                setTimeout(onSuccess, 1000);
-            }
-        } else {
-            if (typeof result.error === 'string') {
-                setError(result.error);
+
+            let result;
+            if (currentId) {
+                console.log('Calling updateEmployee...');
+                result = await updateEmployee(currentId, formData);
             } else {
-                setError('Verifique todos os campos obrigatórios em todas as abas.');
-                console.error(result.error);
+                console.log('Calling createEmployee...');
+                result = await createEmployee(formData);
             }
+
+            console.log('Server Result:', result);
+
+            if (result.success) {
+                if (!currentId && result.data?.id) {
+                    setCurrentId(result.data.id);
+                }
+
+                toast.success("Progresso salvo com sucesso!");
+
+                // Advance to next tab using the VISIBLE tabs list
+                const visibleTabs = tabs.filter(t => t.id !== 'legal_guardian' || isMinor);
+                const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
+
+                console.log('Current Index:', currentIndex);
+                console.log('Visible Tabs:', visibleTabs.map(t => t.id));
+
+                if (currentIndex !== -1 && currentIndex < visibleTabs.length - 1) {
+                    const nextTabId = visibleTabs[currentIndex + 1].id;
+                    console.log('Moving to:', nextTabId);
+                    setActiveTab(nextTabId);
+                } else if (currentIndex === visibleTabs.length - 1) {
+                    console.log('Last tab reached');
+                    setSuccess(true);
+                    if (onSuccess) onSuccess();
+                }
+            } else {
+                const msg = typeof result.error === 'string' ? result.error : 'Erro técnico ao salvar.';
+                console.error('Save failed:', result.error);
+                setError(msg);
+                toast.error(msg);
+            }
+        } catch (err: any) {
+            console.error('Fatal crash in handleSaveStep:', err);
+            toast.error(`Erro crítico: ${err.message || 'Desconhecido'}`);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
+    }
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        await handleSaveStep(event);
     }
 
     const tabs = [
@@ -297,7 +394,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nome Completo *</label>
-                                <Input name="name" defaultValue={initialData?.name} placeholder="Ex: Fabiana Francisca Paludo" required />
+                                <Input name="name" defaultValue={initialData?.name} placeholder="Ex: Pedro Henrique" required />
                             </div>
 
                             <div className="space-y-2">
@@ -314,7 +411,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700">RG *</label>
-                                <Input name="rg" defaultValue={initialData?.rg} placeholder="MG - 11539193" required />
+                                <Input name="rg" defaultValue={initialData?.rg} placeholder="00.000.000-0" required />
                             </div>
 
                             <div className="space-y-2">
@@ -510,15 +607,18 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Cidade - UF *</label>
-                            <div className="flex space-x-2">
+                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                Cidade - UF *
+                                {isCepLoading && <Loader2 className="h-3 w-3 animate-spin text-indigo-500" />}
+                            </label>
+                            <div className="grid grid-cols-12 gap-2">
                                 <Input
                                     name="city"
                                     value={addressFields.city}
                                     onChange={(e) => setAddressFields({ ...addressFields, city: e.target.value })}
                                     placeholder="Cidade"
                                     required
-                                    className="flex-1"
+                                    className="col-span-10"
                                 />
                                 <Input
                                     name="state"
@@ -527,27 +627,39 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                                     placeholder="UF"
                                     maxLength={2}
                                     required
-                                    className="w-16"
+                                    className="col-span-2 text-center"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
                             <label className="text-sm font-medium text-slate-700">Logradouro e Número *</label>
-                            <div className="flex space-x-2">
+                            <div className="grid grid-cols-12 gap-2">
                                 <Input
                                     name="street"
                                     value={addressFields.street}
                                     onChange={(e) => setAddressFields({ ...addressFields, street: e.target.value })}
                                     placeholder="Rua..."
                                     required
-                                    className="flex-1"
+                                    className="col-span-9"
                                 />
-                                <Input name="number" defaultValue={initialData?.address?.number} placeholder="Nº" required className="w-24" />
+                                <Input
+                                    name="number"
+                                    value={addressFields.number}
+                                    onChange={(e) => setAddressFields({ ...addressFields, number: e.target.value })}
+                                    placeholder="Nº"
+                                    required
+                                    className="col-span-3"
+                                />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700">Complemento</label>
-                            <Input name="complement" defaultValue={initialData?.address?.complement} placeholder="Apto 101" />
+                            <Input
+                                name="complement"
+                                value={addressFields.complement}
+                                onChange={(e) => setAddressFields({ ...addressFields, complement: e.target.value })}
+                                placeholder="Apto 101"
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700">Bairro *</label>
@@ -573,15 +685,17 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Empresa de Registro *</label>
                             <select
-                                name="registrationCompany"
-                                defaultValue={initialData?.contract?.registrationCompany || ""}
+                                name="companyId"
+                                defaultValue={initialData?.contract?.companyId || ""}
                                 className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                 required
                             >
                                 <option value="">Selecione a empresa</option>
-                                <option value="Matriz">Supermercado Matriz</option>
-                                <option value="Filial 1">Filial 01 - Centro</option>
-                                <option value="Filial 2">Filial 02 - Norte</option>
+                                {companiesList.map(c => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.tradingName || c.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -592,45 +706,46 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cargo *</label>
                             <select
-                                name="jobTitle"
-                                defaultValue={initialData?.jobTitle || ""}
+                                name="jobRoleId"
+                                defaultValue={initialData?.jobRoleId || initialData?.contract?.jobRoleId || ""}
                                 className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                 required
                             >
-                                <option value="">Selecione</option>
-                                <option value="Operador de Caixa">Operador de Caixa</option>
-                                <option value="Repositor">Repositor</option>
-                                <option value="Gerente">Gerente</option>
-                                <option value="Açougueiro">Açougueiro</option>
+                                <option value="">Selecione o cargo</option>
+                                {jobRolesList.map(r => (
+                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                ))}
                             </select>
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">Setor *</label>
                             <select
-                                name="sector"
-                                defaultValue={initialData?.contract?.sector || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                name="sectorId"
+                                defaultValue={initialData?.contract?.sectorId || ""}
+                                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                 required
                             >
-                                <option value="">Selecione</option>
-                                <option value="Frente de Loja">Frente de Loja</option>
-                                <option value="Mercearia">Mercearia</option>
-                                <option value="Açougue">Açougue</option>
-                                <option value="Administrativo">Administrativo</option>
+                                <option value="">Selecione o setor</option>
+                                {sectorsList.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">Loja *</label>
                             <select
-                                name="store"
-                                defaultValue={initialData?.contract?.store || ""}
+                                name="storeId"
+                                defaultValue={initialData?.contract?.storeId || ""}
                                 className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                 required
                             >
                                 <option value="">Selecione</option>
-                                <option value="Loja 01">Loja 01</option>
-                                <option value="Loja 02">Loja 02</option>
+                                {storesList.map(s => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.tradingName || s.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -652,13 +767,17 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">Turno *</label>
                             <select
-                                name="workShift"
-                                defaultValue={initialData?.contract?.workShift || "FULL_TIME"}
+                                name="workShiftId"
+                                defaultValue={initialData?.contract?.workShiftId || ""}
                                 className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                 required
                             >
-                                <option value="">Selecione</option>
-                                <option value="NIGHT">Noite</option>
+                                <option value="">Selecione o turno</option>
+                                {shiftsList.map((s: any) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name} ({s.startTime} - {s.endTime})
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -853,9 +972,29 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
                             <div className="flex items-center space-x-3">
                                 <span className="text-xl">🚌</span>
-                                <label className="text-sm text-slate-200">Vale Transporte</label>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="hasTransportVoucher"
+                                            defaultChecked={initialData?.contract?.hasTransportVoucher}
+                                            id="vt-toggle"
+                                            className="mr-2 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                                        />
+                                        <label htmlFor="vt-toggle" className="text-sm font-medium text-slate-200 cursor-pointer">
+                                            Ativar Vale Transporte (6%)
+                                        </label>
+                                    </div>
+                                    <span className="text-xs text-slate-500 ml-6">
+                                        O desconto de 6% será aplicado automaticamente.
+                                        <a href="/portal/benefits/transport" target="_blank" className="text-indigo-400 hover:text-indigo-300 ml-1 hover:underline">
+                                            Configurar rotas →
+                                        </a>
+                                    </span>
+                                </div>
                             </div>
-                            <Input name="transportVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.transportVoucherValue} placeholder="Valor Mensal (R$)" className="w-40" />
+                            {/* Hidden input to keep compatibility if backend expects a value, though now we use boolean */}
+                            <input type="hidden" name="transportVoucherValue" value="0" />
                         </div>
 
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
@@ -1103,17 +1242,44 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
             <form onSubmit={handleSubmit} className="flex flex-col h-full">
 
-                <Tabs tabs={tabs.filter(t => t.id !== 'legal_guardian' || isMinor)} />
+                <Tabs
+                    tabs={tabs.filter(t => t.id !== 'legal_guardian' || isMinor)}
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                />
 
-                <div className="mt-8 pt-4 flex justify-end space-x-4 border-t border-slate-800">
-                    {onCancel && (
-                        <Button type="button" variant="outline" onClick={onCancel} className="text-slate-300 border-slate-700 hover:bg-slate-800">
-                            Cancelar
+                <div className="mt-8 pt-4 flex justify-between items-center border-t border-slate-800">
+                    <div>
+                        {onCancel && (
+                            <Button type="button" variant="outline" onClick={onCancel} className="text-slate-300 border-slate-700 hover:bg-slate-800">
+                                Cancelar
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className="flex space-x-4">
+                        {activeTab !== 'personal' && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => {
+                                    const idx = tabs.findIndex(t => t.id === activeTab);
+                                    if (idx > 0) setActiveTab(tabs[idx - 1].id);
+                                }}
+                                className="text-slate-400 hover:text-white"
+                            >
+                                ← Voltar
+                            </Button>
+                        )}
+                        <Button
+                            type="button"
+                            disabled={loading}
+                            onClick={handleSaveStep}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6"
+                        >
+                            {loading ? 'Salvando...' : (activeTab === tabs[tabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
                         </Button>
-                    )}
-                    <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6">
-                        {loading ? 'Salvando...' : (employeeId ? 'Salvar Alterações' : 'Cadastrar Funcionário')}
-                    </Button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -10,9 +10,9 @@ export interface CurrencyInputProps extends Omit<InputHTMLAttributes<HTMLInputEl
 const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
     ({ className, error, onValueChange, value, ...props }, ref) => {
         const [displayValue, setDisplayValue] = useState(() => {
-            if (value) {
-                const num = typeof value === 'string' ? parseFloat(value) : value;
-                return formatCurrency(num);
+            if (value !== undefined && value !== null && value !== '') {
+                const num = typeof value === 'string' ? parseFloat(value) : (typeof value === 'number' ? value : 0);
+                if (!isNaN(num)) return formatCurrency(num);
             }
             return '';
         });

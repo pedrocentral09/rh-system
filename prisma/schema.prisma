@@ -3,11 +3,11 @@
 
 generator client {
   provider   = "prisma-client-js"
-  engineType = "binary"
+  engineType = "library"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -25,7 +25,7 @@ model User {
   firebaseUid String  @unique // Link to Firebase Auth
   email       String  @unique
   name        String?
-  role        String  @default("EMPLOYEE")
+  role        String  @default("EMPLOYEE") // Legacy role field, keeping for compatibility
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,6 +38,9 @@ model User {
   // Dynamic Role Relation
   roleId  String?
   roleDef Role?   @relation(fields: [roleId], references: [id])
+
+  // Store Access Control
+  storeAccess UserStoreAccess[]
 
   @@map("core_users") // Table prefix to organize DB
 }
@@ -55,6 +58,18 @@ model Role {
   updatedAt DateTime @updatedAt
 
   @@map("core_roles")
+}
+
+model UserStoreAccess {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+  @@map("core_user_store_access")
 }
 
 // --- MODULE: PERSONNEL (Cadastro de Pessoal) ---
@@ -97,9 +112,11 @@ model Employee {
   emergencyContactPhone        String?
   emergencyContactRelationship String?
 
-  hireDate   DateTime
-  jobTitle   String
-  department String
+  hireDate   DateTime?
+  jobTitle   String?
+  jobRoleId  String?
+  jobRole    JobRole? @relation(fields: [jobRoleId], references: [id])
+  department String?
 
   status String @default("ACTIVE")
 
@@ -225,10 +242,19 @@ model Contract {
   storeId String? // Optional during migration
   store   Store?  @relation(fields: [storeId], references: [id]) // Relation to Physical Location
 
-  sector        String
+  jobRoleId     String?
+  jobRole       JobRole? @relation(fields: [jobRoleId], references: [id])
+
+  sector        String? // Legacy string field
+  sectorId      String?
+  sectorDef     Sector?  @relation(fields: [sectorId], references: [id])
   baseSalary    Decimal
   contractType  String
-  workShift     String   @default("FULL_TIME")
+  
+  workShift     String?   @default("FULL_TIME") // Keeping for legacy/migration safety if needed, or remove? Better to keep as optional legacy.
+  workShiftId   String?
+  workShiftDef  ShiftType? @relation(fields: [workShiftId], references: [id])
+  
   admissionDate DateTime
 
   // Experience Contract
@@ -237,14 +263,18 @@ model Contract {
   isExperienceExtended Boolean @default(false)
 
   // Benefits
-  transportVoucherValue Decimal?
+  hasTransportVoucher   Boolean  @default(false)
+  transportVoucherValue Decimal? // Optional: Custom value if needed, otherwise 6% calculated elsewhere
   mealVoucherValue      Decimal? // VA - Alimentação
   foodVoucherValue      Decimal? // VR - Refeição
 
   hasFamilySalary Boolean @default(false)
+  familySalaryDependents Int       @default(0)
 
   terminationDate        DateTime? // Date of employee termination
-  familySalaryDependents Int       @default(0)
+  terminationReason      String?   // Legacy reason string
+  terminationReasonId    String?
+  terminationReasonDef   TerminationReason? @relation(fields: [terminationReasonId], references: [id])
 
   // Adicionais / Benefits Flags and Values
   // Insalubridade
@@ -280,6 +310,12 @@ model Document {
   fileUrl  String
   fileName String
 
+  // Signature System (Added for RH Excepcional)
+  status        String    @default("PENDING") // PENDING, SIGNED, EXPIRED
+  signatureHash String?   // SHA-256 hash
+  signatureDate DateTime?
+  signatureIp   String?
+
   uploadedAt DateTime @default(now())
 
   @@map("personnel_documents")
@@ -314,14 +350,20 @@ model CompanySettings {
 }
 
 model AuditLog {
-  id        String  @id @default(uuid())
-  action    String // CREATE, UPDATE, DELETE, LOGIN
-  resource  String // Employee, User, Settings
-  details   String? // JSON details of change
+  id         String  @id @default(uuid())
+  action     String // CREATE, UPDATE, DELETE, LOGIN, EXPORT
+  module     String // core, personnel, payroll, configuration
+  resource   String // Employee, User, Store, etc.
+  resourceId String?
+
+  oldData String? // JSON string
+  newData String? // JSON string
+
   ipAddress String?
+  userAgent String?
 
   userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User? @relation(fields: [userId], references: [id])
 
   timestamp DateTime @default(now())
 
@@ -330,17 +372,26 @@ model AuditLog {
 
 model Company {
   id   String @id @default(uuid())
-  name String // Razão Social / Nome Fantasia
+  name String // Razão Social
+  tradingName String? // Nome Fantasia
   cnpj String @unique
+  stateRegistration String? // Inscrição Estadual
+  municipalRegistration String? // Inscrição Municipal
+  
+  phone       String?
+  email       String?
+  responsible String? // Pessoa responsável
 
   street       String?
   number       String?
+  complement   String?
   neighborhood String?
   city         String?
   state        String?
   zipCode      String?
 
   contracts Contract[]
+  stores    Store[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -350,22 +401,77 @@ model Company {
 
 model Store {
   id   String  @id @default(uuid())
-  name String // Nome da Loja
+  name String // Razão Social da Unidade
+  tradingName String? // Nome Fantasia da Unidade
   code String? // Código Interno (ex: LJ01)
+  cnpj String? // CNPJ Próprio se houver
+
+  stateRegistration String?
+  municipalRegistration String?
+  
+  phone       String?
+  email       String?
+  responsible String?
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
 
   street       String?
   number       String?
+  complement   String?
   neighborhood String?
   city         String?
   state        String?
   zipCode      String?
 
   contracts Contract[]
+  storeAccess UserStoreAccess[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("core_stores")
+}
+
+// --- MODULE: AUXILIARY TABLES ---
+
+model JobRole {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  cbo         String? // Código Brasileiro de Ocupações
+  description String?
+
+  employees Employee[]
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_job_roles")
+}
+
+model Sector {
+  id   String @id @default(uuid())
+  name String @unique
+
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_sectors")
+}
+
+model TerminationReason {
+  id   String @id @default(uuid())
+  name String @unique
+
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("config_termination_reasons")
 }
 
 // --- MODULE: SCALES (Escalas) ---
@@ -378,6 +484,7 @@ model ShiftType {
   breakDuration Int    @default(60) // Minutes
 
   workScales WorkScale[]
+  contracts  Contract[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

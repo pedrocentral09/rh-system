@@ -1,14 +1,23 @@
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { getDashboardStats, getHiringStats } from '@/modules/core/actions/stats';
 import { getDailyOverview } from '@/modules/time-tracking/actions/timesheet';
 import { AttendanceWidget } from '@/modules/time-tracking/components/AttendanceWidget';
 import { HiringEvolutionChart } from '@/modules/core/components/HiringEvolutionChart';
+import { prisma } from '@/lib/prisma';
+import { DashboardFilters } from '@/modules/core/components/DashboardFilters';
+import { DashboardStatsGrid } from '@/modules/core/components/DashboardStatsGrid';
+import { QuickAccessGrid } from '@/modules/core/components/QuickAccessGrid';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import Link from 'next/link';
 
-export default async function DashboardPage() {
-    const { success: statsSuccess, data: statsData } = await getDashboardStats();
-    const hiringResult = await getHiringStats();
+export default async function DashboardPage({ searchParams }: { searchParams: { companyId?: string, storeId?: string, sigStatus?: string } }) {
+    const filters = await searchParams; // Next.js 15+ searchParams are async
+
+    const { success: statsSuccess, data: statsData } = await getDashboardStats(filters);
+    const hiringResult = await getHiringStats(filters);
     const hiringData = (hiringResult.success && hiringResult.data) ? hiringResult.data : [];
+
+    const companies = await prisma.company.findMany({ select: { id: true, name: true } });
+    const stores = await prisma.store.findMany({ select: { id: true, name: true } });
 
     // Fetch Daily Overview for today
     // Format YYYY-MM-DD for local time
@@ -30,10 +39,13 @@ export default async function DashboardPage() {
     };
 
     return (
-        <div className="p-8 space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-950 dark:text-white">Dashboard</h1>
-                <p className="text-slate-600 dark:text-slate-400">Visão geral do HR System</p>
+        <div className="p-8 space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter uppercase">RH <span className="text-orange-500">EXCEPCIONAL</span></h1>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Painel de Controle Executivo & Análise</p>
+                </div>
+                <DashboardFilters companies={companies} stores={stores} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -42,72 +54,30 @@ export default async function DashboardPage() {
                     <AttendanceWidget overview={dailyOverview} />
                 </div>
 
-                {/* Quick Actions / Highlights Placeholder or maybe move one of the small cards here? 
-                    For now let's just leave it empty or put a welcome message? 
-                    Actually, let's just make the Attendance Widget full width or share with something else?
-                    The user wanted "High Impact". 
-                    Let's make the Attendance Widget BIG (2 cols) and maybe an "Alerts" card next to it?
-                    Or just put it above the number cards.
-                */}
-                <Card className="bg-white dark:bg-slate-800 border-l-4 border-indigo-600 dark:border-indigo-500 shadow-sm">
+                <Card className="bg-slate-950 border-none shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] rounded-none hover:translate-x-1 hover:-translate-y-1 transition-transform duration-300">
                     <CardHeader>
-                        <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">👋 Olá, Gestor!</CardTitle>
-                        <CardDescription className="text-slate-600 dark:text-slate-300 font-medium">
-                            Você tem {stats.probationAlerts?.length || 0} contratos vencendo em breve e {stats.activeEmployees} colaboradores ativos.
+                        <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl font-black text-white uppercase tracking-tighter">👋 Olá, Gestor!</CardTitle>
+                            <div className="w-8 h-8 rounded-none bg-orange-500 flex items-center justify-center animate-pulse">
+                                <span className="text-slate-950 text-xs font-black">!</span>
+                            </div>
+                        </div>
+                        <CardDescription className="text-slate-400 font-medium">
+                            Você tem <span className="text-orange-500 font-bold">{stats.probationAlerts?.length || 0}</span> contratos vencendo em breve e <span className="text-emerald-400 font-bold">{stats.activeEmployees}</span> colaboradores ativos.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href="/dashboard/personnel">
-                            <span className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer shadow-sm">
-                                Gerenciar Equipe →
+                            <span className="inline-flex items-center justify-center px-6 py-3 bg-orange-500 text-slate-950 text-xs font-black uppercase tracking-widest hover:bg-white hover:text-slate-950 transition-all cursor-pointer shadow-lg active:scale-95">
+                                GERENCIAR EQUIPE →
                             </span>
                         </Link>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-l-4 border-indigo-500 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-indigo-400">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase">Total Colaboradores</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.totalEmployees}</div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Cadastrados no sistema</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-l-4 border-emerald-500 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-emerald-400">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase">Ativos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">{stats.activeEmployees}</div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Atualmente trabalhando</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-l-4 border-blue-500 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-blue-400">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase">Lojas / Unidades</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.storeCount}</div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Lojas ativas com equipe</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-l-4 border-amber-500 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-amber-400">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase">Departamentos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.departmentCount}</div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Setores opercionais</p>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Stats Grid - Moved to Client Component to fix Framer Motion Error */}
+            <DashboardStatsGrid stats={stats} />
 
             {/* Charts & Lists Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -125,9 +95,9 @@ export default async function DashboardPage() {
                                     <span className="font-medium text-slate-700">{dept.name}</span>
                                     <span className="text-slate-500">{dept.percentage}%</span>
                                 </div>
-                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-none overflow-hidden">
                                     <div
-                                        className="h-full bg-indigo-500 rounded-full"
+                                        className="h-full bg-orange-500"
                                         style={{ width: `${dept.percentage}%` }}
                                     ></div>
                                 </div>
@@ -151,7 +121,7 @@ export default async function DashboardPage() {
                                     <div key={emp.id} className="flex justify-between items-center bg-white p-2 rounded border border-amber-100 shadow-sm">
                                         <div className="flex items-center space-x-2">
                                             <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs overflow-hidden">
-                                                {emp.photoUrl ? <img src={emp.photoUrl} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
+                                                {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
                                             </div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-800">{emp.name}</p>
@@ -172,17 +142,8 @@ export default async function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                {/* Hiring Evolution Chart NEW */}
-                <div className="lg:col-span-3">
-                    {/* 
-                        Note: The layout is 3 columns. 
-                        The chart is best viewed wider or in a separate row.
-                        Let's put it in a new full-width row BELOW the 3-col grid, or 
-                        integrate it. But the user asked to render it.
-                        Let's check where we are inserting.
-                        We are inside the lg:grid-cols-3 div.
-                     */}
-                </div>
+                {/* Evolution Chart Placeholder */}
+                <div className="lg:col-span-1" />
             </div>
 
             {/* New Section for Evolution Chart */}
@@ -190,7 +151,7 @@ export default async function DashboardPage() {
                 <div className="lg:col-span-2">
                     <HiringEvolutionChart data={hiringData} />
                 </div>
-                {/* Birthdays Widget moved here to balance layout if needed, or keep it above */}
+                {/* Birthdays Widget */}
                 <div className="lg:col-span-1">
                     <Card className="border-slate-200 bg-gradient-to-b from-white to-pink-50/30 dark:from-slate-800 dark:to-slate-800/50 dark:border-slate-700 h-full">
                         <CardHeader>
@@ -205,7 +166,7 @@ export default async function DashboardPage() {
                                     {stats.upcomingBirthdays.map((emp: any) => (
                                         <div key={emp.id} className="flex items-center space-x-3 pb-3 border-b border-pink-100 dark:border-slate-700 last:border-0 last:pb-0">
                                             <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/20 border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold overflow-hidden">
-                                                {emp.photoUrl ? <img src={emp.photoUrl} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
+                                                {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{emp.name}</p>
@@ -224,56 +185,9 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-2 mb-4">Acesso Rápido</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Link href="/dashboard/personnel" className="block group">
-                    <Card className="h-full border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-indigo-300 dark:group-hover:border-indigo-500 group-hover:shadow-md transition-all">
-                        <CardHeader>
-                            <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mb-2 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
-                                <span className="text-2xl">👥</span>
-                            </div>
-                            <CardTitle className="text-lg font-bold group-hover:text-indigo-800 dark:group-hover:text-indigo-400 transition-colors dark:text-slate-100">Gestão de Pessoal</CardTitle>
-                            <CardDescription className="text-slate-600 dark:text-slate-400">Gerenciar funcionários, admissões e documentos.</CardDescription>
-                        </CardHeader>
-                    </Card>
-                </Link>
-
-                <Link href="/dashboard/scales" className="block group">
-                    <Card className="h-full border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-emerald-300 dark:group-hover:border-emerald-500 group-hover:shadow-md transition-all">
-                        <CardHeader>
-                            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-2 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors">
-                                <span className="text-2xl">📅</span>
-                            </div>
-                            <CardTitle className="text-lg font-bold group-hover:text-emerald-800 dark:group-hover:text-emerald-400 transition-colors dark:text-slate-100">Escalas de Trabalho</CardTitle>
-                            <CardDescription className="text-slate-600 dark:text-slate-400">Organizar turnos, folgas e escalas semanais.</CardDescription>
-                        </CardHeader>
-                    </Card>
-                </Link>
-
-                <Link href="/dashboard/time-tracking" className="block group">
-                    <Card className="h-full border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-amber-300 dark:group-hover:border-amber-500 group-hover:shadow-md transition-all">
-                        <CardHeader>
-                            <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mb-2 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
-                                <span className="text-2xl">⏰</span>
-                            </div>
-                            <CardTitle className="text-lg font-bold group-hover:text-amber-800 dark:group-hover:text-amber-400 transition-colors dark:text-slate-100">Controle de Ponto</CardTitle>
-                            <CardDescription className="text-slate-600 dark:text-slate-400">Importar AFDs e gerenciar batidas.</CardDescription>
-                        </CardHeader>
-                    </Card>
-                </Link>
-
-                <Link href="/dashboard/configuration" className="block group">
-                    <Card className="h-full border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group-hover:border-slate-400 dark:group-hover:border-slate-500 group-hover:shadow-md transition-all">
-                        <CardHeader>
-                            <div className="w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-2 group-hover:bg-slate-100 dark:group-hover:bg-slate-600 transition-colors">
-                                <span className="text-2xl">⚙️</span>
-                            </div>
-                            <CardTitle className="text-lg font-bold group-hover:text-slate-900 dark:group-hover:text-white transition-colors dark:text-slate-100">Configurações</CardTitle>
-                            <CardDescription className="text-slate-600 dark:text-slate-400">Dados da empresa, usuários e preferências.</CardDescription>
-                        </CardHeader>
-                    </Card>
-                </Link>
-            </div>
+            <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mt-12 mb-4">Acesso Rápido</h2>
+            {/* Quick Access Grid - Moved to Client Component to fix Framer Motion Error */}
+            <QuickAccessGrid />
         </div>
     );
 }

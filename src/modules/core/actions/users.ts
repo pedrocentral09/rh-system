@@ -19,7 +19,13 @@ export async function getUsers() {
 
         const users = await prisma.user.findMany({
             orderBy: { createdAt: 'desc' },
-            include: { employee: true }
+            include: {
+                employee: true,
+                roleDef: true,
+                storeAccess: {
+                    include: { store: true }
+                }
+            }
         });
         return { success: true, data: users };
     } catch (error) {
@@ -40,7 +46,10 @@ export async function updateUserRole(userId: string, role: string) {
 
         await prisma.user.update({
             where: { id: userId },
-            data: { role }
+            data: {
+                role: role, // Keep legacy field updated for now
+                roleId: role === 'ADMIN' ? null : role // If it's a UUID, it's a dynamic role
+            }
         });
 
         await logAction(
@@ -54,6 +63,38 @@ export async function updateUserRole(userId: string, role: string) {
         return { success: true };
     } catch (error) {
         console.error('Error updating role:', error);
+        return { success: false, error: 'Failed' };
+    }
+}
+
+// Update User Store Access
+export async function updateUserStoreAccess(userId: string, storeIds: string[]) {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, error: 'Acesso negado.' };
+        }
+
+        // Transactions to ensure consistency
+        await prisma.$transaction([
+            // Delete old access
+            prisma.userStoreAccess.deleteMany({
+                where: { userId }
+            }),
+            // Create new access
+            prisma.userStoreAccess.createMany({
+                data: storeIds.map(storeId => ({
+                    userId,
+                    storeId
+                }))
+            })
+        ]);
+
+        await logAction('UPDATE_STORE_ACCESS', 'User', { userId, storeIds }, currentUser.id);
+        revalidatePath('/dashboard/configuration');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating store access:', error);
         return { success: false, error: 'Failed' };
     }
 }

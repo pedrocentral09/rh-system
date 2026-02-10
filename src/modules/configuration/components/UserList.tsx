@@ -39,12 +39,11 @@ export function UserList() {
         }
     };
 
-    const getRoleBadge = (role: string) => {
-        switch (role) {
-            case 'ADMIN': return <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold">Admin</span>;
-            case 'HR_MANAGER': return <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-bold">Gerente RH</span>;
-            default: return <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-full text-xs font-bold">Funcionário</span>;
-        }
+    const getRoleBadge = (user: any) => {
+        if (user.role === 'ADMIN') return <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold">Admin</span>;
+        if (user.roleDef) return <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">{user.roleDef.name}</span>;
+        if (user.role === 'HR_MANAGER') return <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-bold">Gerente RH</span>;
+        return <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-full text-xs font-bold">Funcionário</span>;
     };
 
     if (loading) return <div className="p-4 bg-slate-50 rounded animate-pulse h-32"></div>;
@@ -64,8 +63,8 @@ export function UserList() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-                        <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+                    <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
+                        <thead className="text-[11px] text-slate-700 dark:text-slate-300 uppercase bg-slate-100/80 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 font-bold tracking-wider">
                             <tr>
                                 <th className="px-6 py-3">Nome / Email</th>
                                 <th className="px-6 py-3">Perfil de Acesso</th>
@@ -77,11 +76,20 @@ export function UserList() {
                             {users.map((user) => (
                                 <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="font-medium text-slate-900 dark:text-slate-200">{user.name || 'Sem Nome'}</div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400">{user.email}</div>
+                                        <div className="font-bold text-slate-900 dark:text-white leading-tight">{user.name || 'Sem Nome'}</div>
+                                        <div className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">{user.email}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {getRoleBadge(user.role)}
+                                        {getRoleBadge(user)}
+                                        {user.storeAccess && user.storeAccess.length > 0 && (
+                                            <div className="mt-1.5 flex flex-wrap gap-1">
+                                                {user.storeAccess.map((sa: any) => (
+                                                    <span key={sa.id} className="text-[10px] bg-slate-200/50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600 font-bold uppercase tracking-tight">
+                                                        {sa.store.tradingName || sa.store.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-xs">
                                         {user.employee ? (

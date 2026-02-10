@@ -5,10 +5,18 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 const StoreSchema = z.object({
-    name: z.string().min(2, "Nome é obrigatório"),
+    name: z.string().min(2, "Razão Social é obrigatória"),
+    tradingName: z.string().optional(),
     code: z.string().optional(),
+    cnpj: z.string().optional(),
+    stateRegistration: z.string().optional(),
+    municipalRegistration: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    responsible: z.string().optional(),
     street: z.string().optional(),
     number: z.string().optional(),
+    complement: z.string().optional(),
     neighborhood: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
@@ -41,6 +49,23 @@ export async function createStore(data: z.infer<typeof StoreSchema>) {
     } catch (error) {
         console.error('Error creating store:', error);
         return { success: false, error: 'Falha ao criar loja' };
+    }
+}
+
+export async function updateStore(id: string, data: z.infer<typeof StoreSchema>) {
+    try {
+        const valid = StoreSchema.parse(data);
+
+        await prisma.store.update({
+            where: { id },
+            data: valid
+        });
+
+        revalidatePath('/dashboard/configuration');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating store:', error);
+        return { success: false, error: 'Falha ao atualizar loja' };
     }
 }
 

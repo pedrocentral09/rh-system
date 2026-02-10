@@ -6,10 +6,14 @@ import { revalidatePath } from 'next/cache';
 const COMPANY_PROFILE_KEY = 'COMPANY_PROFILE';
 
 export type CompanyProfile = {
-    companyName: string;
+    companyName: string; // Razão Social
+    tradingName?: string; // Nome Fantasia
     cnpj: string;
+    stateRegistration?: string;
+    municipalRegistration?: string;
     email: string;
     phone: string;
+    responsible?: string;
     address: {
         street: string;
         number: string;

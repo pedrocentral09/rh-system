@@ -2,111 +2,49 @@
 
 import { prisma } from '@/lib/prisma';
 
-export async function getDashboardStats() {
-    try {
-        const [
-            totalEmployees,
-            activeEmployees,
-            terminatedEmployees,
-            stores,
-            allActiveEmployees
-        ] = await Promise.all([
-            prisma.employee.count(),
-            prisma.employee.count({ where: { status: 'ACTIVE' } }),
-            prisma.employee.count({ where: { status: 'TERMINATED' } }),
-            prisma.store.findMany({ select: { id: true } }),
-            prisma.employee.findMany({
-                where: { status: 'ACTIVE' },
-                select: {
-                    id: true,
-                    name: true,
-                    dateOfBirth: true,
-                    department: true,
-                    photoUrl: true,
-                    hireDate: true // Added for probation check
-                }
-            })
-        ]);
+import { StatsService } from '../services/stats.service';
 
-        // Process Birthdays
-        const currentMonth = new Date().getMonth();
-        const upcomingBirthdays = allActiveEmployees
-            .filter(e => new Date(e.dateOfBirth).getMonth() === currentMonth)
-            .map(e => ({
-                ...e,
-                day: new Date(e.dateOfBirth).getDate()
-            }))
-            .sort((a, b) => a.day - b.day);
-
-        // Process Department Distribution
-        const deptMap: Record<string, number> = {};
-        allActiveEmployees.forEach(e => {
-            const dept = e.department || 'Sem Dept.';
-            deptMap[dept] = (deptMap[dept] || 0) + 1;
-        });
-
-        const departmentStats = Object.entries(deptMap)
-            .map(([name, count]) => ({ name, count, percentage: Math.round((count / allActiveEmployees.length) * 100) }))
-            .sort((a, b) => b.count - a.count);
-
-        // Process Probation Alerts (Experiência)
-        // Rules: 45 days (1st period) and 90 days (2nd period)
-        const today = new Date();
-        const probationAlerts = allActiveEmployees
-            .map(e => {
-                const hire = new Date(e.hireDate);
-                const diffTime = Math.abs(today.getTime() - hire.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return { ...e, diffDays };
-            })
-            .filter(e => {
-                // Alert if approaching 45 days (e.g., 40-45) or 90 days (e.g., 85-90)
-                // Filter only those in probation (< 90 days) who are close to a deadline
-                return (e.diffDays >= 35 && e.diffDays <= 45) || (e.diffDays >= 80 && e.diffDays <= 90);
-            })
-            .map(e => ({
-                id: e.id,
-                name: e.name,
-                photoUrl: e.photoUrl,
-                days: e.diffDays,
-                period: e.diffDays <= 45 ? '1º Período (45d)' : '2º Período (90d)'
-            }))
-            .sort((a, b) => b.days - a.days);
-
-        return {
-            success: true,
-            data: {
-                totalEmployees,
-                activeEmployees,
-                terminatedEmployees,
-                storeCount: stores.length,
-                departmentCount: Object.keys(deptMap).length,
-                upcomingBirthdays: upcomingBirthdays.slice(0, 5),
-                birthdaysCount: upcomingBirthdays.length,
-                departmentStats,
-                probationAlerts
-            }
-        };
-    } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
-        return { success: false, error: 'Failed to load stats' };
-    }
+export async function getDashboardStats(filters?: { companyId?: string, storeId?: string, sigStatus?: string }) {
+    const result = await StatsService.getDashboardData(filters);
+    return result;
 }
 
-export async function getHiringStats() {
+export async function getHiringStats(filters?: { companyId?: string, storeId?: string, sigStatus?: string }) {
+    // Note: getHiringStats logic can also be moved to StatsService for consistency.
+    // For now, let's keep it simple or migrate it too.
+    // Since the goal is performance, I'll migrate it to StatsService in the next step if needed.
+    // But for now, let's just make sure getDashboardStats is fast.
     try {
         const today = new Date();
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(today.getMonth() - 5);
         sixMonthsAgo.setDate(1); // Start of that month
 
+        const hiredWhere: any = { hireDate: { gte: sixMonthsAgo } };
+        const terminatedWhere: any = { terminationDate: { gte: sixMonthsAgo } };
+
+        if (filters?.companyId) {
+            hiredWhere.contract = { companyId: filters.companyId };
+            terminatedWhere.companyId = filters.companyId;
+        }
+        if (filters?.storeId) {
+            hiredWhere.contract = { ...hiredWhere.contract, storeId: filters.storeId };
+            terminatedWhere.storeId = filters.storeId;
+        }
+
+        if (filters?.sigStatus && filters.sigStatus !== 'all') {
+            const sigFilter = { some: { status: filters.sigStatus } };
+            hiredWhere.documents = sigFilter;
+            terminatedWhere.employee = { documents: sigFilter };
+        }
+
         const [hired, terminated] = await Promise.all([
             prisma.employee.findMany({
-                where: { hireDate: { gte: sixMonthsAgo } },
+                where: hiredWhere,
                 select: { hireDate: true }
             }),
             prisma.contract.findMany({
-                where: { terminationDate: { gte: sixMonthsAgo } },
+                where: terminatedWhere,
                 select: { terminationDate: true }
             })
         ]);
@@ -123,7 +61,7 @@ export async function getHiringStats() {
             statsMap.set(key, { month: label, hired: 0, terminated: 0, sortKey: d.getTime() });
         }
 
-        hired.forEach(e => {
+        hired.forEach((e: any) => {
             const d = new Date(e.hireDate);
             const key = `${d.getMonth()}-${d.getFullYear()}`;
             if (statsMap.has(key)) {
@@ -131,7 +69,7 @@ export async function getHiringStats() {
             }
         });
 
-        terminated.forEach(c => {
+        terminated.forEach((c: any) => {
             if (c.terminationDate) {
                 const d = new Date(c.terminationDate);
                 const key = `${d.getMonth()}-${d.getFullYear()}`;

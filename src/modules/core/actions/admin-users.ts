@@ -11,7 +11,8 @@ const CreateUserSchema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(6),
-    role: z.string()
+    role: z.string(),
+    storeIds: z.array(z.string()).optional(),
 });
 
 export async function createSystemUser(data: z.infer<typeof CreateUserSchema>) {
@@ -42,17 +43,31 @@ export async function createSystemUser(data: z.infer<typeof CreateUserSchema>) {
             }
         }
 
-        // 2. Create in Database
-        const newUser = await prisma.user.create({
-            data: {
-                firebaseUid,
-                email: validData.email,
-                name: validData.name,
-                role: validData.role,
+        // 2. Create in Database with store access
+        const newUser = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    firebaseUid,
+                    email: validData.email,
+                    name: validData.name,
+                    role: validData.role,
+                    roleId: validData.role.length > 20 ? validData.role : null, // Handle dynamic role
+                }
+            });
+
+            if (validData.storeIds && validData.storeIds.length > 0) {
+                await tx.userStoreAccess.createMany({
+                    data: validData.storeIds.map(storeId => ({
+                        userId: user.id,
+                        storeId: storeId
+                    }))
+                });
             }
+
+            return user;
         });
 
-        await logAction('CREATE_USER', 'User', { newUserId: newUser.id, email: newUser.email }, currentUser.id);
+        await logAction('CREATE_USER', 'User', { newUserId: newUser.id, email: newUser.email, storeIds: validData.storeIds }, currentUser.id);
 
         revalidatePath('/dashboard/configuration');
         return { success: true };

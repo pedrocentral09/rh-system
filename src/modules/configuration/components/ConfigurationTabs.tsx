@@ -7,6 +7,7 @@ import { ProfileList } from './ProfileList';
 import { AuditLogViewer } from './AuditLogViewer';
 import { CompanyList } from './CompanyList';
 import { StoreList } from './StoreList';
+import { AuxiliaryTablesManager } from './AuxiliaryTablesManager';
 import { Card, CardContent } from '@/shared/components/ui/card';
 
 export function ConfigurationTabs() {
@@ -82,16 +83,7 @@ export function ConfigurationTabs() {
                 )}
 
                 {activeTab === 'tables' && (
-                    <Card className="border-slate-200 bg-slate-50/50">
-                        <CardContent className="py-12 text-center text-slate-500">
-                            <span className="text-4xl block mb-2">🚧</span>
-                            <h3 className="text-lg font-medium text-slate-700">Em Desenvolvimento</h3>
-                            <p className="max-w-md mx-auto mt-2 text-sm">
-                                Aqui você poderá gerenciar tabelas auxiliares como:
-                                <br />Cargos, Departamentos, Sindicatos e Motivos de Desligamento.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <AuxiliaryTablesManager />
                 )}
 
                 {activeTab === 'audit' && (

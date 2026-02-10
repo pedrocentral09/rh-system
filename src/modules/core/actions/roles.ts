@@ -46,7 +46,35 @@ export async function createRole(data: z.infer<typeof RoleSchema>) {
         revalidatePath('/dashboard/configuration');
         return { success: true, data: newRole };
     } catch (error) {
+        console.error('Error creating role:', error);
         return { success: false, error: 'Failed to create role' };
+    }
+}
+
+export async function updateRole(roleId: string, data: z.infer<typeof RoleSchema>) {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, error: 'Denied' };
+        }
+
+        const validData = RoleSchema.parse(data);
+
+        const updatedRole = await prisma.role.update({
+            where: { id: roleId },
+            data: {
+                name: validData.name,
+                permissions: JSON.stringify(validData.permissions),
+                description: validData.description,
+            }
+        });
+
+        await logAction('UPDATE_ROLE', 'Role', { id: updatedRole.id, name: updatedRole.name }, currentUser.id);
+        revalidatePath('/dashboard/configuration');
+        return { success: true, data: updatedRole };
+    } catch (error) {
+        console.error('Error updating role:', error);
+        return { success: false, error: 'Failed to update role' };
     }
 }
 
