@@ -18,9 +18,10 @@ export async function logAction(
             data: {
                 action,
                 resource,
-                details: typeof details === 'string' ? details : JSON.stringify(details),
+                module: 'core', // Default module if not specified
+                newData: typeof details === 'string' ? details : JSON.stringify(details), // Map details to newData
                 ipAddress: ip,
-                userId: userId || 'SYSTEM', // If not provided, assume system/anonymous
+                userId: userId, // Allow null for system actions
             }
         });
     } catch (error) {
@@ -36,7 +37,14 @@ export async function getAuditLogs() {
             orderBy: { timestamp: 'desc' },
             include: { user: { select: { name: true, email: true } } }
         });
-        return { success: true, data: logs };
+
+        // Map Prisma result to expected Frontend Interface
+        const mappedLogs = logs.map(log => ({
+            ...log,
+            details: log.newData || log.oldData || null
+        }));
+
+        return { success: true, data: mappedLogs };
     } catch (error) {
         console.error('Failed to fetch audit logs:', error);
         return { success: false, error: 'Failed' };
