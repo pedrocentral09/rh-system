@@ -3,8 +3,10 @@ import * as admin from 'firebase-admin';
 if (!admin.apps.length) {
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
-        ? process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n')
+    const privateKeyRaw = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+    // Handle both literal "\n" and real newlines
+    const privateKey = privateKeyRaw
+        ? privateKeyRaw.replace(/\\n/g, '\n').replace(/"/g, '') // Remove quotes if present
         : undefined;
 
     if (projectId && clientEmail && privateKey) {
