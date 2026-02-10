@@ -77,6 +77,7 @@ export const CreateEmployeeSchema = z.object({
     experienceExtensionDays: z.coerce.number().optional(),
 
     // Benefits Values
+    hasTransportVoucher: z.coerce.boolean().optional(),
     transportVoucherValue: z.coerce.number().optional(),
     mealVoucherValue: z.coerce.number().optional(), // VA
     foodVoucherValue: z.coerce.number().optional(), // VR

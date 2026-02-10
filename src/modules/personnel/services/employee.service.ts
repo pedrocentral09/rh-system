@@ -132,6 +132,16 @@ export class EmployeeService extends BaseService {
                         contractType: rawData.contractType || 'CLT',
                         workShiftId: rawData.workShiftId || undefined,
                         admissionDate: rawData.hireDate ? new Date(rawData.hireDate) : new Date(),
+                        hasTransportVoucher: rawData.hasTransportVoucher === 'on' || rawData.hasTransportVoucher === 'true' || rawData.hasTransportVoucher === true,
+                        transportVoucherValue: rawData.transportVoucherValue ? parseFloat(rawData.transportVoucherValue) : undefined,
+                        mealVoucherValue: rawData.mealVoucherValue ? parseFloat(rawData.mealVoucherValue) : undefined,
+                        foodVoucherValue: rawData.foodVoucherValue ? parseFloat(rawData.foodVoucherValue) : undefined,
+                        hasFamilySalary: rawData.hasFamilySalary === 'on' || rawData.hasFamilySalary === 'true' || rawData.hasFamilySalary === true,
+                        familySalaryDependents: rawData.familySalaryDependents ? parseInt(rawData.familySalaryDependents) : 0,
+                        hasInsalubrity: rawData.hasInsalubrity === 'on' || rawData.hasInsalubrity === 'true' || rawData.hasInsalubrity === true,
+                        hasDangerousness: rawData.hasDangerousness === 'on' || rawData.hasDangerousness === 'true' || rawData.hasDangerousness === true,
+                        hasTrustPosition: rawData.hasTrustPosition === 'on' || rawData.hasTrustPosition === 'true' || rawData.hasTrustPosition === true,
+                        hasCashHandling: rawData.hasCashHandling === 'on' || rawData.hasCashHandling === 'true' || rawData.hasCashHandling === true,
                     }
                 };
             }
@@ -242,6 +252,9 @@ export class EmployeeService extends BaseService {
                 if (rawData.experienceExtensionDays) contractData.experienceExtensionDays = parseInt(rawData.experienceExtensionDays);
 
                 // Benefits
+                if (rawData.hasTransportVoucher !== undefined) {
+                    contractData.hasTransportVoucher = rawData.hasTransportVoucher === 'on' || rawData.hasTransportVoucher === 'true' || rawData.hasTransportVoucher === true;
+                }
                 if (rawData.transportVoucherValue) contractData.transportVoucherValue = parseFloat(rawData.transportVoucherValue);
                 if (rawData.mealVoucherValue) contractData.mealVoucherValue = parseFloat(rawData.mealVoucherValue);
                 if (rawData.foodVoucherValue) contractData.foodVoucherValue = parseFloat(rawData.foodVoucherValue);

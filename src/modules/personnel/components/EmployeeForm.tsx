@@ -394,7 +394,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nome Completo *</label>
-                                <Input name="name" defaultValue={initialData?.name} placeholder="Ex: Fabiana Francisca Paludo" required />
+                                <Input name="name" defaultValue={initialData?.name} placeholder="Ex: Pedro Henrique" required />
                             </div>
 
                             <div className="space-y-2">
@@ -411,7 +411,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700">RG *</label>
-                                <Input name="rg" defaultValue={initialData?.rg} placeholder="MG - 11539193" required />
+                                <Input name="rg" defaultValue={initialData?.rg} placeholder="00.000.000-0" required />
                             </div>
 
                             <div className="space-y-2">
@@ -972,9 +972,29 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
                             <div className="flex items-center space-x-3">
                                 <span className="text-xl">🚌</span>
-                                <label className="text-sm text-slate-200">Vale Transporte</label>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="hasTransportVoucher"
+                                            defaultChecked={initialData?.contract?.hasTransportVoucher}
+                                            id="vt-toggle"
+                                            className="mr-2 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                                        />
+                                        <label htmlFor="vt-toggle" className="text-sm font-medium text-slate-200 cursor-pointer">
+                                            Ativar Vale Transporte (6%)
+                                        </label>
+                                    </div>
+                                    <span className="text-xs text-slate-500 ml-6">
+                                        O desconto de 6% será aplicado automaticamente.
+                                        <a href="/portal/benefits/transport" target="_blank" className="text-indigo-400 hover:text-indigo-300 ml-1 hover:underline">
+                                            Configurar rotas →
+                                        </a>
+                                    </span>
+                                </div>
                             </div>
-                            <Input name="transportVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.transportVoucherValue} placeholder="Valor Mensal (R$)" className="w-40" />
+                            {/* Hidden input to keep compatibility if backend expects a value, though now we use boolean */}
+                            <input type="hidden" name="transportVoucherValue" value="0" />
                         </div>
 
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">

@@ -79,6 +79,51 @@ export async function logoutAction() {
     redirect('/login');
 }
 
+export async function devLoginAction() {
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error('Not allowed in production');
+    }
+
+    const email = 'admin@dev.local';
+    const uid = 'dev-admin-uid';
+
+    let user = await prisma.user.findUnique({
+        where: { firebaseUid: uid },
+    });
+
+    if (!user) {
+        user = await prisma.user.create({
+            data: {
+                firebaseUid: uid,
+                email: email,
+                name: 'Dev Admin',
+                role: 'ADMIN',
+            },
+        });
+    } else {
+        // Ensure user is admin
+        if (user.role !== 'ADMIN') {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { role: 'ADMIN' },
+            });
+        }
+    }
+
+    const cookieStore = await cookies();
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    cookieStore.set('hr_session', user.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires,
+        sameSite: 'lax',
+        path: '/',
+    });
+
+    redirect('/dashboard');
+}
+
 export async function getCurrentUser() {
     try {
         const cookieStore = await cookies();
