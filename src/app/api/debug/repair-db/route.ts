@@ -65,6 +65,76 @@ export async function GET() {
             logs.push(`⚠️ FK constraint warning (might be ok): ${e.message}`);
         }
 
+        // 4. Create Sector table (config_sectors)
+        logs.push('🔧 Checking config_sectors table...');
+        try {
+            await prisma.$executeRawUnsafe(`
+                CREATE TABLE IF NOT EXISTS "config_sectors" (
+                    "id" TEXT NOT NULL,
+                    "name" TEXT NOT NULL,
+                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    "updatedAt" TIMESTAMP(3) NOT NULL,
+                    CONSTRAINT "config_sectors_pkey" PRIMARY KEY ("id")
+                );
+            `);
+            await prisma.$executeRawUnsafe(`
+                CREATE UNIQUE INDEX IF NOT EXISTS "config_sectors_name_key" ON "config_sectors"("name");
+            `);
+            logs.push('✅ config_sectors table checked/created.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to create config_sectors: ${e.message}`);
+        }
+
+        // 5. Add sectorId to personnel_contracts
+        logs.push('🔧 Checking personnel_contracts.sectorId column...');
+        try {
+            await prisma.$executeRawUnsafe(`
+                ALTER TABLE "personnel_contracts" ADD COLUMN IF NOT EXISTS "sectorId" TEXT;
+            `);
+            // Add FK if possible
+            await prisma.$executeRawUnsafe(`
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'personnel_contracts_sectorId_fkey') THEN
+                        ALTER TABLE "personnel_contracts"
+                        ADD CONSTRAINT "personnel_contracts_sectorId_fkey"
+                        FOREIGN KEY ("sectorId")
+                        REFERENCES "config_sectors"("id")
+                        ON DELETE SET NULL ON UPDATE CASCADE;
+                    END IF;
+                END $$;
+             `);
+            logs.push('✅ personnel_contracts.sectorId column checked/added.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to add sectorId column: ${e.message}`);
+        }
+
+        // 6. Add workShiftId to personnel_contracts (just in case)
+        logs.push('🔧 Checking personnel_contracts.workShiftId column...');
+        try {
+            await prisma.$executeRawUnsafe(`
+                ALTER TABLE "personnel_contracts" ADD COLUMN IF NOT EXISTS "workShiftId" TEXT;
+            `);
+            await prisma.$executeRawUnsafe(`
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'personnel_contracts_workShiftId_fkey') THEN
+                         -- Only adding if table time_shift_types exists, to be safe
+                         IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'time_shift_types') THEN
+                            ALTER TABLE "personnel_contracts"
+                            ADD CONSTRAINT "personnel_contracts_workShiftId_fkey"
+                            FOREIGN KEY ("workShiftId")
+                            REFERENCES "time_shift_types"("id")
+                            ON DELETE SET NULL ON UPDATE CASCADE;
+                         END IF;
+                    END IF;
+                END $$;
+             `);
+            logs.push('✅ personnel_contracts.workShiftId column checked/added.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to add workShiftId: ${e.message}`);
+        }
+
         return NextResponse.json({
             status: 'completed',
             logs
