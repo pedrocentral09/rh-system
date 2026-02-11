@@ -41,13 +41,23 @@ export function EmployeeList() {
     const [filterCompany, setFilterCompany] = useState('');
     const [filterDept, setFilterDept] = useState('');
 
+    const [error, setError] = useState<string | null>(null);
+
     const loadEmployees = async () => {
         setLoading(true);
-        const result = await getEmployees();
-        if (result.success) {
-            setEmployees(result.data || []);
-        } else {
-            console.error(result.error);
+        setError(null);
+        try {
+            const result = await getEmployees();
+            if (result.success) {
+                console.log('Employees loaded:', result.data?.length);
+                setEmployees(result.data || []);
+            } else {
+                console.error(result.error);
+                setError(result.error?.message || 'Erro ao carregar colaboradores');
+            }
+        } catch (e: any) {
+            console.error('Fetch error:', e);
+            setError(e.message || 'Erro de conexão ao buscar colaboradores');
         }
         setLoading(false);
     };
@@ -228,6 +238,13 @@ export function EmployeeList() {
                         )}
                     </div>
                 </div>
+
+                {error && (
+                    <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 m-4">
+                        <p className="font-bold">Erro ao carregar colaboradores:</p>
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 <CardContent className="p-0">
                     {/* Mobile View (Cards) */}
