@@ -6,7 +6,15 @@ async function migrateDatabase() {
     console.log('🚀 [DEPLOY] Starting Database Migration...');
     try {
         // Attempt schema sync with data loss acceptance (for column deletion/addition)
-        execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+        // Use local binary directly to avoid npx path issues
+        const prismaPath = './node_modules/.bin/prisma';
+        try {
+            console.log(`Trying migration with: ${prismaPath} db push`);
+            execSync(`${prismaPath} db push --accept-data-loss`, { stdio: 'inherit' });
+        } catch (localError) {
+            console.warn('⚠️ [DEPLOY] Local binary failed, trying npx fallback...');
+            execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+        }
         console.log('✅ [DEPLOY] Migration Successful!');
     } catch (error) {
         console.error('❌ [DEPLOY] Migration Failed:', error.message);
