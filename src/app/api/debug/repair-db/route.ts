@@ -31,6 +31,45 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        const action = searchParams.get('action');
+        if (action === 'promote_admin') {
+            const email = searchParams.get('email');
+            if (!email) {
+                return NextResponse.json({ status: 'error', message: 'Email required for promotion' }, { status: 400 });
+            }
+            logs.push(`🚀 Promoting user ${email} to ADMIN...`);
+
+            // 1. Ensure ADMIN role exists
+            let adminRole = await prisma.role.findUnique({ where: { name: 'ADMIN' } });
+            if (!adminRole) {
+                logs.push('⚠️ ADMIN role not found. Creating it...');
+                adminRole = await prisma.role.create({
+                    data: {
+                        name: 'ADMIN',
+                        permissions: JSON.stringify({ "*": ["read", "write", "delete", "manage"] }),
+                        description: 'System Administrator',
+                        isSystem: true
+                    }
+                });
+                logs.push('✅ ADMIN role created.');
+            }
+
+            // 2. Find User
+            const user = await prisma.user.findUnique({ where: { email } });
+            if (!user) {
+                logs.push(`❌ User with email ${email} not found.`);
+                return NextResponse.json({ status: 'error', logs, message: 'User not found' }, { status: 404 });
+            }
+
+            // 3. Assign Role
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { roleId: adminRole.id }
+            });
+            logs.push('✅ User promoted to ADMIN successfully!');
+            return NextResponse.json({ status: 'completed', logs });
+        }
+
         logs.push('🚀 Starting DB Repair (Adding Constraints Only)...');
 
         // Existing Repair Logic (Keep as fallback)
