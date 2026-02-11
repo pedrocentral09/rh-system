@@ -135,6 +135,70 @@ export async function GET() {
             logs.push(`❌ Failed to add workShiftId: ${e.message}`);
         }
 
+        // 7. Create Shift Type table (time_shift_types)
+        logs.push('🔧 Checking time_shift_types table...');
+        try {
+            await prisma.$executeRawUnsafe(`
+                CREATE TABLE IF NOT EXISTS "time_shift_types" (
+                    "id" TEXT NOT NULL,
+                    "name" TEXT NOT NULL,
+                    "startTime" TEXT NOT NULL,
+                    "endTime" TEXT NOT NULL,
+                    "breakDuration" INTEGER NOT NULL DEFAULT 60,
+                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    "updatedAt" TIMESTAMP(3) NOT NULL,
+                    CONSTRAINT "time_shift_types_pkey" PRIMARY KEY ("id")
+                );
+            `);
+            logs.push('✅ time_shift_types table checked/created.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to create time_shift_types: ${e.message}`);
+        }
+
+        // 8. Create Termination Reason table (config_termination_reasons)
+        logs.push('🔧 Checking config_termination_reasons table...');
+        try {
+            await prisma.$executeRawUnsafe(`
+                CREATE TABLE IF NOT EXISTS "config_termination_reasons" (
+                    "id" TEXT NOT NULL,
+                    "name" TEXT NOT NULL,
+                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    "updatedAt" TIMESTAMP(3) NOT NULL,
+                    CONSTRAINT "config_termination_reasons_pkey" PRIMARY KEY ("id")
+                );
+            `);
+            await prisma.$executeRawUnsafe(`
+                CREATE UNIQUE INDEX IF NOT EXISTS "config_termination_reasons_name_key" ON "config_termination_reasons"("name");
+            `);
+            logs.push('✅ config_termination_reasons table checked/created.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to create config_termination_reasons: ${e.message}`);
+        }
+
+        // 9. Update Companies Table (core_companies)
+        logs.push('🔧 Updating core_companies columns...');
+        try {
+            const columns = ['complement', 'email', 'municipalRegistration', 'phone', 'responsible', 'stateRegistration', 'tradingName'];
+            for (const col of columns) {
+                await prisma.$executeRawUnsafe(`ALTER TABLE "core_companies" ADD COLUMN IF NOT EXISTS "${col}" TEXT;`);
+            }
+            logs.push('✅ core_companies columns checked/added.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to update core_companies: ${e.message}`);
+        }
+
+        // 10. Update Stores Table (core_stores)
+        logs.push('🔧 Updating core_stores columns...');
+        try {
+            const columns = ['cnpj', 'complement', 'email', 'municipalRegistration', 'phone', 'responsible', 'stateRegistration', 'tradingName'];
+            for (const col of columns) {
+                await prisma.$executeRawUnsafe(`ALTER TABLE "core_stores" ADD COLUMN IF NOT EXISTS "${col}" TEXT;`);
+            }
+            logs.push('✅ core_stores columns checked/added.');
+        } catch (e: any) {
+            logs.push(`❌ Failed to update core_stores: ${e.message}`);
+        }
+
         return NextResponse.json({
             status: 'completed',
             logs
