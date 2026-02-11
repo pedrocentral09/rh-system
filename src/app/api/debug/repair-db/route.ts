@@ -1,14 +1,39 @@
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { execSync } from 'child_process';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const searchParams = request.nextUrl.searchParams;
+        const reset = searchParams.get('reset');
         const logs: string[] = [];
-        logs.push('🚀 Starting DB Repair...');
 
+        if (reset === 'true') {
+            logs.push('🚀 NUKING DATABASE (RESET REQUESTED)...');
+            try {
+                // Use local binary directly to avoid npx path issues
+                const prismaPath = './node_modules/.bin/prisma';
+                try {
+                    logs.push(`Trying reset with: ${prismaPath} db push --force-reset`);
+                    execSync(`${prismaPath} db push --force-reset --accept-data-loss`, { stdio: 'inherit' });
+                } catch (localError) {
+                    logs.push('⚠️ Local binary failed, trying npx fallback...');
+                    execSync('npx prisma db push --force-reset --accept-data-loss', { stdio: 'inherit' });
+                }
+                logs.push('✅ DATABASE FULLY RESET & SYNCED!');
+                return NextResponse.json({ status: 'completed', logs });
+            } catch (error: any) {
+                logs.push(`❌ RESET FAILED: ${error.message}`);
+                return NextResponse.json({ status: 'error', logs, error: error.message }, { status: 500 });
+            }
+        }
+
+        logs.push('🚀 Starting DB Repair (Adding Constraints Only)...');
+
+        // Existing Repair Logic (Keep as fallback)
         // 1. Create JobRole table if not exists (config_job_roles)
         logs.push('🔧 Checking config_job_roles table...');
         try {
