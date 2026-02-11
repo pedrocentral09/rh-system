@@ -61,12 +61,15 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ status: 'error', logs, message: 'User not found' }, { status: 404 });
             }
 
-            // 3. Assign Role
+            // 3. Assign Role (BOTH legacy field and relation)
             await prisma.user.update({
                 where: { id: user.id },
-                data: { roleId: adminRole.id }
+                data: {
+                    roleId: adminRole.id,
+                    role: 'ADMIN' // CRITICAL: Auth logic checks this string field!
+                }
             });
-            logs.push('✅ User promoted to ADMIN successfully!');
+            logs.push('✅ User promoted to ADMIN (Legacy + Relation) successfully!');
             return NextResponse.json({ status: 'completed', logs });
         }
 
