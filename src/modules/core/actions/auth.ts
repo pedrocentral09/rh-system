@@ -145,7 +145,8 @@ export async function getCurrentUser() {
         if (!userId) return null;
 
         const user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: { id: userId },
+            include: { roleDef: true }
         });
 
         return user;
@@ -161,9 +162,21 @@ export async function requireAuth(allowedRoles?: string[]) {
         redirect('/login');
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
+    let hasPermission = true;
+
+    if (allowedRoles) {
+        hasPermission = allowedRoles.includes(user.role) ||
+            (!!user.roleDef && (
+                // If checking for ADMIN, allow if custom role name is 'Administrador'
+                (allowedRoles.includes('ADMIN') && user.roleDef.name.toLowerCase() === 'administrador') ||
+                // If checking for HR_MANAGER, allow any custom role (assuming > Employee)
+                (allowedRoles.includes('HR_MANAGER'))
+            ));
+    }
+
+    if (allowedRoles && !hasPermission) {
         // Redirect to appropriate home based on Role
-        if (user.role === 'EMPLOYEE') {
+        if (user.role === 'EMPLOYEE' && !user.roleDef) {
             redirect('/portal');
         } else {
             redirect('/dashboard');
