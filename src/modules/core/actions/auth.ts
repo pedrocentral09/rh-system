@@ -171,7 +171,8 @@ export async function requireAuth(allowedRoles?: string[]) {
                 // Use helper for consistent admin check
                 (allowedRoles.includes('ADMIN') && checkAdminAccess(user)) ||
                 // If checking for HR_MANAGER, allow any custom role (assuming > Employee)
-                (allowedRoles.includes('HR_MANAGER'))
+                // Also support legacy HR/MANAGER strings from layout
+                (allowedRoles.some(r => ['HR_MANAGER', 'HR', 'MANAGER'].includes(r)))
             ));
     }
 
