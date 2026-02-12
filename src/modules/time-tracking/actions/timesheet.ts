@@ -60,8 +60,8 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
             const dayNum = loopDate.getDate();
 
             // Filter pre-fetched data
-            const dayRecords = records.filter(r => r.date.getDate() === dayNum && r.date.getMonth() === loopDate.getMonth());
-            const dayScale = scales.find(s => s.date.getDate() === dayNum && s.date.getMonth() === loopDate.getMonth());
+            const dayRecords = records.filter((r: { date: Date }) => r.date.getDate() === dayNum && r.date.getMonth() === loopDate.getMonth());
+            const dayScale = scales.find((s: { date: Date }) => s.date.getDate() === dayNum && s.date.getMonth() === loopDate.getMonth());
 
             const calc = await calculateDay(employeeId, loopDate, dayRecords, dayScale);
 
@@ -86,9 +86,9 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
 
 export async function getDailyOverview(dateString: string) {
     try {
-        // Parse "YYYY-MM-DD" explicitly to Local Midnight
+        // Parse "YYYY-MM-DD" explicitly to UTC Midnight
         const [y, m, d] = dateString.split('-').map(Number);
-        const queryDate = new Date(y, m - 1, d);
+        const queryDate = new Date(Date.UTC(y, m - 1, d));
 
         // Fetch all active employees
         const employees = await prisma.employee.findMany({
@@ -111,8 +111,8 @@ export async function getDailyOverview(dateString: string) {
         // Calculate for each employee
         const overview = [];
         for (const emp of employees) {
-            const empScale = scales.find(s => s.employeeId === emp.id);
-            const empRecords = records.filter(r => r.employeeId === emp.id);
+            const empScale = scales.find((s: { employeeId: string }) => s.employeeId === emp.id);
+            const empRecords = records.filter((r: { employeeId: string | null }) => r.employeeId === emp.id);
 
             const calc = await calculateDay(emp.id, queryDate, empRecords, empScale);
 
@@ -211,8 +211,8 @@ export async function getBankOverview(month: number, year: number) {
                     d1.getMonth() === d2.getMonth() &&
                     d1.getFullYear() === d2.getFullYear();
 
-                const empScale = allScales.find(s => s.employeeId === emp.id && isSameDay(s.date, current));
-                const empRecords = allRecords.filter(r => r.employeeId === emp.id && isSameDay(r.date, current));
+                const empScale = allScales.find((s: { employeeId: string; date: Date }) => s.employeeId === emp.id && isSameDay(s.date, current));
+                const empRecords = allRecords.filter((r: { employeeId: string | null; date: Date }) => r.employeeId === emp.id && isSameDay(r.date, current));
 
                 const calc = await calculateDay(emp.id, new Date(current), empRecords, empScale);
                 balance += calc.balanceMinutes;
@@ -247,7 +247,7 @@ export async function adjustTimeRecords(employeeId: string, dateString: string, 
         if (!emp) throw new Error('Employee not found');
 
         // Transaction: Delete old records for day -> Insert new ones
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             // 1. Delete existing records for this employee on this day
             // (Both file-based and manual, effectively overwriting)
             await tx.timeRecord.deleteMany({
