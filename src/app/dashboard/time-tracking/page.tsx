@@ -8,6 +8,7 @@ import { DailyOverview } from '@/modules/time-tracking/components/DailyOverview'
 import { BankOfHours } from '@/modules/time-tracking/components/BankOfHours';
 import { Button } from '@/shared/components/ui/button';
 
+import { TimeTrackingSyncButton } from '@/modules/time-tracking/components/TimeTrackingSyncButton';
 import { TimeTrackingReportsTab } from '@/modules/time-tracking/components/TimeTrackingReportsTab';
 import { TimeTrackingClosingTab } from '@/modules/time-tracking/components/TimeTrackingClosingTab';
 
@@ -21,6 +22,7 @@ export default function TimeTrackingPage() {
                     <h1 className="text-3xl font-bold text-slate-800">Controle de Ponto</h1>
                     <p className="text-slate-500">Gestão de frequência e horas.</p>
                 </div>
+                <TimeTrackingSyncButton />
             </div>
 
             {/* Tabs Navigation */}
