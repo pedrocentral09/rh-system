@@ -68,17 +68,40 @@ export async function uploadAFD(formData: FormData) {
             // Try Match 1: Distinct PIS
             let empId = pisMap.get(rawId);
 
-            // Try Match 2: CPF (The file might contain CPF left-padded with 0 to fit 12 chars)
-            // Example: File "012345678901" -> CPF "12345678901"
+            // Try Match 2: CPF
+            // Strategy: The file field is 12 digits. CPF is 11 digits.
+            // Possibilities:
+            // 1. "0" + CPF (most common)
+            // 2. CPF + " " (unlikely with replace \D)
+            // 3. Just CPF numbers inside the 12 (padded with 0s)
+
             if (!empId) {
-                // If standard CPF is 11 chars, and file has 12, strip leading zero
-                const possibleCpf = rawId.startsWith('0') ? rawId.substring(1) : rawId;
-                empId = cpfMap.get(possibleCpf);
+                // Attempt A: Exact strip of leading zero (existing logic)
+                const c1 = rawId.startsWith('0') ? rawId.substring(1) : rawId;
+                if (cpfMap.has(c1)) empId = cpfMap.get(c1);
             }
 
-            // Try Match 3: Direct CPF match (if file identifier is exactly 11 chars inside the field somehow)
             if (!empId) {
-                empId = cpfMap.get(rawId);
+                // Attempt B: Match by right-most 11 digits (Standard CPF length)
+                if (rawId.length >= 11) {
+                    const c2 = rawId.slice(-11);
+                    if (cpfMap.has(c2)) empId = cpfMap.get(c2);
+                }
+            }
+
+            if (!empId) {
+                // Attempt C: Match as Number (remove all leading zeros)
+                // This handles "000123..." matching "123..."
+                const asNum = rawId.replace(/^0+/, '');
+                // We need to check against a map of "numeric" CPFs too?
+                // For now, let's try finding in values? No, that's slow.
+                // Let's assume the maps are populated with normalized strings.
+                if (cpfMap.has(asNum)) empId = cpfMap.get(asNum);
+            }
+
+            // Debug log for first failure
+            if (!empId && recordsData.length < 5) {
+                console.log(`Failed to match PIS/CPF: ${rawId} (Original: ${m.pis})`);
             }
 
             return {

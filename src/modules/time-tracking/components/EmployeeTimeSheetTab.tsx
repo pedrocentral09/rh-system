@@ -124,10 +124,13 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                 <table className="min-w-full text-sm item-center text-left">
                     <thead className="bg-slate-50 border-b border-slate-200 font-medium text-slate-600 sticky top-0">
                         <tr>
-                            <th className="px-4 py-2 w-12 text-center">Dia</th>
+                            <th className="px-4 py-2 text-center w-12">Dia</th>
                             <th className="px-4 py-2 w-16">Semana</th>
                             <th className="px-4 py-2">Turno</th>
-                            <th className="px-4 py-2">Batidas</th>
+                            <th className="px-2 py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrada</th>
+                            <th className="px-2 py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Saída Int.</th>
+                            <th className="px-2 py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Volta Int.</th>
+                            <th className="px-2 py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Saída</th>
                             <th className="px-4 py-2 text-center">Saldo</th>
                             <th className="px-4 py-2 text-center w-24">Status</th>
                         </tr>
@@ -152,21 +155,30 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                                     <td className="px-4 py-2 text-xs text-slate-500">
                                         {day.shiftName || '-'}
                                     </td>
-                                    <td className="px-4 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex gap-1 flex-wrap">
-                                                {day.punches.length > 0 ? day.punches.map((p: string, i: number) => (
-                                                    <span key={i} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-mono text-xs">
-                                                        {p}
-                                                    </span>
-                                                )) : '-'}
-                                            </div>
-                                            {hasInterShiftViolation && (
-                                                <div className="text-yellow-600" title="Alerta: Interjornada < 11h">
-                                                    <AlertTriangle className="h-4 w-4" />
-                                                </div>
-                                            )}
-                                        </div>
+                                    <td className="px-2 py-2 text-center">
+                                        <span className="font-mono text-sm text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                            {day.punches[0] || '--:--'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-2 text-center">
+                                        <span className="font-mono text-sm text-slate-600">
+                                            {day.punches[1] || '--:--'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-2 text-center">
+                                        <span className="font-mono text-sm text-slate-600">
+                                            {day.punches[2] || '--:--'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-2 text-center relative group">
+                                        <span className="font-mono text-sm text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                            {day.punches[3] || '--:--'}
+                                        </span>
+                                        {day.punches.length > 4 && (
+                                            <span className="absolute top-1 right-0 text-[10px] flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold" title={`Mais batidas: ${day.punches.slice(4).join(', ')}`}>
+                                                +
+                                            </span>
+                                        )}
                                     </td>
                                     <td className={`px-4 py-2 text-center font-mono text-xs ${day.balanceMinutes < 0 ? 'text-red-500' : 'text-green-600'}`}>
                                         {day.balanceMinutes !== 0 ? formatMinutes(day.balanceMinutes) : '-'}
