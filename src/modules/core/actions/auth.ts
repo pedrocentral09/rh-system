@@ -30,17 +30,30 @@ export async function loginAction(formData: FormData) {
         });
 
         if (!user) {
-            console.log('User not found. Creating new user...');
-            user = await prisma.user.create({
-                data: {
-                    firebaseUid: uid,
-                    email: email,
-                    name: decodedToken.name || email.split('@')[0],
-                    role: 'EMPLOYEE',
-                },
+            // Check if user exists by email (to link accounts)
+            user = await prisma.user.findUnique({
+                where: { email: email },
             });
-            await logAction('USER_CREATED', 'User', { id: user.id, email }, user.id);
-            console.log('User created:', user.id);
+
+            if (user) {
+                console.log('User found by email. Updating firebaseUid...');
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { firebaseUid: uid },
+                });
+            } else {
+                console.log('User not found. Creating new user...');
+                user = await prisma.user.create({
+                    data: {
+                        firebaseUid: uid,
+                        email: email,
+                        name: decodedToken.name || email.split('@')[0],
+                        role: 'EMPLOYEE',
+                    },
+                });
+                await logAction('USER_CREATED', 'User', { id: user.id, email }, user.id);
+                console.log('User created:', user.id);
+            }
         } else {
             console.log('User found:', user.id, user.role);
         }
