@@ -7,6 +7,8 @@ import { Button } from '@/shared/components/ui/button';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RecruitmentPage() {
     const { data: jobs } = await getJobs();
     const { data: candidates } = await getCandidates();

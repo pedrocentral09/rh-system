@@ -4,6 +4,8 @@ import { getEmployees } from '@/modules/personnel/actions/employees';
 import { DisciplinaryList } from '@/modules/disciplinary/components/DisciplinaryList';
 import { DisciplinaryForm } from '@/modules/disciplinary/components/DisciplinaryForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DisciplinaryPage() {
     const { data: records } = await getDisciplinaryRecords();
     const { data: employees } = await getEmployees({ status: 'ACTIVE' });

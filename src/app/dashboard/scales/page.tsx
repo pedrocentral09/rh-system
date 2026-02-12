@@ -3,6 +3,8 @@ import { ShiftManageForm } from '@/modules/scales/components/ShiftManageForm';
 import { WeeklyScaleBuilder } from '@/modules/scales/components/WeeklyScaleBuilder';
 import { Tabs } from '@/shared/components/ui/tabs';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ScalesPage() {
     const { data: shifts } = await getShiftTypes();
 

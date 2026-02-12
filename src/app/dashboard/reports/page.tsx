@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { ReportCenter } from '@/modules/payroll/components/ReportCenter';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReportsPage() {
     const companies = await prisma.company.findMany({ select: { id: true, name: true } });
     const stores = await prisma.store.findMany({ select: { id: true, name: true } });

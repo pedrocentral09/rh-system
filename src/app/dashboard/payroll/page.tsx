@@ -6,6 +6,8 @@ import { CreatePeriodButton } from '@/modules/payroll/components/CreatePeriodBut
 
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PayrollPage() {
     const { data: periods } = await getPayrollPeriods();
     const activeEmployeeCount = await prisma.employee.count({ where: { status: 'ACTIVE' } });

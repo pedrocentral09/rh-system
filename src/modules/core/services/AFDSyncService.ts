@@ -78,11 +78,14 @@ export class AFDSyncService {
                         select: { id: true, pis: true }
                     });
 
-                    const pisToEmployee = new Map(
-                        employees.map((e: { id: string; pis: string }) => [e.pis, e.id])
-                    );
+                    const pisToEmployee = new Map<string, string>();
+                    employees.forEach(e => {
+                        if (e.pis) {
+                            pisToEmployee.set(e.pis, e.id);
+                        }
+                    });
 
-                    result.employeesFound += employees.length;
+                    result.employeesFound += pisToEmployee.size;
 
                     // Track unmatched PIS
                     for (const pis of uniquePis) {

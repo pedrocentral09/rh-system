@@ -1,4 +1,6 @@
 import { getDashboardStats, getHiringStats } from '@/modules/core/actions/stats';
+
+export const dynamic = 'force-dynamic';
 import { getDailyOverview } from '@/modules/time-tracking/actions/timesheet';
 import { AttendanceWidget } from '@/modules/time-tracking/components/AttendanceWidget';
 import { HiringEvolutionChart } from '@/modules/core/components/HiringEvolutionChart';
