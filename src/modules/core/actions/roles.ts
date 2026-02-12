@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { getCurrentUser } from './auth';
+import { getCurrentUser, checkAdminAccess } from './auth';
 import { logAction } from './audit';
 import { z } from 'zod';
 
@@ -28,7 +28,7 @@ export async function getRoles() {
 export async function createRole(data: z.infer<typeof RoleSchema>) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Denied' };
         }
 
@@ -54,7 +54,7 @@ export async function createRole(data: z.infer<typeof RoleSchema>) {
 export async function updateRole(roleId: string, data: z.infer<typeof RoleSchema>) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Denied' };
         }
 
@@ -81,7 +81,7 @@ export async function updateRole(roleId: string, data: z.infer<typeof RoleSchema
 export async function deleteRole(roleId: string) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') return { success: false, error: 'Denied' };
+        if (!currentUser || !checkAdminAccess(currentUser)) return { success: false, error: 'Denied' };
 
         const role = await prisma.role.findUnique({ where: { id: roleId }, include: { _count: { select: { users: true } } } });
 

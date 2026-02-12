@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { getCurrentUser } from './auth';
+import { getCurrentUser, checkAdminAccess } from './auth';
 import { logAction } from './audit';
 
 // List all users
@@ -11,7 +11,11 @@ export async function getUsers() {
         const currentUser = await getCurrentUser();
         // Allow HR_MANAGER or ADMIN to view users? Or just ADMIN?
         // Let's restrict USER list to ADMIN only for now.
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser) {
+            return { success: false, error: 'Usuário não autenticado.' };
+        }
+
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             // For strict security, throw or return empty.
             // But maybe HR needs to see it? Let's say only ADMIN can manage USERS.
             return { success: false, error: 'Acesso negado. Apenas Administradores.' };
@@ -38,7 +42,7 @@ export async function getUsers() {
 export async function updateUserRole(userId: string, role: string) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Acesso negado.' };
         }
 
@@ -71,7 +75,7 @@ export async function updateUserRole(userId: string, role: string) {
 export async function updateUserStoreAccess(userId: string, storeIds: string[]) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Acesso negado.' };
         }
 
@@ -103,7 +107,7 @@ export async function updateUserStoreAccess(userId: string, storeIds: string[]) 
 export async function deleteUser(userId: string) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Acesso negado.' };
         }
 
