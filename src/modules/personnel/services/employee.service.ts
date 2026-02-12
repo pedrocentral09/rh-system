@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { BaseService, ServiceResult } from '@/lib/BaseService';
 import { AuditService } from '../../core/services/audit.service';
+import { parseCurrency, parseDate } from '@/shared/utils/parsing-utils';
 
 export class EmployeeService extends BaseService {
 
@@ -85,7 +86,7 @@ export class EmployeeService extends BaseService {
                 email: rawData.email,
                 cpf: rawData.cpf,
                 rg: rawData.rg,
-                dateOfBirth: rawData.dateOfBirth ? new Date(rawData.dateOfBirth) : null,
+                dateOfBirth: parseDate(rawData.dateOfBirth),
                 gender: rawData.gender || '',
                 maritalStatus: rawData.maritalStatus || '',
                 status: 'ACTIVE',
@@ -95,7 +96,7 @@ export class EmployeeService extends BaseService {
             if (rawData.jobTitle) data.jobTitle = rawData.jobTitle;
             if (rawData.jobRoleId) data.jobRoleId = rawData.jobRoleId;
             if (rawData.department) data.department = rawData.department;
-            if (rawData.hireDate) data.hireDate = new Date(rawData.hireDate);
+            if (rawData.hireDate) data.hireDate = parseDate(rawData.hireDate);
             if (rawData.photoUrl) data.photoUrl = rawData.photoUrl;
             if (rawData.phone) data.phone = rawData.phone;
             if (rawData.landline) data.landline = rawData.landline;
@@ -128,14 +129,14 @@ export class EmployeeService extends BaseService {
                         jobRoleId: rawData.jobRoleId || undefined,
                         sectorId: rawData.sectorId || undefined,
                         sector: rawData.sector || rawData.department || '',
-                        baseSalary: rawData.baseSalary || 0,
+                        baseSalary: parseCurrency(rawData.baseSalary) || 0,
                         contractType: rawData.contractType || 'CLT',
                         workShiftId: rawData.workShiftId || undefined,
-                        admissionDate: rawData.hireDate ? new Date(rawData.hireDate) : new Date(),
+                        admissionDate: parseDate(rawData.hireDate) || new Date(),
                         hasTransportVoucher: rawData.hasTransportVoucher === 'on' || rawData.hasTransportVoucher === 'true' || rawData.hasTransportVoucher === true,
-                        transportVoucherValue: rawData.transportVoucherValue ? parseFloat(rawData.transportVoucherValue) : undefined,
-                        mealVoucherValue: rawData.mealVoucherValue ? parseFloat(rawData.mealVoucherValue) : undefined,
-                        foodVoucherValue: rawData.foodVoucherValue ? parseFloat(rawData.foodVoucherValue) : undefined,
+                        transportVoucherValue: parseCurrency(rawData.transportVoucherValue),
+                        mealVoucherValue: parseCurrency(rawData.mealVoucherValue),
+                        foodVoucherValue: parseCurrency(rawData.foodVoucherValue),
                         hasFamilySalary: rawData.hasFamilySalary === 'on' || rawData.hasFamilySalary === 'true' || rawData.hasFamilySalary === true,
                         familySalaryDependents: rawData.familySalaryDependents ? parseInt(rawData.familySalaryDependents) : 0,
                         hasInsalubrity: rawData.hasInsalubrity === 'on' || rawData.hasInsalubrity === 'true' || rawData.hasInsalubrity === true,
@@ -188,7 +189,7 @@ export class EmployeeService extends BaseService {
             if (rawData.jobTitle !== undefined) data.jobTitle = rawData.jobTitle;
             if (rawData.jobRoleId !== undefined) data.jobRoleId = rawData.jobRoleId;
             if (rawData.department !== undefined) data.department = rawData.department;
-            if (rawData.hireDate !== undefined) data.hireDate = new Date(rawData.hireDate);
+            if (rawData.hireDate !== undefined) data.hireDate = parseDate(rawData.hireDate);
             if (rawData.photoUrl !== undefined) data.photoUrl = rawData.photoUrl;
             if (rawData.landline !== undefined) data.landline = rawData.landline;
             if (rawData.phone !== undefined) data.phone = rawData.phone;
@@ -232,14 +233,14 @@ export class EmployeeService extends BaseService {
                 if (rawData.jobRoleId) contractData.jobRoleId = rawData.jobRoleId;
                 if (rawData.sectorId) contractData.sectorId = rawData.sectorId;
                 if (rawData.sector) contractData.sector = rawData.sector;
-                if (rawData.baseSalary) contractData.baseSalary = parseFloat(rawData.baseSalary);
+                if (rawData.baseSalary) contractData.baseSalary = parseCurrency(rawData.baseSalary);
                 if (rawData.contractType) contractData.contractType = rawData.contractType;
 
                 // Shift Relation
                 if (rawData.workShiftId) contractData.workShiftId = rawData.workShiftId;
 
-                if (rawData.admissionDate) contractData.admissionDate = new Date(rawData.admissionDate);
-                else if (rawData.hireDate) contractData.admissionDate = new Date(rawData.hireDate);
+                if (rawData.admissionDate) contractData.admissionDate = parseDate(rawData.admissionDate);
+                else if (rawData.hireDate) contractData.admissionDate = parseDate(rawData.hireDate);
 
                 if (rawData.isExperienceContract !== undefined) {
                     contractData.isExperienceContract = rawData.isExperienceContract === 'on' || rawData.isExperienceContract === 'true' || rawData.isExperienceContract === true;
@@ -255,9 +256,9 @@ export class EmployeeService extends BaseService {
                 if (rawData.hasTransportVoucher !== undefined) {
                     contractData.hasTransportVoucher = rawData.hasTransportVoucher === 'on' || rawData.hasTransportVoucher === 'true' || rawData.hasTransportVoucher === true;
                 }
-                if (rawData.transportVoucherValue) contractData.transportVoucherValue = parseFloat(rawData.transportVoucherValue);
-                if (rawData.mealVoucherValue) contractData.mealVoucherValue = parseFloat(rawData.mealVoucherValue);
-                if (rawData.foodVoucherValue) contractData.foodVoucherValue = parseFloat(rawData.foodVoucherValue);
+                if (rawData.transportVoucherValue) contractData.transportVoucherValue = parseCurrency(rawData.transportVoucherValue);
+                if (rawData.mealVoucherValue) contractData.mealVoucherValue = parseCurrency(rawData.mealVoucherValue);
+                if (rawData.foodVoucherValue) contractData.foodVoucherValue = parseCurrency(rawData.foodVoucherValue);
 
                 if (rawData.hasFamilySalary !== undefined) {
                     contractData.hasFamilySalary = rawData.hasFamilySalary === 'on' || rawData.hasFamilySalary === 'true' || rawData.hasFamilySalary === true;
@@ -269,24 +270,24 @@ export class EmployeeService extends BaseService {
                     contractData.hasInsalubrity = rawData.hasInsalubrity === 'on' || rawData.hasInsalubrity === 'true' || rawData.hasInsalubrity === true;
                 }
                 if (rawData.insalubrityLevel) contractData.insalubrityLevel = parseInt(rawData.insalubrityLevel);
-                if (rawData.insalubrityBase) contractData.insalubrityBase = parseFloat(rawData.insalubrityBase);
+                if (rawData.insalubrityBase) contractData.insalubrityBase = parseCurrency(rawData.insalubrityBase);
 
                 if (rawData.hasDangerousness !== undefined) {
                     contractData.hasDangerousness = rawData.hasDangerousness === 'on' || rawData.hasDangerousness === 'true' || rawData.hasDangerousness === true;
                 }
-                if (rawData.dangerousnessBase) contractData.dangerousnessBase = parseFloat(rawData.dangerousnessBase);
+                if (rawData.dangerousnessBase) contractData.dangerousnessBase = parseCurrency(rawData.dangerousnessBase);
 
                 if (rawData.hasTrustPosition !== undefined) {
                     contractData.hasTrustPosition = rawData.hasTrustPosition === 'on' || rawData.hasTrustPosition === 'true' || rawData.hasTrustPosition === true;
                 }
-                if (rawData.trustPositionBase) contractData.trustPositionBase = parseFloat(rawData.trustPositionBase);
+                if (rawData.trustPositionBase) contractData.trustPositionBase = parseCurrency(rawData.trustPositionBase);
 
                 if (rawData.hasCashHandling !== undefined) {
                     contractData.hasCashHandling = rawData.hasCashHandling === 'on' || rawData.hasCashHandling === 'true' || rawData.hasCashHandling === true;
                 }
-                if (rawData.cashHandlingBase) contractData.cashHandlingBase = parseFloat(rawData.cashHandlingBase);
+                if (rawData.cashHandlingBase) contractData.cashHandlingBase = parseCurrency(rawData.cashHandlingBase);
 
-                if (rawData.monthlyBonus) contractData.monthlyBonus = parseFloat(rawData.monthlyBonus);
+                if (rawData.monthlyBonus) contractData.monthlyBonus = parseCurrency(rawData.monthlyBonus);
                 if (rawData.otherBenefits) contractData.otherBenefits = rawData.otherBenefits;
 
                 data.contract = {
@@ -331,13 +332,13 @@ export class EmployeeService extends BaseService {
                     upsert: {
                         create: {
                             asoType: rawData.asoType || 'Admissional',
-                            lastAsoDate: rawData.lastAsoDate ? new Date(rawData.lastAsoDate) : new Date(),
+                            lastAsoDate: parseDate(rawData.lastAsoDate) || new Date(),
                             periodicity: parseInt(rawData.asoPeriodicity || '12'),
                             observations: rawData.asoObservations
                         },
                         update: {
                             asoType: rawData.asoType,
-                            lastAsoDate: rawData.lastAsoDate ? new Date(rawData.lastAsoDate) : undefined,
+                            lastAsoDate: rawData.lastAsoDate ? parseDate(rawData.lastAsoDate) : undefined,
                             periodicity: rawData.asoPeriodicity ? parseInt(rawData.asoPeriodicity) : undefined,
                             observations: rawData.asoObservations
                         }
@@ -463,15 +464,15 @@ export class EmployeeService extends BaseService {
                         status: 'ACTIVE',
                         jobTitle: rawData.jobTitle,
                         department: rawData.department,
-                        hireDate: new Date(rawData.admissionDate),
+                        hireDate: parseDate(rawData.admissionDate) || new Date(),
                         contract: {
                             update: {
                                 companyId: rawData.companyId,
                                 sector: rawData.department,
-                                baseSalary: rawData.baseSalary,
+                                baseSalary: parseCurrency(rawData.baseSalary) || 0,
                                 contractType: rawData.contractType,
                                 workShift: rawData.workShift,
-                                admissionDate: new Date(rawData.admissionDate),
+                                admissionDate: parseDate(rawData.admissionDate) || new Date(),
                                 terminationDate: null,
                                 hasFamilySalary: false,
                                 hasInsalubrity: false,
