@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from './auth';
-import { checkAdminAccess } from '@/modules/core/utils/auth-helpers';
+import { checkAdminAccess, checkHRAccess } from '@/modules/core/utils/auth-helpers';
 import { logAction } from './audit';
 
 // List all users
@@ -16,10 +16,10 @@ export async function getUsers() {
             return { success: false, error: 'Usuário não autenticado.' };
         }
 
-        if (!currentUser || !checkAdminAccess(currentUser)) {
+        if (!currentUser || !checkHRAccess(currentUser)) {
             // For strict security, throw or return empty.
             // But maybe HR needs to see it? Let's say only ADMIN can manage USERS.
-            return { success: false, error: 'Acesso negado. Apenas Administradores.' };
+            return { success: false, error: 'Acesso negado. Apenas Gestores e Administradores.' };
         }
 
         const users = await prisma.user.findMany({
@@ -43,7 +43,7 @@ export async function getUsers() {
 export async function updateUserRole(userId: string, role: string) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || !checkAdminAccess(currentUser)) {
+        if (!currentUser || !checkHRAccess(currentUser)) {
             return { success: false, error: 'Acesso negado.' };
         }
 
@@ -76,7 +76,7 @@ export async function updateUserRole(userId: string, role: string) {
 export async function updateUserStoreAccess(userId: string, storeIds: string[]) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || !checkAdminAccess(currentUser)) {
+        if (!currentUser || !checkHRAccess(currentUser)) {
             return { success: false, error: 'Acesso negado.' };
         }
 
