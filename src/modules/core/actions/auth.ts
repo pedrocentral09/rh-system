@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { adminAuth } from '@/lib/firebase/admin';
 import { logAction } from './audit';
 import { redirect } from 'next/navigation';
+import { checkAdminAccess } from '@/modules/core/utils/auth-helpers';
 
 export async function loginAction(formData: FormData) {
     const token = formData.get('token') as string;
@@ -167,8 +168,8 @@ export async function requireAuth(allowedRoles?: string[]) {
     if (allowedRoles) {
         hasPermission = allowedRoles.includes(user.role) ||
             (!!user.roleDef && (
-                // If checking for ADMIN, allow if custom role name is 'Administrador'
-                (allowedRoles.includes('ADMIN') && user.roleDef.name.toLowerCase() === 'administrador') ||
+                // Use helper for consistent admin check
+                (allowedRoles.includes('ADMIN') && checkAdminAccess(user)) ||
                 // If checking for HR_MANAGER, allow any custom role (assuming > Employee)
                 (allowedRoles.includes('HR_MANAGER'))
             ));
@@ -184,9 +185,4 @@ export async function requireAuth(allowedRoles?: string[]) {
     }
 
     return user;
-}
-
-export function checkAdminAccess(user: any): boolean {
-    if (!user) return false;
-    return user.role === 'ADMIN' || (!!user.roleDef && user.roleDef.name.toLowerCase() === 'administrador');
 }

@@ -2,7 +2,8 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { getCurrentUser, checkAdminAccess } from './auth';
+import { getCurrentUser } from './auth';
+import { checkAdminAccess } from '@/modules/core/utils/auth-helpers';
 import { logAction } from './audit';
 import { z } from 'zod';
 
