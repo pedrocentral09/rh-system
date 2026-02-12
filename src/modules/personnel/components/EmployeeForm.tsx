@@ -54,6 +54,7 @@ const maskLandline = (value: string) => {
 
 export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: EmployeeFormProps) {
     const [loading, setLoading] = useState(false);
+    const [refsLoading, setRefsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState('personal');
@@ -103,6 +104,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             } catch (error) {
                 console.error('Error loading refs:', error);
                 toast.error('Erro ao carregar dados do formulário');
+            } finally {
+                setRefsLoading(false);
             }
         };
         loadRefs();
@@ -1242,11 +1245,18 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
             <form onSubmit={handleSubmit} className="flex flex-col h-full">
 
-                <Tabs
-                    tabs={tabs.filter(t => t.id !== 'legal_guardian' || isMinor)}
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                />
+                {refsLoading ? (
+                    <div className="flex flex-col items-center justify-center h-64">
+                        <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+                        <p className="text-slate-500 font-medium">Carregando formulário...</p>
+                    </div>
+                ) : (
+                    <Tabs
+                        tabs={tabs.filter(t => t.id !== 'legal_guardian' || isMinor)}
+                        value={activeTab}
+                        onValueChange={setActiveTab}
+                    />
+                )}
 
                 <div className="mt-8 pt-4 flex justify-between items-center border-t border-slate-800">
                     <div>
