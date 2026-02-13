@@ -73,9 +73,12 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
     async function loadData() {
         setLoading(true);
+        const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
+        const normalizedEnd = new Date(format(addDays(weekStart, 6), 'yyyy-MM-dd') + 'T00:00:00Z');
+
         const [empResult, scaleResult] = await Promise.all([
             getEmployeesForScale(),
-            getWeeklyScales(weekStart, addDays(weekStart, 6))
+            getWeeklyScales(normalizedStart, normalizedEnd)
         ]);
 
         if (empResult.success) setEmployees(empResult.data as any);
@@ -105,7 +108,8 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
         if (!confirm('Tem certeza que deseja copiar a escala da SEMANA ANTERIOR para a semana atual? Isso substituirá os registros existentes.')) return;
 
         setLoading(true);
-        const result = await cloneWeeklyScale(weekStart);
+        const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
+        const result = await cloneWeeklyScale(normalizedStart);
         if (result.success) {
             toast.success('Escala clonada com sucesso!');
             await loadData(); // Reload data to show new values
@@ -119,7 +123,8 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
         if (!confirm('Deseja gerar uma escala automática padrão (5x2) para TODOS os funcionários nesta semana? Isso substituirá registros existentes.')) return;
 
         setLoading(true);
-        const result = await generateAutomaticScale(weekStart);
+        const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
+        const result = await generateAutomaticScale(normalizedStart);
         if (result.success) {
             toast.success('Escala automática gerada com sucesso!');
             await loadData();
@@ -130,8 +135,8 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     }
 
     function getScaleForCell(employeeId: string, day: Date) {
-        // Use ISO date string (YYYY-MM-DD) for comparison to avoid timezone shifts
-        const dayIso = day.toISOString().split('T')[0];
+        // Use YYYY-MM-DD format for internal keys and comparison
+        const dayIso = format(day, 'yyyy-MM-dd');
 
         // Check pending changes first
         if (pendingChanges[employeeId]?.[dayIso] !== undefined) {
@@ -147,14 +152,15 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         const scale = scales.find(s => {
             if (!s.date) return false;
-            const sDateIso = new Date(s.date).toISOString().split('T')[0];
+            // Ensure we compare using the same format
+            const sDateIso = format(new Date(s.date), 'yyyy-MM-dd');
             return s.employeeId === employeeId && sDateIso === dayIso;
         });
         return scale;
     }
 
     function handleScaleChange(employeeId: string, day: Date, value: string) {
-        const dayIso = day.toISOString().split('T')[0];
+        const dayIso = format(day, 'yyyy-MM-dd');
 
         setPendingChanges(prev => ({
             ...prev,
@@ -172,7 +178,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         for (const empId of employeeIds) {
             const changes = Object.entries(pendingChanges[empId]).map(([dateIso, val]) => ({
-                // Ensure we create a UTC midnight date
+                // Create a pure UTC date from the YYYY-MM-DD string
                 date: new Date(`${dateIso}T00:00:00.000Z`),
                 shiftTypeId: val
             }));
