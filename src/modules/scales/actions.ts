@@ -128,6 +128,43 @@ export async function saveWorkScale(employeeId: string, date: Date, shiftTypeId:
     }
 }
 
+export async function saveWorkScalesBatch(employeeId: string, changes: { date: Date, shiftTypeId: string | null }[]) {
+    try {
+        const operations = changes.map(change => {
+            const normalizedDate = new Date(change.date);
+            normalizedDate.setHours(0, 0, 0, 0);
+
+            const finalShiftId = (change.shiftTypeId === 'FOLGA' || change.shiftTypeId === '' || change.shiftTypeId === null)
+                ? null
+                : change.shiftTypeId;
+
+            return prisma.workScale.upsert({
+                where: {
+                    employeeId_date: {
+                        employeeId,
+                        date: normalizedDate
+                    }
+                },
+                create: {
+                    employeeId,
+                    date: normalizedDate,
+                    shiftTypeId: finalShiftId
+                },
+                update: {
+                    shiftTypeId: finalShiftId
+                }
+            });
+        });
+
+        await prisma.$transaction(operations);
+        revalidatePath('/dashboard/scales');
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving scales batch:', error);
+        return { success: false, error: 'Falha ao salvar lote de escalas.' };
+    }
+}
+
 export async function cloneWeeklyScale(targetWeekStart: Date) {
     try {
         const sourceStart = new Date(targetWeekStart);

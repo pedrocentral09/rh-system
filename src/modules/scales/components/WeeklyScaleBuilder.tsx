@@ -7,7 +7,7 @@ import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { getEmployeesForScale, getWeeklyScales, saveWorkScale, cloneWeeklyScale, generateAutomaticScale } from '../actions';
+import { getEmployeesForScale, getWeeklyScales, saveWorkScale, cloneWeeklyScale, generateAutomaticScale, saveWorkScalesBatch } from '../actions';
 
 interface ShiftType {
     id: string;
@@ -42,6 +42,10 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStore, setSelectedStore] = useState('ALL');
     const [selectedSector, setSelectedSector] = useState('ALL');
+
+    // NEW Edit Mode States
+    const [isEditing, setIsEditing] = useState(false);
+    const [pendingChanges, setPendingChanges] = useState<Record<string, Record<string, string>>>({});
 
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
@@ -80,10 +84,20 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     }
 
     function handlePrevWeek() {
+        if (isEditing && Object.keys(pendingChanges).length > 0) {
+            if (!confirm('Você tem alterações não salvas. Deseja descartar e mudar de semana?')) return;
+        }
+        setIsEditing(false);
+        setPendingChanges({});
         setWeekStart(date => subDays(date, 7));
     }
 
     function handleNextWeek() {
+        if (isEditing && Object.keys(pendingChanges).length > 0) {
+            if (!confirm('Você tem alterações não salvas. Deseja descartar e mudar de semana?')) return;
+        }
+        setIsEditing(false);
+        setPendingChanges({});
         setWeekStart(date => addDays(date, 7));
     }
 
@@ -116,43 +130,61 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     }
 
     function getScaleForCell(employeeId: string, day: Date) {
-        return scales.find(s => s.employeeId === employeeId && isSameDay(new Date(s.date), day));
+        // Check pending changes first
+        const dayIso = day.toISOString().split('T')[0];
+        if (pendingChanges[employeeId]?.[dayIso] !== undefined) {
+            const val = pendingChanges[employeeId][dayIso];
+            return {
+                id: 'pending',
+                date: day,
+                employeeId,
+                shiftTypeId: val === 'FOLGA' || val === '' ? null : val,
+                isPending: true
+            };
+        }
+
+        const scale = scales.find(s => s.employeeId === employeeId && isSameDay(new Date(s.date), day));
+        return scale;
     }
 
-    async function handleScaleChange(employeeId: string, day: Date, value: string) {
-        // Optimistic update
-        const previousScales = [...scales];
-        const newScales = [...scales];
-        const existingIndex = newScales.findIndex(s => s.employeeId === employeeId && isSameDay(new Date(s.date), day));
+    function handleScaleChange(employeeId: string, day: Date, value: string) {
+        const dayIso = day.toISOString().split('T')[0];
 
-        const normalizedDay = new Date(day);
-        normalizedDay.setHours(0, 0, 0, 0);
-
-        const newRecord = {
-            id: 'temp-' + Math.random(),
-            date: normalizedDay,
-            employeeId,
-            shiftTypeId: (value === 'FOLGA' || value === '') ? null : value
-        };
-
-        if (existingIndex >= 0) {
-            newScales[existingIndex] = newRecord as any;
-        } else {
-            newScales.push(newRecord as any);
-        }
-        setScales(newScales);
-
-        try {
-            // Server update
-            const result = await saveWorkScale(employeeId, normalizedDay, value);
-            if (!result.success) {
-                toast.error(result.error || 'Erro ao salvar alteração');
-                setScales(previousScales); // Rollback
+        setPendingChanges(prev => ({
+            ...prev,
+            [employeeId]: {
+                ...(prev[employeeId] || {}),
+                [dayIso]: value
             }
-        } catch (error) {
-            toast.error('Erro de conexão ao salvar escala');
-            setScales(previousScales); // Rollback
+        }));
+    }
+
+    async function saveChanges() {
+        setLoading(true);
+        const employeeIds = Object.keys(pendingChanges);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const empId of employeeIds) {
+            const changes = Object.entries(pendingChanges[empId]).map(([dateIso, val]) => ({
+                date: new Date(dateIso + 'T00:00:00Z'), // Force UTC start of day
+                shiftTypeId: val
+            }));
+
+            const result = await saveWorkScalesBatch(empId, changes);
+            if (result.success) successCount++;
+            else errorCount++;
         }
+
+        if (errorCount === 0) {
+            toast.success('Todas as alterações foram salvas com sucesso!');
+            setPendingChanges({});
+            setIsEditing(false);
+            await loadData();
+        } else {
+            toast.error(`Erro ao salvar algumas escalas (${errorCount} falhas).`);
+        }
+        setLoading(false);
     }
 
     function calculateTotalHours(empId: string) {
@@ -163,16 +195,11 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
             if (scale && scale.shiftTypeId) {
                 const shift = shiftTypes.find(s => s.id === scale.shiftTypeId);
                 if (shift) {
-                    // Start/End are strings "08:00", we need to parse them to calc diff
                     const start = parse(shift.startTime, 'HH:mm', new Date());
                     const end = parse(shift.endTime, 'HH:mm', new Date());
                     let diff = differenceInMinutes(end, start);
-                    if (diff < 0) diff += 1440; // Handle overnight shifts if needed (simple logic)
-
-                    // Subtract 1 hour (60 min) for break if shift > 6 hours (standard rule approximation)
-                    // TODO: In future, get break duration from ShiftType
+                    if (diff < 0) diff += 1440;
                     if (diff > 360) diff -= 60;
-
                     totalMinutes += diff;
                 }
             }
@@ -188,16 +215,20 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
             {/* Header Controls */}
             <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center space-x-2">
-                    <Button variant="outline" onClick={handlePrevWeek} className="text-slate-600 border-slate-300 hover:bg-slate-50">◀ Anterior</Button>
-                    <Button variant="outline" onClick={handleClone} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50" title="Copiar escala da semana passada">
-                        📋 Copiar Anterior
-                    </Button>
-                    <Button variant="outline" onClick={handleAutoGenerate} className="text-emerald-600 border-emerald-200 hover:bg-emerald-50" title="Gerar escala padrão 5x2">
-                        🤖 Escala Auto
-                    </Button>
-                    <Button variant="outline" onClick={() => window.print()} className="text-slate-600 border-slate-300 hover:bg-slate-50" title="Imprimir escala">
-                        🖨️ Imprimir
-                    </Button>
+                    <Button variant="outline" onClick={handlePrevWeek} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50">◀ Anterior</Button>
+                    {!isEditing && (
+                        <>
+                            <Button variant="outline" onClick={handleClone} disabled={loading} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50" title="Copiar escala da semana passada">
+                                📋 Copiar Anterior
+                            </Button>
+                            <Button variant="outline" onClick={handleAutoGenerate} disabled={loading} className="text-emerald-600 border-emerald-200 hover:bg-emerald-50" title="Gerar escala padrão 5x2">
+                                🤖 Escala Auto
+                            </Button>
+                            <Button variant="outline" onClick={() => window.print()} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50" title="Imprimir escala">
+                                🖨️ Imprimir
+                            </Button>
+                        </>
+                    )}
                 </div>
 
                 <div className="text-center">
@@ -208,7 +239,42 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                         Semana de {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 6), "dd/MM")}
                     </p>
                 </div>
-                <Button variant="outline" onClick={handleNextWeek} className="text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">Próxima ▶</Button>
+
+                <div className="flex items-center space-x-2">
+                    {isEditing ? (
+                        <>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    if (confirm('Descartar todas as alterações?')) {
+                                        setPendingChanges({});
+                                        setIsEditing(false);
+                                    }
+                                }}
+                                disabled={loading}
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={saveChanges}
+                                disabled={loading || Object.keys(pendingChanges).length === 0}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            >
+                                {loading ? 'Salvando...' : 'Gravar Alterações'}
+                            </Button>
+                        </>
+                    ) : (
+                        <Button
+                            onClick={() => setIsEditing(true)}
+                            disabled={loading}
+                            className="bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900"
+                        >
+                            ✏️ Editar Escala
+                        </Button>
+                    )}
+                    <Button variant="outline" onClick={handleNextWeek} disabled={loading} className="text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">Próxima ▶</Button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -252,7 +318,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
             </div>
 
             {/* Matrix Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-md bg-white dark:bg-slate-800">
+            <div className={`overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-md bg-white dark:bg-slate-800 ${isEditing ? 'ring-2 ring-indigo-500 ring-opacity-50' : ''}`}>
                 <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900">
                         <tr>
@@ -274,30 +340,15 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                         {filteredEmployees.map(emp => (
                             <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 {(() => {
-                                    // Validation Logic
                                     const shifts = weekDays.map(day => getScaleForCell(emp.id, day));
-                                    const daysWorked = shifts.filter(s => s && s.shiftTypeId && s.shiftTypeId !== 'FOLGA').length; // Assuming null can be empty
-                                    // Scale items might be null if not created yet. 
-                                    // 'FOLGA' is stored as shiftTypeId in our optimistic logic, but what about DB?
-                                    // handleScaleChange uses: shiftTypeId: value === 'FOLGA' ? null : value
-                                    // Wait, if shiftTypeId is null, it is a Day Off?
-                                    // In `WorkScale` model: `shiftTypeId String ? // If null = Day Off (Folga)`
-                                    // So we need to count explicit NULLs as Folga? 
-                                    // Or simply: count days WITH shiftTypeId.
-
-                                    // Let's refine checks. 
-                                    // If record exists and shiftTypeId is NOT null -> Working.
-                                    // If record exists and shiftTypeId IS null -> Off.
-                                    // If record does NOT exist -> Undefined (treat as Off or Pending? usually needs definition).
-                                    // For safety, let's flag if daysWorked == 7.
-
+                                    const daysWorked = shifts.filter(s => s && s.shiftTypeId).length;
                                     const hasViols = daysWorked === 7;
 
                                     return (
                                         <td className={`px-4 py-3 font-medium text-slate-800 dark:text-slate-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-slate-200 dark:border-slate-700 ${hasViols ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-800'}`}>
                                             <div className="truncate w-48" title={emp.name}>{emp.name}</div>
                                             <div className="flex items-center gap-2">
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{emp.jobTitle}</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate text-[10px]">{emp.jobTitle}</div>
                                                 {hasViols && (
                                                     <span className="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-[10px] px-1 rounded font-bold border border-red-200 dark:border-red-800" title="Alerta: 7 dias de trabalho consecutivos nesta semana (Violação 6x1)">
                                                         ⚠ 7 Dias
@@ -309,34 +360,48 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                 })()}
                                 {
                                     weekDays.map(day => {
-                                        const scale = getScaleForCell(emp.id, day);
+                                        const scale = getScaleForCell(emp.id, day) as any;
                                         const value = scale?.shiftTypeId || (scale ? 'FOLGA' : '');
-
+                                        const isPending = scale?.isPending;
 
                                         return (
-                                            <td key={day.toISOString()} className="px-1 py-1 border-r border-slate-100 dark:border-slate-700 last:border-0 relative group">
-                                                <select
-                                                    className={`w-full h-8 px-2 rounded border-0 text-xs font-medium cursor-pointer transition-colors appearance-none
-                                                    ${value === 'FOLGA' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' :
-                                                            value ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}
-                                                `}
-                                                    value={value || ''}
-                                                    onChange={(e) => handleScaleChange(emp.id, day, e.target.value)}
-                                                >
-                                                    <option value="" className="bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">-</option>
-                                                    <option value="FOLGA" className="bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 font-bold">🏖️ FOLGA</option>
-                                                    <optgroup label="Turnos" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
-                                                        {shiftTypes.map(s => (
-                                                            <option key={s.id} value={s.id}>
-                                                                {s.name} ({s.startTime}-{s.endTime})
-                                                            </option>
-                                                        ))}
-                                                    </optgroup>
-                                                </select>
-                                                {/* Custom Chevron because select appearance-none removes it */}
-                                                <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center px-1 text-slate-500 opacity-0 group-hover:opacity-50">
-                                                    <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                                                </div>
+                                            <td key={day.toISOString()} className={`px-1 py-1 border-r border-slate-100 dark:border-slate-700 last:border-0 relative group ${isPending ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}>
+                                                {!isEditing ? (
+                                                    <div
+                                                        className={`w-full h-8 px-2 flex items-center justify-center rounded text-[10px] font-bold transition-colors
+                                                     ${value === 'FOLGA' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' :
+                                                                value ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-transparent text-slate-400 dark:text-slate-600'}
+                                                 `}
+                                                    >
+                                                        {value === 'FOLGA' ? '🏖️ FOLGA' : shiftTypes.find(s => s.id === value)?.name || '-'}
+                                                    </div>
+                                                ) : (
+                                                    <select
+                                                        className={`w-full h-8 px-2 rounded border-0 text-[10px] font-bold cursor-pointer transition-colors appearance-none
+                                                        ${value === 'FOLGA' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' :
+                                                                value ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}
+                                                        ${isPending ? 'ring-2 ring-indigo-400 ring-inset' : ''}
+                                                    `}
+                                                        value={value || ''}
+                                                        onChange={(e) => handleScaleChange(emp.id, day, e.target.value)}
+                                                    >
+                                                        <option value="" className="bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">-</option>
+                                                        <option value="FOLGA" className="bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 font-bold">🏖️ FOLGA</option>
+                                                        <optgroup label="Turnos" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                                                            {shiftTypes.map(s => (
+                                                                <option key={s.id} value={s.id}>
+                                                                    {s.name} ({s.startTime}-{s.endTime})
+                                                                </option>
+                                                            ))}
+                                                        </optgroup>
+                                                    </select>
+                                                )}
+
+                                                {isEditing && (
+                                                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center px-1 text-slate-500 opacity-0 group-hover:opacity-50">
+                                                        <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                                                    </div>
+                                                )}
                                             </td>
                                         );
                                     })
@@ -344,7 +409,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                 {
                                     (() => {
                                         const { totalMinutes, label } = calculateTotalHours(emp.id);
-                                        const isOverload = totalMinutes > 2640; // > 44 hours
+                                        const isOverload = totalMinutes > 2640;
                                         return (
                                             <td className={`px-2 py-3 text-center font-bold text-xs border-l border-slate-200 dark:border-slate-700 ${isOverload ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20' : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800'}`}>
                                                 {label}
@@ -357,6 +422,17 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                     </tbody >
                 </table >
             </div >
-        </div >
+            {isEditing && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-white dark:bg-slate-800 p-3 rounded-full shadow-2xl border border-indigo-200 dark:border-indigo-900 animate-in fade-in slide-in-from-bottom-4">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 ml-2">
+                        {Object.values(pendingChanges).reduce((acc, curr) => acc + Object.keys(curr).length, 0)} alterações pendentes
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => { if (confirm('Descartar alterações?')) { setPendingChanges({}); setIsEditing(false); } }} className="text-red-600 hover:bg-red-50 rounded-full">Descartar</Button>
+                    <Button size="sm" onClick={saveChanges} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-full shadow-lg shadow-indigo-200 dark:shadow-none">
+                        {loading ? 'Salvando...' : 'Gravar Tudo'}
+                    </Button>
+                </div>
+            )}
+        </div>
     );
 }
