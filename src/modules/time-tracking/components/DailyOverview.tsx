@@ -70,7 +70,10 @@ export function DailyOverview() {
                             <th className="px-4 py-3">Funcionário</th>
                             <th className="px-4 py-3">Depto</th>
                             <th className="px-4 py-3">Turno</th>
-                            <th className="px-4 py-3">Batidas</th>
+                            <th className="px-2 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrada</th>
+                            <th className="px-2 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Saída Int.</th>
+                            <th className="px-2 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Volta Int.</th>
+                            <th className="px-2 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Saída</th>
                             <th className="px-4 py-3 text-center">Saldo</th>
                             <th className="px-4 py-3 text-center">Status</th>
                             <th className="px-4 py-3 text-center w-10">Opções</th>
@@ -87,12 +90,30 @@ export function DailyOverview() {
                                 <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">{item.employee.name}</td>
                                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.employee.department}</td>
                                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.shiftName || 'Folga'}</td>
-                                <td className="px-4 py-3">
-                                    <div className="flex gap-1 flex-wrap">
-                                        {item.punches.map((p: string, i: number) => (
-                                            <span key={i} className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200 dark:border-slate-600">{p}</span>
-                                        ))}
-                                    </div>
+                                <td className="px-2 py-3 text-center">
+                                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200 dark:border-slate-600">
+                                        {item.punches[0] || '--:--'}
+                                    </span>
+                                </td>
+                                <td className="px-2 py-3 text-center">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-mono">
+                                        {item.punches[1] || '--:--'}
+                                    </span>
+                                </td>
+                                <td className="px-2 py-3 text-center">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-mono">
+                                        {item.punches[2] || '--:--'}
+                                    </span>
+                                </td>
+                                <td className="px-2 py-3 text-center relative group">
+                                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200 dark:border-slate-600">
+                                        {item.punches[3] || '--:--'}
+                                    </span>
+                                    {item.punches.length > 4 && (
+                                        <span className="absolute top-1 right-0 text-[10px] flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold" title={`Mais batidas: ${item.punches.slice(4).join(', ')}`}>
+                                            +
+                                        </span>
+                                    )}
                                 </td>
                                 <td className={`px-4 py-3 text-center font-mono ${item.balanceMinutes < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                     {formatMinutes(item.balanceMinutes)}
