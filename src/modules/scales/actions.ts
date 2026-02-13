@@ -73,10 +73,10 @@ export async function getEmployeesForScale() {
 export async function getWeeklyScales(startDate: Date, endDate: Date) {
     try {
         const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
+        start.setUTCHours(0, 0, 0, 0);
 
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
+        end.setUTCHours(23, 59, 59, 999);
 
         const scales = await prisma.workScale.findMany({
             where: {
@@ -96,7 +96,7 @@ export async function saveWorkScale(employeeId: string, date: Date, shiftTypeId:
     try {
         // 1. Normalize Date (Start of day UTC-ish for consistency)
         const normalizedDate = new Date(date);
-        normalizedDate.setHours(0, 0, 0, 0);
+        normalizedDate.setUTCHours(0, 0, 0, 0);
 
         // 2. Handle empty or "FOLGA" as null
         const finalShiftId = (shiftTypeId === 'FOLGA' || shiftTypeId === '' || shiftTypeId === null)
@@ -132,7 +132,7 @@ export async function saveWorkScalesBatch(employeeId: string, changes: { date: D
     try {
         const operations = changes.map(change => {
             const normalizedDate = new Date(change.date);
-            normalizedDate.setHours(0, 0, 0, 0);
+            normalizedDate.setUTCHours(0, 0, 0, 0);
 
             const finalShiftId = (change.shiftTypeId === 'FOLGA' || change.shiftTypeId === '' || change.shiftTypeId === null)
                 ? null
@@ -193,7 +193,7 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
         const operations = sourceScales.map(scale => {
             const newDate = new Date(scale.date);
             newDate.setDate(newDate.getDate() + 7); // Shift 7 days forward
-            newDate.setHours(0, 0, 0, 0); // Ensure normalization
+            newDate.setUTCHours(0, 0, 0, 0); // Ensure normalization
 
             const shiftVal = scale.shiftTypeId;
 
@@ -229,7 +229,7 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
 export async function generateAutomaticScale(weekStart: Date) {
     try {
         const startDate = new Date(weekStart);
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setUTCHours(0, 0, 0, 0);
 
         // Get standard shift (first one alphabetically for now, or TODO: get from settings)
         const standardShift = await prisma.shiftType.findFirst({
@@ -254,7 +254,7 @@ export async function generateAutomaticScale(weekStart: Date) {
             for (let i = 0; i < 7; i++) {
                 const currentDate = new Date(startDate);
                 currentDate.setDate(currentDate.getDate() + i);
-                currentDate.setHours(0, 0, 0, 0); // Normalize
+                currentDate.setUTCHours(0, 0, 0, 0); // Normalize
 
                 // Logic: Mon(0)..Fri(4) = Work, Sat(5)/Sun(6) = Folga (null)
                 const isWeekend = i >= 5;

@@ -130,8 +130,10 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     }
 
     function getScaleForCell(employeeId: string, day: Date) {
-        // Check pending changes first
+        // Use ISO date string (YYYY-MM-DD) for comparison to avoid timezone shifts
         const dayIso = day.toISOString().split('T')[0];
+
+        // Check pending changes first
         if (pendingChanges[employeeId]?.[dayIso] !== undefined) {
             const val = pendingChanges[employeeId][dayIso];
             return {
@@ -143,7 +145,11 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
             };
         }
 
-        const scale = scales.find(s => s.employeeId === employeeId && isSameDay(new Date(s.date), day));
+        const scale = scales.find(s => {
+            if (!s.date) return false;
+            const sDateIso = new Date(s.date).toISOString().split('T')[0];
+            return s.employeeId === employeeId && sDateIso === dayIso;
+        });
         return scale;
     }
 
@@ -162,27 +168,29 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     async function saveChanges() {
         setLoading(true);
         const employeeIds = Object.keys(pendingChanges);
-        let successCount = 0;
-        let errorCount = 0;
+        let errorMessages: string[] = [];
 
         for (const empId of employeeIds) {
             const changes = Object.entries(pendingChanges[empId]).map(([dateIso, val]) => ({
-                date: new Date(dateIso + 'T00:00:00Z'), // Force UTC start of day
+                // Ensure we create a UTC midnight date
+                date: new Date(`${dateIso}T00:00:00.000Z`),
                 shiftTypeId: val
             }));
 
             const result = await saveWorkScalesBatch(empId, changes);
-            if (result.success) successCount++;
-            else errorCount++;
+            if (!result.success) {
+                errorMessages.push(result.error || `Erro ao salvar escalas do funcionário ${empId}`);
+            }
         }
 
-        if (errorCount === 0) {
+        if (errorMessages.length === 0) {
             toast.success('Todas as alterações foram salvas com sucesso!');
             setPendingChanges({});
             setIsEditing(false);
             await loadData();
         } else {
-            toast.error(`Erro ao salvar algumas escalas (${errorCount} falhas).`);
+            toast.error(errorMessages[0]);
+            console.error('Scale batch save errors:', errorMessages);
         }
         setLoading(false);
     }
