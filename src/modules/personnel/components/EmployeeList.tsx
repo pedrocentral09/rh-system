@@ -111,7 +111,7 @@ export function EmployeeList() {
             'CPF': emp.cpf || '-',
             'Cargo': emp.jobTitle || '-',
             'Departamento': emp.department || '-',
-            'Loja': emp.contract?.store || '-',
+            'Loja': emp.contract?.store?.name || emp.contract?.store || '-',
             'Status': translateStatus(emp.status),
             'Admissão': emp.contract?.admissionDate ? formatDateForExport(emp.contract.admissionDate) : '-'
         }));
@@ -124,7 +124,7 @@ export function EmployeeList() {
             cpf: emp.cpf || '-',
             cargo: emp.jobTitle || '-',
             departamento: emp.department || '-',
-            loja: emp.contract?.store || '-',
+            loja: emp.contract?.store?.name || emp.contract?.store || '-',
             status: translateStatus(emp.status)
         }));
 

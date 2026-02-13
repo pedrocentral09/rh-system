@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFD Collector</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-color: #1a73e8;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        button:hover {
+            background: #1557b0;
+        }
+
+        button:disabled {
+            background: #ccc;
+        }
+
+        .btn-secondary {
+            background: #5f6368;
+        }
+
+        #log-area {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>AFD Collector Web</h1>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+            <div class="tab" onclick="switchTab('settings')">Settings</div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard" class="content active">
+            <button onclick="runCollection()" id="btn-run">Run Collection Now</button>
+            <div id="log-area"></div>
+        </div>
+
+        <!-- Settings Content -->
+        <div id="settings" class="content">
+            <div class="form-group">
+                <label>Control iD IP</label>
+                <input type="text" id="ip" placeholder="192.168.1.200">
+            </div>
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="user" value="admin">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="pass">
+            </div>
+            <div class="form-group">
+                <label>Railway DB URL</label>
+                <input type="text" id="db_url" placeholder="postgresql://...">
+            </div>
+
+            <button onclick="saveSettings()">Save Settings</button>
+            <button class="btn-secondary" onclick="testConnection()">Test Connection</button>
+            <div id="test-result" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function log(msg) {
+            const area = document.getElementById('log-area');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = msg;
+            area.appendChild(entry);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        async function loadSettings() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            document.getElementById('ip').value = config.controlIdIp || '';
+            document.getElementById('user').value = config.controlIdUser || 'admin';
+            document.getElementById('pass').value = config.controlIdPass || '';
+            document.getElementById('db_url').value = config.railwayDbUrl || '';
+        }
+
+        async function saveSettings() {
+            const config = {
+                controlIdIp: document.getElementById('ip').value,
+                controlIdUser: document.getElementById('user').value,
+                controlIdPass: document.getElementById('pass').value,
+                railwayDbUrl: document.getElementById('db_url').value
+            };
+            await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            alert('Settings Saved!');
+        }
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = 'Testing...';
+
+            const config = {
+                controlIdIp: document.getElementById('ip').value,
+                controlIdUser: document.getElementById('user').value,
+                controlIdPass: document.getElementById('pass').value,
+                railwayDbUrl: document.getElementById('db_url').value
+            };
+
+            const res = await fetch('/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            const result = await res.json();
+
+            let html = '';
+            html += `<div>Device: ${result.device ? '✅ OK' : '❌ Failed'}</div>`;
+            html += `<div>Database: ${result.db ? '✅ OK' : '❌ Failed'}</div>`;
+            if (result.errors.length > 0) {
+                html += `<div style="color:red; font-size: 0.9em;">${result.errors.join('<br>')}</div>`;
+            }
+            resultDiv.innerHTML = html;
+        }
+
+        async function runCollection() {
+            const btn = document.getElementById('btn-run');
+            btn.disabled = true;
+            log('Starting process...');
+
+            try {
+                const res = await fetch('/api/run', { method: 'POST' });
+                const result = await res.json();
+
+                if (result.logs) {
+                    result.logs.forEach(l => log(l));
+                }
+                if (result.success) {
+                    log('Process completed successfully!');
+                } else {
+                    log(`Process failed: ${result.error}`);
+                }
+            } catch (e) {
+                log(`Network Error: ${e.message}`);
+            }
+            btn.disabled = false;
+        }
+
+        loadSettings();
+    </script>
+</body>
+
+</html>

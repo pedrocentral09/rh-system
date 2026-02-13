@@ -69,43 +69,62 @@ export class AFDSyncService {
                         }
                     });
 
-                    // Build PIS -> Employee map
-                    const allPis = parsed.punches.map(p => p.pis);
-                    const uniquePis = [...new Set(allPis)];
-
+                    // 4. Resolve PIS/CPF -> EmployeeID
+                    // Fetch all active/terminated employees for matching
                     const employees = await prisma.employee.findMany({
-                        where: { pis: { in: uniquePis } },
-                        select: { id: true, pis: true }
+                        where: { status: { in: ['ACTIVE', 'TERMINATED'] } },
+                        select: { id: true, pis: true, cpf: true }
                     });
 
-                    const pisToEmployee = new Map<string, string>();
-                    employees.forEach(e => {
-                        if (e.pis) {
-                            pisToEmployee.set(e.pis, e.id);
-                        }
+                    const pisMap = new Map<string, string>();
+                    const cpfMap = new Map<string, string>();
+
+                    employees.forEach(emp => {
+                        if (emp.pis) pisMap.set(emp.pis.replace(/\D/g, ''), emp.id);
+                        if (emp.cpf) cpfMap.set(emp.cpf.replace(/\D/g, ''), emp.id);
                     });
 
-                    result.employeesFound += pisToEmployee.size;
+                    // 5. Build Records Data
+                    const recordsToCreate = [];
+                    const uniquePunches = new Set<string>();
 
-                    // Track unmatched PIS
-                    for (const pis of uniquePis) {
-                        if (!pisToEmployee.has(pis) && !result.employeesNotFound.includes(pis)) {
-                            result.employeesNotFound.push(pis);
-                        }
-                    }
-
-                    // Import punches
-                    let imported = 0;
                     for (const punch of parsed.punches) {
-                        const employeeId = pisToEmployee.get(punch.pis) || null;
+                        const rawId = punch.pis.replace(/\D/g, '');
+                        let empId = pisMap.get(rawId);
 
-                        // Check for duplicate (same PIS + Date + Time)
+                        // Robust Matching Logic
+                        if (!empId) {
+                            const c1 = rawId.startsWith('0') ? rawId.substring(1) : rawId;
+                            if (cpfMap.has(c1)) empId = cpfMap.get(c1);
+                        }
+                        if (!empId && rawId.length >= 11) {
+                            const c2 = rawId.slice(-11);
+                            if (cpfMap.has(c2)) empId = cpfMap.get(c2);
+                        }
+                        if (!empId) {
+                            const asNum = rawId.replace(/^0+/, '');
+                            if (cpfMap.has(asNum)) empId = cpfMap.get(asNum);
+                        }
+
+                        if (empId) {
+                            result.employeesFound++;
+                        } else if (!result.employeesNotFound.includes(punch.pis)) {
+                            result.employeesNotFound.push(punch.pis);
+                        }
+
+                        // Check for duplicate in current build or DB
+                        const punchKey = `${punch.pis}_${punch.date.toISOString().split('T')[0]}_${punch.time}`;
+                        if (uniquePunches.has(punchKey)) continue;
+                        uniquePunches.add(punchKey);
+
+                        // Partial check against DB (slow but necessary for atomicity here)
                         const existing = await prisma.timeRecord.findFirst({
                             where: {
                                 pis: punch.pis,
                                 date: punch.date,
                                 time: punch.time
-                            }
+                            },
+                            select: { id: true }
                         });
 
                         if (existing) {
@@ -113,22 +132,25 @@ export class AFDSyncService {
                             continue;
                         }
 
-                        await prisma.timeRecord.create({
-                            data: {
-                                fileId: clockFile.id,
-                                pis: punch.pis,
-                                employeeId,
-                                date: punch.date,
-                                time: punch.time,
-                                nsr: punch.nsr,
-                                originalLine: null,
-                                isManual: false
-                            }
+                        recordsToCreate.push({
+                            fileId: clockFile.id,
+                            pis: punch.pis,
+                            employeeId: empId || null,
+                            date: punch.date,
+                            time: punch.time,
+                            nsr: punch.nsr,
+                            originalLine: null,
+                            isManual: false
                         });
-                        imported++;
                     }
 
-                    result.punchesImported += imported;
+                    // 6. Batch Insert
+                    if (recordsToCreate.length > 0) {
+                        await prisma.timeRecord.createMany({
+                            data: recordsToCreate
+                        });
+                        result.punchesImported += recordsToCreate.length;
+                    }
 
                     // Update file status
                     await prisma.timeClockFile.update({

@@ -1,0 +1,23 @@
+=== TABLES ===
+ - afd_files
+
+=== COLUMNS: afd_files ===
+  id (integer, nullable: NO)
+  filename (character varying, nullable: YES)
+  content (text, nullable: YES)
+  created_at (timestamp without time zone, nullable: YES)
+  TOTAL ROWS: 11
+
+=== SAMPLE: afd_files ===
+{
+  "id": 1,
+  "filename": "afd_20260211.txt",
+  "content": "000000001630092024102902\r\n000000002630092024170702\r\n000000003613052025101202\r\n000000004613052025154302\r\n000000005619052025145102\r\n000000006619052025145502\r\n000000007219052025151089494199200   13894821... [TRUNCATED]",
+  "created_at": "2026-02-12T15:33:29.640Z"
+}
+{
+  "id": 2,
+  "filename": "afd_20260101.txt",
+  "content": "000000001601102024074702\r\n000000002601102024084002\r\n000000003601102024084102\r\n000000004620052025121302\r\n000000005220052025123910725304650   144053152000128            .                                ... [TRUNCATED]",
+  "created_at": "2026-02-12T16:23:36.059Z"
+}

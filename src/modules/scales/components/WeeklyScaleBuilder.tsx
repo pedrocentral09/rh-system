@@ -22,7 +22,7 @@ interface Employee {
     jobTitle: string;
     department: string;
     contract?: {
-        store: string;
+        store: { id: string; name: string };
     };
 }
 
@@ -46,12 +46,19 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
     // Extract unique Stores and Sectors
-    const stores = Array.from(new Set(employees.map(e => e.contract?.store).filter(Boolean))) as string[];
+    const storesMap = new Map<string, string>();
+    employees.forEach(e => {
+        if (e.contract?.store) {
+            storesMap.set(e.contract.store.id, e.contract.store.name);
+        }
+    });
+
+    const stores = Array.from(storesMap.entries()).map(([id, name]) => ({ id, name }));
     const sectors = Array.from(new Set(employees.map(e => e.department).filter(Boolean))) as string[];
 
     const filteredEmployees = employees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStore = selectedStore === 'ALL' || emp.contract?.store === selectedStore;
+        const matchesStore = selectedStore === 'ALL' || emp.contract?.store?.id === selectedStore;
         const matchesSector = selectedSector === 'ALL' || emp.department === selectedSector;
         return matchesSearch && matchesStore && matchesSector;
     });
@@ -114,14 +121,18 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
     async function handleScaleChange(employeeId: string, day: Date, value: string) {
         // Optimistic update
+        const previousScales = [...scales];
         const newScales = [...scales];
         const existingIndex = newScales.findIndex(s => s.employeeId === employeeId && isSameDay(new Date(s.date), day));
 
+        const normalizedDay = new Date(day);
+        normalizedDay.setHours(0, 0, 0, 0);
+
         const newRecord = {
             id: 'temp-' + Math.random(),
-            date: day,
+            date: normalizedDay,
             employeeId,
-            shiftTypeId: value === 'FOLGA' ? null : value
+            shiftTypeId: (value === 'FOLGA' || value === '') ? null : value
         };
 
         if (existingIndex >= 0) {
@@ -131,8 +142,17 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
         }
         setScales(newScales);
 
-        // Server update
-        await saveWorkScale(employeeId, day, value);
+        try {
+            // Server update
+            const result = await saveWorkScale(employeeId, normalizedDay, value);
+            if (!result.success) {
+                toast.error(result.error || 'Erro ao salvar alteração');
+                setScales(previousScales); // Rollback
+            }
+        } catch (error) {
+            toast.error('Erro de conexão ao salvar escala');
+            setScales(previousScales); // Rollback
+        }
     }
 
     function calculateTotalHours(empId: string) {
@@ -212,7 +232,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                     >
                         <option value="ALL">Todas as Lojas</option>
                         {stores.map(store => (
-                            <option key={store} value={store}>{store}</option>
+                            <option key={store.id} value={store.id}>{store.name}</option>
                         ))}
                     </select>
                 </div>
@@ -240,9 +260,9 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                 Colaborador
                             </th>
                             {weekDays.map(day => (
-                                <th key={day.toISOString()} className={`px - 2 py - 3 text - center min - w - [140px] border - b border - slate - 200 dark: border - slate - 700 ${isSameDay(day, new Date()) ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : ''} `}>
-                                    <div className="font-bold">{format(day, "EEE", { locale: ptBR })}</div>
-                                    <div className="text-xs opacity-70">{format(day, "dd/MM")}</div>
+                                <th key={day.toISOString()} className={`px-2 py-3 text-center min-w-[140px] border-b border-slate-200 dark:border-slate-700 ${isSameDay(day, new Date()) ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : ''}`}>
+                                    <div className="font-bold text-slate-700 dark:text-slate-200">{format(day, "EEE", { locale: ptBR })}</div>
+                                    <div className="text-xs opacity-70 text-slate-500 dark:text-slate-400">{format(day, "dd/MM")}</div>
                                 </th>
                             ))}
                             <th className="px-2 py-3 text-center min-w-[80px] border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -292,33 +312,6 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                         const scale = getScaleForCell(emp.id, day);
                                         const value = scale?.shiftTypeId || (scale ? 'FOLGA' : '');
 
-                                        function calculateTotalHours(empId: string) {
-                                            let totalMinutes = 0;
-
-                                            weekDays.forEach(day => {
-                                                const scale = getScaleForCell(empId, day);
-                                                if (scale && scale.shiftTypeId) {
-                                                    const shift = shiftTypes.find(s => s.id === scale.shiftTypeId);
-                                                    if (shift) {
-                                                        // Start/End are strings "08:00", we need to parse them to calc diff
-                                                        const start = parse(shift.startTime, 'HH:mm', new Date());
-                                                        const end = parse(shift.endTime, 'HH:mm', new Date());
-                                                        let diff = differenceInMinutes(end, start);
-                                                        if (diff < 0) diff += 1440; // Handle overnight shifts if needed (simple logic)
-
-                                                        // Subtract 1 hour (60 min) for break if shift > 6 hours (standard rule approximation)
-                                                        // TODO: In future, get break duration from ShiftType
-                                                        if (diff > 360) diff -= 60;
-
-                                                        totalMinutes += diff;
-                                                    }
-                                                }
-                                            });
-
-                                            const hours = Math.floor(totalMinutes / 60);
-                                            const mins = totalMinutes % 60;
-                                            return { totalMinutes, label: `${hours}h${mins > 0 ? ` ${mins}m` : ''}` };
-                                        }
 
                                         return (
                                             <td key={day.toISOString()} className="px-1 py-1 border-r border-slate-100 dark:border-slate-700 last:border-0 relative group">

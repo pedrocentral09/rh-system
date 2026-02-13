@@ -72,14 +72,19 @@ export async function getEmployeesForScale() {
 
 export async function getWeeklyScales(startDate: Date, endDate: Date) {
     try {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
         const scales = await prisma.workScale.findMany({
             where: {
                 date: {
-                    gte: startDate,
-                    lte: endDate
+                    gte: start,
+                    lte: end
                 }
-            },
-            include: { shiftType: true }
+            }
         });
         return { success: true, data: scales };
     } catch (error) {
@@ -89,53 +94,37 @@ export async function getWeeklyScales(startDate: Date, endDate: Date) {
 
 export async function saveWorkScale(employeeId: string, date: Date, shiftTypeId: string | null) {
     try {
-        if (shiftTypeId === 'FOLGA' || shiftTypeId === null) {
-            // Delete existing scale if setting to Folga (or keep record with null shift? prefer record with null logic or delete)
-            // Let's decide: WorkScale record with null shiftTypeId = Folga explicitly or just absence of record?
-            // The schema says shiftTypeId String? // If null = Day Off (Folga)
-            // So we Create/Update with null
-            const payloadValue = shiftTypeId === 'FOLGA' ? null : shiftTypeId;
+        // 1. Normalize Date (Start of day UTC-ish for consistency)
+        const normalizedDate = new Date(date);
+        normalizedDate.setHours(0, 0, 0, 0);
 
-            await prisma.workScale.upsert({
-                where: {
-                    employeeId_date: {
-                        employeeId,
-                        date
-                    }
-                },
-                create: {
+        // 2. Handle empty or "FOLGA" as null
+        const finalShiftId = (shiftTypeId === 'FOLGA' || shiftTypeId === '' || shiftTypeId === null)
+            ? null
+            : shiftTypeId;
+
+        await prisma.workScale.upsert({
+            where: {
+                employeeId_date: {
                     employeeId,
-                    date,
-                    shiftTypeId: payloadValue
-                },
-                update: {
-                    shiftTypeId: payloadValue
+                    date: normalizedDate
                 }
-            });
-        } else {
-            await prisma.workScale.upsert({
-                where: {
-                    employeeId_date: {
-                        employeeId,
-                        date
-                    }
-                },
-                create: {
-                    employeeId,
-                    date,
-                    shiftTypeId
-                },
-                update: {
-                    shiftTypeId
-                }
-            });
-        }
+            },
+            create: {
+                employeeId,
+                date: normalizedDate,
+                shiftTypeId: finalShiftId
+            },
+            update: {
+                shiftTypeId: finalShiftId
+            }
+        });
 
         revalidatePath('/dashboard/scales');
         return { success: true };
     } catch (error) {
-        console.error(error);
-        return { success: false, error: 'Failed to save scale' };
+        console.error('Error saving scale:', error);
+        return { success: false, error: 'Falha ao salvar escala.' };
     }
 }
 
@@ -143,7 +132,6 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
     try {
         const sourceStart = new Date(targetWeekStart);
         sourceStart.setDate(sourceStart.getDate() - 7);
-        // Ensure we are comparing dates correctly (start of day)
         sourceStart.setHours(0, 0, 0, 0);
 
         const sourceEnd = new Date(sourceStart);
@@ -168,6 +156,7 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
         const operations = sourceScales.map(scale => {
             const newDate = new Date(scale.date);
             newDate.setDate(newDate.getDate() + 7); // Shift 7 days forward
+            newDate.setHours(0, 0, 0, 0); // Ensure normalization
 
             const shiftVal = scale.shiftTypeId;
 
@@ -224,14 +213,14 @@ export async function generateAutomaticScale(weekStart: Date) {
 
         // For each employee
         for (const emp of employees) {
-            // For Monday (0) to Friday (4) - relative to weekStart (Mon)
+            // Monday (0) to Sunday (6)
             for (let i = 0; i < 7; i++) {
                 const currentDate = new Date(startDate);
                 currentDate.setDate(currentDate.getDate() + i);
+                currentDate.setHours(0, 0, 0, 0); // Normalize
 
                 // Logic: Mon(0)..Fri(4) = Work, Sat(5)/Sun(6) = Folga (null)
-                // Note: weekStart is Monday.
-                const isWeekend = i >= 5; // 5=Sat, 6=Sun
+                const isWeekend = i >= 5;
                 const shiftValue = isWeekend ? null : standardShift.id;
 
                 operations.push(
@@ -248,8 +237,6 @@ export async function generateAutomaticScale(weekStart: Date) {
                             shiftTypeId: shiftValue
                         },
                         update: {
-                            // Only update if it doesn't exist? Or overwrite?
-                            // "Automatic" usually implies overwriting / resetting.
                             shiftTypeId: shiftValue
                         }
                     })

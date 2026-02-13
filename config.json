@@ -1,0 +1,6 @@
+{
+  "controlIdIp": "192.168.1.253",
+  "controlIdUser": "admin",
+  "controlIdPass": "Admin2025",
+  "railwayDbUrl": "postgresql://postgres:glNJnFRkCSEXzRrahznMnSkRyDzuiNVG@shortline.proxy.rlwy.net:25803/railway"
+}
