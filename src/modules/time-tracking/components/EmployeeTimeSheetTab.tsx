@@ -137,8 +137,10 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {(sheetData?.days || []).map((day: any, idx: number) => {
-                            const date = new Date(day.date);
-                            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                            // Fix: Parse "YYYY-MM-DD" as local midday to avoid TZ shifting to previous day
+                            const dateParts = day.date.toString().split('T')[0].split('-');
+                            const displayDate = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]), 12, 0, 0);
+                            const isWeekend = displayDate.getDay() === 0 || displayDate.getDay() === 6;
 
                             // Mock Inter-shift Check (Needs backend support for accuracy)
                             // We check if "previous day end" and "current day start" is < 11h
@@ -150,7 +152,7 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                                 <tr key={day.day} className={`hover:bg-slate-50 ${isWeekend ? 'bg-slate-50/50' : ''}`}>
                                     <td className="px-4 py-2 text-center font-bold text-slate-700">{day.day}</td>
                                     <td className={`px-4 py-2 text-xs ${isWeekend ? 'text-red-400' : 'text-slate-500'}`}>
-                                        {date.toLocaleDateString('pt-BR', { weekday: 'short' })}
+                                        {displayDate.toLocaleDateString('pt-BR', { weekday: 'short' })}
                                     </td>
                                     <td className="px-4 py-2 text-xs text-slate-500">
                                         {day.shiftName || '-'}

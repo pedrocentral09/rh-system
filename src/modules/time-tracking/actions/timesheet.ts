@@ -16,20 +16,18 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
             } catch { } // Default 31
         }
 
-        // 1. Calculate Date Range
+        // 1. Calculate Date Range (UTC Midnights)
         let startDate: Date;
         let endDate: Date;
 
         if (closingDay >= 28) {
             // Standard Full Month (1 to 30/31)
-            startDate = new Date(year, month, 1);
-            endDate = new Date(year, month + 1, 0); // Last day of month
+            startDate = new Date(Date.UTC(year, month, 1));
+            endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)); // End of last day
         } else {
             // Split Month (e.g. 21st Jan to 20th Feb)
-            // Month param is 0-indexed (0 = Jan).
-            // If viewing Feb (1), we want Jan 21 to Feb 20.
-            startDate = new Date(year, month - 1, closingDay + 1);
-            endDate = new Date(year, month, closingDay);
+            startDate = new Date(Date.UTC(year, month - 1, closingDay + 1));
+            endDate = new Date(Date.UTC(year, month, closingDay, 23, 59, 59, 999));
         }
 
         // 2. Fetch all records for the period
@@ -53,15 +51,20 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
         // 4. Process every day in the range
         const sheet = [];
 
-        // Loop from Start to End Date
+        // Loop from Start to End Date using UTC
         const current = new Date(startDate);
         while (current <= endDate) {
-            const loopDate = new Date(current); // Copy
-            const dayNum = loopDate.getDate();
+            const loopDate = new Date(current); // This is already a UTC date object
+            const dayNum = loopDate.getUTCDate();
+            const monthNum = loopDate.getUTCMonth();
 
-            // Filter pre-fetched data
-            const dayRecords = records.filter((r: { date: Date }) => r.date.getDate() === dayNum && r.date.getMonth() === loopDate.getMonth());
-            const dayScale = scales.find((s: { date: Date }) => s.date.getDate() === dayNum && s.date.getMonth() === loopDate.getMonth());
+            // Filter pre-fetched data using UTC methods
+            const dayRecords = records.filter((r: { date: Date }) =>
+                r.date.getUTCDate() === dayNum && r.date.getUTCMonth() === monthNum
+            );
+            const dayScale = scales.find((s: { date: Date }) =>
+                s.date.getUTCDate() === dayNum && s.date.getUTCMonth() === monthNum
+            );
 
             const calc = await calculateDay(employeeId, loopDate, dayRecords, dayScale);
 
