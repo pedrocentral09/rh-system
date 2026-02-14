@@ -26,6 +26,20 @@ export async function createShiftType(formData: FormData) {
     }
 }
 
+export async function updateShiftType(id: string, data: { name?: string, startTime?: string, endTime?: string, breakDuration?: number }) {
+    try {
+        await prisma.shiftType.update({
+            where: { id },
+            data
+        });
+        revalidatePath('/dashboard/scales');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating shift type:', error);
+        return { success: false, error: 'Failed to update shift type' };
+    }
+}
+
 export async function getShiftTypes() {
     try {
         const shifts = await prisma.shiftType.findMany({
