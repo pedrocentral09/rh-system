@@ -73,7 +73,7 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
                 ...calc
             });
 
-            current.setDate(current.getDate() + 1);
+            current.setUTCDate(current.getUTCDate() + 1);
         }
 
         // Calculate Totals

@@ -144,9 +144,10 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {(sheetData?.days || []).map((day: any, idx: number) => {
-                            // Fix: Parse "YYYY-MM-DD" as local midday to avoid TZ shifting to previous day
-                            const dateParts = day.date.toString().split('T')[0].split('-');
-                            const displayDate = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]), 12, 0, 0);
+                            // Fix: Extract UTC parts to create a local midday date for display
+                            // This avoids hydration mismatch and timezone shifts.
+                            const d = new Date(day.date);
+                            const displayDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0);
                             const isWeekend = displayDate.getDay() === 0 || displayDate.getDay() === 6;
 
                             // Mock Inter-shift Check (Needs backend support for accuracy)
