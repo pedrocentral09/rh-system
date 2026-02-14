@@ -12,6 +12,7 @@ interface EmployeeTimeSheetTabProps {
 
 export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) {
     const today = new Date();
+    const [mounted, setMounted] = useState(false);
     const [month, setMonth] = useState(today.getMonth());
     const [year, setYear] = useState(today.getFullYear());
     const [sheetData, setSheetData] = useState<{ days: any[], totalBalance: number } | null>(null);
@@ -19,9 +20,15 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
     const [isClosed, setIsClosed] = useState(false);
 
     useEffect(() => {
-        loadSheet();
-        checkClosing();
-    }, [employeeId, month, year]);
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (mounted) {
+            loadSheet();
+            checkClosing();
+        }
+    }, [employeeId, month, year, mounted]);
 
     async function loadSheet() {
         setLoading(true);
@@ -152,7 +159,7 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                                 <tr key={day.day} className={`hover:bg-slate-50 ${isWeekend ? 'bg-slate-50/50' : ''}`}>
                                     <td className="px-4 py-2 text-center font-bold text-slate-700">{day.day}</td>
                                     <td className={`px-4 py-2 text-xs ${isWeekend ? 'text-red-400' : 'text-slate-500'}`}>
-                                        {displayDate.toLocaleDateString('pt-BR', { weekday: 'short' })}
+                                        {mounted ? displayDate.toLocaleDateString('pt-BR', { weekday: 'short' }) : '---'}
                                     </td>
                                     <td className="px-4 py-2 text-xs text-slate-500">
                                         {day.shiftName || '-'}

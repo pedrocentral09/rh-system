@@ -8,14 +8,20 @@ import { Loader2, RefreshCw } from 'lucide-react';
 import { TimeAdjustmentModal } from './TimeAdjustmentModal';
 
 export function DailyOverview() {
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
+    const [mounted, setMounted] = useState(false);
+    const [date, setDate] = useState(''); // Start empty to avoid mismatch
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [selectedAdjustment, setSelectedAdjustment] = useState<{ empId: string, empName: string, date: string, punches: string[] } | null>(null);
 
     useEffect(() => {
-        loadData();
+        setMounted(true);
+        setDate(new Date().toISOString().split('T')[0]);
+    }, []);
+
+    useEffect(() => {
+        if (date) loadData();
     }, [date]);
 
     async function loadData() {
