@@ -28,31 +28,21 @@ function startAutoSync() {
     console.log('🔄 [DEPLOY] Starting Background Auto-Sync...');
 
     const runSync = () => {
-        console.log('🔄 [AUTO-SYNC] Triggering Collection and Sync...');
+        console.log('🔄 [AUTO-SYNC] Triggering Firebase Sync...');
         const { exec } = require('child_process');
 
-        // 1. Collect from physical clock (if configured)
-        exec('node afd_collector.js', (cErr, cOut) => {
-            if (cErr) {
-                console.warn(`⚠️ [AUTO-SYNC] Collection Step: ${cErr.message}`);
-            } else {
-                console.log(`✅ [AUTO-SYNC] Collection Successful: ${cOut.slice(0, 200)}...`);
+        // Execute sync script which reads from Firebase Storage
+        exec('npx tsx scripts/trigger-sync.js', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ [AUTO-SYNC] Sync Error: ${error.message}`);
+                return;
             }
-
-            // 2. Sync collected files to main database
-            exec('npx tsx scripts/trigger-sync.js', (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`❌ [AUTO-SYNC] Sync Step Error: ${error.message}`);
-                    return;
-                }
-                console.log(`✅ [AUTO-SYNC] Sync Step Completed: ${stdout.slice(0, 500)}...`);
-            });
+            console.log(`✅ [AUTO-SYNC] Sync Completed: ${stdout.slice(0, 500)}...`);
         });
     };
 
     // Run 1 minute after start
     setTimeout(runSync, 60 * 1000);
-    // Every 5 minutes
     setInterval(runSync, 5 * 60 * 1000);
 }
 

@@ -1,7 +1,6 @@
-import { Client } from 'pg';
+import { adminStorage } from '@/lib/firebase/admin';
 import { prisma } from '@/lib/prisma';
 import { AFDParser } from './AFDParser';
-import crypto from 'crypto';
 
 interface SyncResult {
     filesProcessed: number;
@@ -13,12 +12,6 @@ interface SyncResult {
 }
 
 export class AFDSyncService {
-    private externalDbUrl: string;
-
-    constructor(externalDbUrl: string) {
-        this.externalDbUrl = externalDbUrl;
-    }
-
     async sync(): Promise<SyncResult> {
         const result: SyncResult = {
             filesProcessed: 0,
@@ -29,12 +22,8 @@ export class AFDSyncService {
             errors: []
         };
 
-        const client = new Client(this.externalDbUrl);
-
         try {
-            await client.connect();
-
-            // 1. Get the highest NSR already in our DB to avoid duplicates and speed up
+            // 1. Get the highest NSR already in our DB
             const lastRecord = await prisma.timeRecord.findFirst({
                 where: { nsr: { not: null } },
                 orderBy: { nsr: 'desc' },
@@ -45,7 +34,7 @@ export class AFDSyncService {
             // 2. Load all employees into memory for fast matching
             const employees = await prisma.employee.findMany({
                 where: { status: { in: ['ACTIVE', 'TERMINATED'] } },
-                select: { id: true, pis: true, cpf: true, name: true }
+                select: { id: true, pis: true, cpf: true }
             });
 
             const pisMap = new Map<string, string>();
@@ -62,17 +51,25 @@ export class AFDSyncService {
                 }
             });
 
-            // 3. Get all AFD files from external DB (Only recent ones to avoid massive memory usage)
-            // We order by ID desc to get the latest first, but we need to process in order if possible.
-            // Actually, if we filter by content length or just take the top X, it might be safer.
-            const { rows: afdFiles } = await client.query(
-                'SELECT id, filename, content FROM afd_files ORDER BY id DESC LIMIT 20'
-            );
+            // 3. List all terminal folders in Firebase Storage
+            const [files] = await adminStorage.getFiles({ prefix: 'afd_terminals/' });
 
-            // 4. Process each file
-            for (const afdFile of afdFiles) {
+            // Filter only files named 'latest.txt'
+            const latestFiles = files.filter(f => f.name.endsWith('/latest.txt'));
+
+            if (latestFiles.length === 0) {
+                console.log('[SYNC] No terminal files found in Firebase Storage.');
+                return result;
+            }
+
+            // 4. Process each terminal file
+            for (const file of latestFiles) {
+                const terminalName = file.name.split('/')[1];
                 try {
-                    const parsed = AFDParser.parseFile(afdFile.content);
+                    const [contentBuffer] = await file.download();
+                    const content = contentBuffer.toString('utf8');
+
+                    const parsed = AFDParser.parseFile(content);
                     const recordsToCreate: any[] = [];
 
                     // Filter only new punches (NSR > lastNSR)
@@ -87,11 +84,7 @@ export class AFDSyncService {
                     }
 
                     for (const punch of newPunches) {
-                        // Basic Validation
-                        if (!punch.date || !punch.time || !punch.pis) {
-                            result.errors.push(`File ${afdFile.filename}: Incomplete punch data skipped (NSR: ${punch.nsr})`);
-                            continue;
-                        }
+                        if (!punch.date || !punch.time || !punch.pis) continue;
 
                         const rawId = punch.pis.replace(/\D/g, '').replace(/^0+/, '');
                         let empId = pisMap.get(rawId) || cpfMap.get(rawId);
@@ -102,13 +95,9 @@ export class AFDSyncService {
                             empId = pisMap.get(shortId) || cpfMap.get(shortId);
                         }
 
-                        if (empId) {
-                            result.employeesFound++;
-                        } else {
-                            if (!result.employeesNotFound.includes(punch.pis)) {
-                                result.employeesNotFound.push(punch.pis);
-                                console.warn(`[SYNC] Employee not found for ID: ${punch.pis} (Parsed: ${rawId}) in file ${afdFile.filename}`);
-                            }
+                        if (empId) result.employeesFound++;
+                        else if (!result.employeesNotFound.includes(punch.pis)) {
+                            result.employeesNotFound.push(punch.pis);
                         }
 
                         recordsToCreate.push({
@@ -122,7 +111,7 @@ export class AFDSyncService {
                         });
                     }
 
-                    // 5. Atomic Batch Insert and Log for this file
+                    // 5. Atomic Batch Insert
                     if (recordsToCreate.length > 0) {
                         await prisma.$transaction(async (tx) => {
                             await tx.timeRecord.createMany({
@@ -130,14 +119,13 @@ export class AFDSyncService {
                                 skipDuplicates: true
                             });
 
-                            // Create an individual file record for traceability
                             await tx.timeClockFile.create({
                                 data: {
-                                    fileName: afdFile.filename,
-                                    fileHash: `sync_${afdFile.id}_${Date.now()}`,
+                                    fileName: `Firebase: ${terminalName}`,
+                                    fileHash: `fb_${terminalName}_${Date.now()}`,
                                     status: 'DONE',
-                                    store: 'Sincronização Externa',
-                                    errorLog: `Importados ${recordsToCreate.length} pontos (NSRs: ${newPunches[0]?.nsr} a ${newPunches[newPunches.length - 1]?.nsr})`
+                                    store: terminalName,
+                                    errorLog: `Importados ${recordsToCreate.length} pontos.`
                                 }
                             });
                         });
@@ -146,27 +134,25 @@ export class AFDSyncService {
 
                     result.filesProcessed++;
                 } catch (fileError: any) {
-                    result.errors.push(`File ${afdFile.filename}: ${fileError.message}`);
+                    result.errors.push(`Terminal ${terminalName}: ${fileError.message}`);
                 }
             }
 
-            // 6. Log the overall sync summary if anything was imported
-            if (result.punchesImported > 0 || result.errors.length > 0) {
+            // 6. Log completion if anything happened
+            if (result.punchesImported > 0) {
                 await prisma.timeClockFile.create({
                     data: {
-                        fileName: `Sync Automático: ${new Date().toLocaleDateString('pt-BR')}`,
-                        fileHash: `sync_${Date.now()}_${result.punchesImported}`,
+                        fileName: `Sync Firebase: ${new Date().toLocaleDateString('pt-BR')}`,
+                        fileHash: `sync_fb_${Date.now()}`,
                         status: result.errors.length > 0 ? 'PARTIAL' : 'DONE',
-                        errorLog: result.errors.length > 0 ? result.errors.join('\n') : `Importados ${result.punchesImported} novos pontos.`,
+                        errorLog: `Sincronização concluída para ${result.filesProcessed} terminais.`,
                         store: 'Sistema'
                     }
                 });
             }
 
         } catch (error: any) {
-            result.errors.push(`Connection error: ${error.message}`);
-        } finally {
-            await client.end();
+            result.errors.push(`Firebase/Prisma error: ${error.message}`);
         }
 
         return result;

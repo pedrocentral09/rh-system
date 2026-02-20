@@ -6,14 +6,8 @@ require('dotenv').config();
 // I can try to use 'tsx' to run the service.
 
 async function main() {
-    const externalDbUrl = process.env.AFD_DATABASE_URL || process.env.RAILWAY_DB_URL;
-    if (!externalDbUrl) {
-        console.error('❌ AFD_DATABASE_URL or RAILWAY_DB_URL not found in environment');
-        return;
-    }
-
-    console.log('--- Iniciando Sincronização AFD Manual ---');
-    const syncService = new AFDSyncService(externalDbUrl);
+    console.log('--- Iniciando Sincronização AFD via Firebase ---');
+    const syncService = new AFDSyncService();
 
     try {
         const result = await syncService.sync();
