@@ -167,7 +167,14 @@ export class EmployeeService extends BaseService {
 
             const serialized = JSON.parse(JSON.stringify(employee));
             return this.success(serialized);
-        } catch (error) {
+        } catch (error: any) {
+            console.error('EmployeeService.create error:', error);
+            if (error.code === 'P2002') {
+                const target = error.meta?.target || [];
+                if (target.includes('cpf')) return this.error(error, 'Este CPF já está cadastrado no sistema.');
+                if (target.includes('email')) return this.error(error, 'Este e-mail já está em uso por outro colaborador.');
+                return this.error(error, 'Já existe um registro com estes dados únicos.');
+            }
             return this.error(error, 'Erro ao criar registro do colaborador');
         }
     }
@@ -447,9 +454,12 @@ export class EmployeeService extends BaseService {
             const serialized = JSON.parse(JSON.stringify(employee));
             return this.success(serialized);
         } catch (error: any) {
-            console.error('EmployeeService.update - COMPLETE ERROR OBJECT:', error);
+            console.error('EmployeeService.update - ERROR:', error);
             if (error.code === 'P2002') {
-                console.error('Unique constraint failed on fields:', error.meta?.target);
+                const target = error.meta?.target || [];
+                if (target.includes('cpf')) return this.error(error, 'Este CPF já pertence a outro colaborador.');
+                if (target.includes('email')) return this.error(error, 'Este e-mail já está em uso.');
+                return this.error(error, 'Conflito de dados: outro registro já possui estes dados únicos.');
             }
             return this.error(error, 'Erro ao atualizar registro do colaborador');
         }

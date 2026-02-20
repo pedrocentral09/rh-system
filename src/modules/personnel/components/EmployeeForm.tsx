@@ -208,10 +208,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
     const initialDob = safeDate(initialData?.dateOfBirth);
     const [birthDate, setBirthDate] = useState(initialDob);
-    const [isMinor, setIsMinor] = useState(() => {
-        if (!initialDob) return false;
-        return calculateAge(initialDob) < 18;
-    });
+    const [isMinor, setIsMinor] = useState(false); // Default to false to avoid hydration mismatch
+
+    useEffect(() => {
+        // Set actual minor status after mount
+        if (initialDob) {
+            setIsMinor(calculateAge(initialDob) < 18);
+        }
+    }, [initialDob]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newDate = e.target.value;
