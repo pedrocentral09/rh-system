@@ -112,6 +112,8 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
+        const employeeIds = filteredEmployees.map(e => e.id);
+        const result = await cloneWeeklyScale(normalizedStart, employeeIds);
         if (result.success) {
             toast.success('Escala clonada com sucesso!');
             await loadData(); // Reload data to show new values
@@ -135,6 +137,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
+        const filterIds = filteredEmployees.map(e => e.id);
 
         const result = await generateAutomaticScale(normalizedStart, filterIds, scalePattern);
 
