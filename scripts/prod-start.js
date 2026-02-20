@@ -49,13 +49,26 @@ function startAutoSync() {
 // Start Function
 function startApp() {
     console.log('🚀 [DEPLOY] Starting Next.js Server...');
-    try {
-        // Use npm start (which runs "next start")
-        execSync('npm start', { stdio: 'inherit' });
-    } catch (error) {
-        console.error('❌ [DEPLOY] App Start Failed:', error.message);
-        process.exit(1); // Critical failure if app won't start
-    }
+    const { spawn } = require('child_process');
+
+    // Use npm start (which runs "next start")
+    // On Windows/Railway, we might need to handle shell: true or direct execution
+    const child = spawn('npm', ['start'], {
+        stdio: 'inherit',
+        shell: true
+    });
+
+    child.on('error', (error) => {
+        console.error('❌ [DEPLOY] App Start Failed to Spawn:', error.message);
+        process.exit(1);
+    });
+
+    child.on('exit', (code) => {
+        if (code !== 0) {
+            console.error(`❌ [DEPLOY] App Server exited with code ${code}`);
+            process.exit(code || 1);
+        }
+    });
 }
 
 // Main Execution
