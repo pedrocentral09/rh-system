@@ -181,7 +181,7 @@ export async function saveWorkScalesBatch(employeeId: string, changes: { date: D
     }
 }
 
-export async function cloneWeeklyScale(targetWeekStart: Date) {
+export async function cloneWeeklyScale(targetWeekStart: Date, employeeIds?: string[]) {
     try {
         const sourceStart = new Date(targetWeekStart);
         sourceStart.setUTCDate(sourceStart.getUTCDate() - 7);
@@ -197,7 +197,8 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
                 date: {
                     gte: sourceStart,
                     lte: sourceEnd
-                }
+                },
+                ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {})
             }
         });
 

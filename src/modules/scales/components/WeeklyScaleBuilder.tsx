@@ -112,7 +112,6 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
-        const result = await cloneWeeklyScale(normalizedStart);
         if (result.success) {
             toast.success('Escala clonada com sucesso!');
             await loadData(); // Reload data to show new values
