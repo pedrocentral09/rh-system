@@ -55,7 +55,7 @@ export class AFDSyncService {
             const [files] = await adminStorage.getFiles({ prefix: 'afd_terminals/' });
 
             // Filter only files named 'latest.txt'
-            const latestFiles = files.filter(f => f.name.endsWith('/latest.txt'));
+            const latestFiles = files.filter((f: any) => f.name.endsWith('/latest.txt'));
 
             if (latestFiles.length === 0) {
                 console.log('[SYNC] No terminal files found in Firebase Storage.');
