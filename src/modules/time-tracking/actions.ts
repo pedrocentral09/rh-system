@@ -76,27 +76,22 @@ export async function uploadAFD(formData: FormData) {
             // 3. Just CPF numbers inside the 12 (padded with 0s)
 
             if (!empId) {
-                // Attempt A: Exact strip of leading zero (existing logic)
-                const c1 = rawId.startsWith('0') ? rawId.substring(1) : rawId;
+                // Attempt A: Exact strip of leading zero
+                const c1 = rawId.replace(/^0+/, '');
                 if (cpfMap.has(c1)) empId = cpfMap.get(c1);
             }
 
-            if (!empId) {
+            if (!empId && rawId.length >= 11) {
                 // Attempt B: Match by right-most 11 digits (Standard CPF length)
-                if (rawId.length >= 11) {
-                    const c2 = rawId.slice(-11);
-                    if (cpfMap.has(c2)) empId = cpfMap.get(c2);
-                }
+                const c2 = rawId.slice(-11).replace(/^0+/, '');
+                if (cpfMap.has(c2)) empId = cpfMap.get(c2);
             }
 
             if (!empId) {
-                // Attempt C: Match as Number (remove all leading zeros)
-                // This handles "000123..." matching "123..."
+                // Attempt C: Direct PIS/CPF lookup without leading zeros
                 const asNum = rawId.replace(/^0+/, '');
-                // We need to check against a map of "numeric" CPFs too?
-                // For now, let's try finding in values? No, that's slow.
-                // Let's assume the maps are populated with normalized strings.
-                if (cpfMap.has(asNum)) empId = cpfMap.get(asNum);
+                if (pisMap.has(asNum)) empId = pisMap.get(asNum);
+                if (!empId && cpfMap.has(asNum)) empId = cpfMap.get(asNum);
             }
 
             // Debug log for first failure
@@ -132,6 +127,57 @@ export async function uploadAFD(formData: FormData) {
     } catch (error: any) {
         console.error('Error uploading AFD:', error);
         return { success: false, error: `Erro ao processar arquivo: ${error.message}` };
+    }
+}
+
+export async function getOrphanPunches() {
+    try {
+        const orphans = await prisma.timeRecord.findMany({
+            where: { employeeId: null },
+            select: {
+                pis: true,
+                date: true,
+                time: true,
+                nsr: true,
+            },
+            orderBy: { date: 'desc' },
+            take: 500
+        });
+
+        // Group by PIS to make it a report
+        const grouped = orphans.reduce((acc: any, curr) => {
+            if (!acc[curr.pis]) {
+                acc[curr.pis] = {
+                    pis: curr.pis,
+                    count: 0,
+                    lastSeen: curr.date,
+                    lastTime: curr.time
+                };
+            }
+            acc[curr.pis].count++;
+            if (new Date(curr.date) > new Date(acc[curr.pis].lastSeen)) {
+                acc[curr.pis].lastSeen = curr.date;
+                acc[curr.pis].lastTime = curr.time;
+            }
+            return acc;
+        }, {});
+
+        return { success: true, data: Object.values(grouped).sort((a: any, b: any) => b.count - a.count) };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch orphans' };
+    }
+}
+
+export async function getLastSync() {
+    try {
+        const lastFile = await prisma.timeClockFile.findFirst({
+            where: { status: 'DONE' },
+            orderBy: { uploadDate: 'desc' },
+            select: { uploadDate: true }
+        });
+        return { success: true, data: lastFile?.uploadDate || null };
+    } catch (error) {
+        return { success: false, error: 'Failed' };
     }
 }
 

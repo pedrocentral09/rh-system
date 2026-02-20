@@ -5,15 +5,23 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { registerCandidate } from '../actions/candidates';
+import { registerCandidateInternal } from '../actions/candidates';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { FileUpload } from '@/shared/components/FileUpload';
 
 export function CandidateForm({ jobId }: { jobId?: string }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [resumeUrl, setResumeUrl] = useState('');
+    const [candidateName, setCandidateName] = useState('');
 
     async function handleSubmit(formData: FormData) {
+        if (!resumeUrl) {
+            toast.error('Por favor, faça o upload do currículo');
+            return;
+        }
+
         setIsLoading(true);
         const data = {
             name: formData.get('name'),
@@ -21,17 +29,17 @@ export function CandidateForm({ jobId }: { jobId?: string }) {
             phone: formData.get('phone'),
             linkedin: formData.get('linkedin'),
             notes: formData.get('notes'),
+            resumeUrl: resumeUrl,
+            source: formData.get('source'),
             jobId: jobId // Optional: Auto-apply to this job
         };
 
-        const result = await registerCandidate(data);
+        const result = await registerCandidateInternal(data);
 
         if (result.success) {
             toast.success('Candidato registrado com sucesso!');
             if (jobId) {
-                // Refresh to show in Kanban or list
                 router.refresh();
-                // Close modal logic would go here if it was a modal
             } else {
                 router.push('/dashboard/recruitment');
             }
@@ -44,28 +52,47 @@ export function CandidateForm({ jobId }: { jobId?: string }) {
     return (
         <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo</Label>
-                <Input id="name" name="name" required />
+                <Label htmlFor="name" className="dark:text-slate-200">Nome Completo</Label>
+                <Input
+                    id="name"
+                    name="name"
+                    required
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
+                />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="dark:text-slate-200">Email</Label>
                 <Input id="email" name="email" type="email" required />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
+                    <Label htmlFor="phone" className="dark:text-slate-200">Telefone</Label>
                     <Input id="phone" name="phone" placeholder="(11) 99999-9999" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="linkedin">LinkedIn (URL)</Label>
+                    <Label htmlFor="linkedin" className="dark:text-slate-200">LinkedIn (URL)</Label>
                     <Input id="linkedin" name="linkedin" placeholder="https://..." />
                 </div>
             </div>
 
+            <div className="space-y-4">
+                <FileUpload
+                    label="Currículo (PDF)"
+                    candidateName={candidateName}
+                    onUploadComplete={setResumeUrl}
+                />
+            </div>
+
             <div className="space-y-2">
-                <Label htmlFor="notes">Observações</Label>
+                <Label htmlFor="source" className="dark:text-slate-200">Método de Cadastro</Label>
+                <Input id="source" name="source" placeholder="Ex: LinkedIn, Indicação, Site" />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="notes" className="dark:text-slate-200">Observações</Label>
                 <textarea
                     id="notes"
                     name="notes"
@@ -74,7 +101,7 @@ export function CandidateForm({ jobId }: { jobId?: string }) {
                 />
             </div>
 
-            <Button type="submit" className="w-full bg-[#FF7800] hover:bg-orange-600 text-white" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-[#FF7800] hover:bg-orange-600 text-white" disabled={isLoading || !resumeUrl}>
                 {isLoading ? 'Salvando...' : 'Adicionar Candidato'}
             </Button>
         </form>

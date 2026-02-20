@@ -43,3 +43,9 @@ export const adminAuth = isInitialized ? admin.auth() : {
 } as any;
 
 export const adminDb = isInitialized ? admin.firestore() : {} as any;
+export const adminStorage = isInitialized ? admin.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET) : {
+    file: () => ({
+        save: async () => { throw new Error('Firebase Admin Storage not initialized'); },
+        getSignedUrl: async () => { throw new Error('Firebase Admin Storage not initialized'); }
+    })
+} as any;

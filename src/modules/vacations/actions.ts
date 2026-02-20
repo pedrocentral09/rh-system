@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { addYears, addMonths, isBefore, differenceInDays } from 'date-fns';
 
+import { parseSafeDate } from '@/shared/utils/date-utils';
+
 export async function getVacationData(employeeId: string) {
     try {
         const periods = await prisma.vacationPeriod.findMany({
@@ -27,7 +29,11 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
 
         if (!emp || !emp.contract?.admissionDate) return { success: false, error: 'Admission date not found' };
 
-        const admission = new Date(emp.contract.admissionDate);
+        const admissionStr = emp.contract.admissionDate instanceof Date
+            ? emp.contract.admissionDate.toISOString().split('T')[0]
+            : (emp.contract.admissionDate as string).split('T')[0];
+
+        const admission = parseSafeDate(admissionStr)!;
         const now = new Date();
         const checkDate = new Date(now);
         checkDate.setDate(checkDate.getDate() + 1); // Allow if cursor matches today
@@ -60,8 +66,6 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
 
             if (!exists) {
                 // Determine limits
-                // Periodo Concessivo ends 11 months after Periodo Aquisitivo ends (usually 23 months from start)
-                // Technically 12 months after vesting.
                 const limitDate = addMonths(periodEnd, 12);
 
                 await prisma.vacationPeriod.create({
@@ -74,6 +78,18 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
                         status: isBefore(limitDate, now) ? 'EXPIRED' : (isBefore(periodEnd, now) ? 'OPEN' : 'ACCRUING')
                     }
                 });
+            } else {
+                // Update existing period status if needed
+                const newStatus = isBefore(exists.limitDate, now) ? 'EXPIRED' : (isBefore(exists.endDate, now) ? 'OPEN' : 'ACCRUING');
+                if (exists.status !== newStatus) {
+                    await prisma.vacationPeriod.update({
+                        where: { id: exists.id },
+                        data: {
+                            status: newStatus,
+                            vested: isBefore(exists.endDate, now)
+                        }
+                    });
+                }
             }
 
             cursor = nextAnniversary;
@@ -90,6 +106,8 @@ export async function checkVacationRights(employeeId: string, shouldRevalidate: 
     }
 }
 
+import { validateVacationRequest } from './utils/vacation-rules';
+
 export async function createVacationRequest(data: {
     employeeId: string,
     periodId: string,
@@ -98,38 +116,105 @@ export async function createVacationRequest(data: {
     soldDays: number
 }) {
     try {
-        // Validation logic
-        const period = await prisma.vacationPeriod.findUnique({ where: { id: data.periodId }, include: { requests: true } });
-        if (!period) return { success: false, error: 'Period not found' };
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Concurrency Protection: Re-read period data inside transaction
+            const period = await tx.vacationPeriod.findUnique({
+                where: { id: data.periodId },
+                include: { requests: true }
+            });
 
-        // Calculate balance
-        const usedDays = period.requests.reduce((acc, r) => acc + r.daysCount + r.soldDays, 0);
-        const remaining = 30 - usedDays;
-        const totalRequested = data.daysCount + data.soldDays;
+            if (!period) throw new Error('Período aquisitivo não encontrado.');
 
-        if (totalRequested > remaining) {
-            return { success: false, error: `Saldo insuficiente. Restam ${remaining} dias.` };
-        }
+            // 2. CLT & Overlap Validations (Server-side)
+            const validation = await validateVacationRequest(
+                data.employeeId,
+                data.startDate,
+                data.daysCount,
+                data.soldDays,
+                period.requests
+            );
+            if (!validation.success) throw new Error(validation.error);
 
-        const endDate = new Date(data.startDate);
-        endDate.setDate(endDate.getDate() + data.daysCount - 1); // Inclusive
+            // 3. Balance Validation inside transaction
+            const usedDays = period.requests.reduce((acc, r) => acc + r.daysCount + r.soldDays, 0);
+            const remaining = 30 - usedDays;
+            const totalRequested = data.daysCount + data.soldDays;
 
-        await prisma.vacationRequest.create({
-            data: {
-                employeeId: data.employeeId,
-                periodId: data.periodId,
-                startDate: data.startDate,
-                endDate: endDate,
-                daysCount: data.daysCount,
-                soldDays: data.soldDays,
-                status: 'APPROVED' // Auto-approve for now
+            if (totalRequested > remaining) {
+                throw new Error(`Saldo insuficiente. Restam ${remaining} dias.`);
             }
+
+            // 4. Create the request
+            const startDate = parseSafeDate(data.startDate)!;
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + data.daysCount - 1);
+
+            const request = await tx.vacationRequest.create({
+                data: {
+                    employeeId: data.employeeId,
+                    periodId: data.periodId,
+                    startDate: startDate,
+                    endDate: endDate,
+                    daysCount: data.daysCount,
+                    soldDays: data.soldDays,
+                    status: 'APPROVED'
+                }
+            });
+
+            // 5. Audit Log
+            await tx.auditLog.create({
+                data: {
+                    action: 'CREATE',
+                    module: 'vacations',
+                    resource: 'VacationRequest',
+                    resourceId: request.id,
+                    newData: JSON.stringify(request),
+                }
+            });
+
+            return request;
         });
 
         revalidatePath('/dashboard/personnel');
+        revalidatePath('/dashboard/vacations');
         return { success: true };
-    } catch (error) {
-        return { success: false, error: 'Failed to create request' };
+    } catch (error: any) {
+        console.error('Vacation creation error:', error);
+        return { success: false, error: error.message || 'Falha ao criar agendamento' };
+    }
+}
+
+export async function deleteVacationRequest(requestId: string) {
+    try {
+        await prisma.$transaction(async (tx) => {
+            const request = await tx.vacationRequest.findUnique({
+                where: { id: requestId }
+            });
+
+            if (!request) throw new Error('Agendamento não encontrado.');
+
+            // Audit Log (Before deletion to capture state)
+            await tx.auditLog.create({
+                data: {
+                    action: 'DELETE',
+                    module: 'vacations',
+                    resource: 'VacationRequest',
+                    resourceId: requestId,
+                    oldData: JSON.stringify(request),
+                }
+            });
+
+            await tx.vacationRequest.delete({
+                where: { id: requestId }
+            });
+        });
+
+        revalidatePath('/dashboard/personnel');
+        revalidatePath('/dashboard/vacations');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Failed to delete vacation request:', error);
+        return { success: false, error: error.message || 'Falha ao excluir agendamento' };
     }
 }
 
@@ -155,14 +240,10 @@ export async function getAllVacations() {
     }
 }
 
-export async function getAllVacationPeriods() {
+export async function getPendingVacationRequests() {
     try {
-        // AUTO-SYNC: Update rights for all active employees before fetching
-        // This ensures the dashboard is always up to date without manual buttons.
-        await syncAllVacationRights();
-
-        const periods = await prisma.vacationPeriod.findMany({
-
+        const requests = await prisma.vacationRequest.findMany({
+            where: { status: 'PENDING' },
             include: {
                 employee: {
                     select: {
@@ -172,16 +253,80 @@ export async function getAllVacationPeriods() {
                         photoUrl: true
                     }
                 },
-                requests: true
+                period: true
             },
-            orderBy: { startDate: 'desc' },
-            where: {
-                status: { in: ['OPEN', 'ACCRUING', 'EXPIRED'] }
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: requests };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch pending requests' };
+    }
+}
+
+export async function updateVacationRequestStatus(requestId: string, status: string, notes?: string) {
+    try {
+        const request = await prisma.vacationRequest.update({
+            where: { id: requestId },
+            data: { status, notes }
+        });
+
+        // If approved, we might need to revalidate paths
+        revalidatePath('/dashboard/vacations');
+        return { success: true, data: request };
+    } catch (error) {
+        return { success: false, error: 'Failed to update request status' };
+    }
+}
+
+export async function getEmployeeVacationSummary() {
+    try {
+        // Get all active employees and their vacation status
+        // We focus on finding individuals with EXPIRED or OPEN periods.
+        const employees = await prisma.employee.findMany({
+            where: { status: 'ACTIVE' },
+            select: {
+                id: true,
+                name: true,
+                department: true,
+                photoUrl: true,
+                vacationPeriods: {
+                    include: { requests: true }
+                }
             }
         });
-        return { success: true, data: periods };
+
+        const summary = employees.map(emp => {
+            const expiredCount = emp.vacationPeriods.filter(p => {
+                const used = p.requests.reduce((rAcc, r) => rAcc + r.daysCount + r.soldDays, 0);
+                return p.status === 'EXPIRED' && used < 30;
+            }).length;
+            const openCount = emp.vacationPeriods.filter(p => {
+                const used = p.requests.reduce((rAcc, r) => rAcc + r.daysCount + r.soldDays, 0);
+                return p.status === 'OPEN' && used < 30;
+            }).length;
+
+            // Calculate total balance
+            const totalBalance = emp.vacationPeriods.reduce((acc, p) => {
+                const used = p.requests.reduce((rAcc, r) => rAcc + r.daysCount + r.soldDays, 0);
+                return acc + (p.status !== 'ACCRUING' ? (30 - used) : 0);
+            }, 0);
+
+            return {
+                id: emp.id,
+                name: emp.name,
+                department: emp.department,
+                photoUrl: emp.photoUrl,
+                expiredCount,
+                openCount,
+                totalBalance,
+                status: expiredCount > 0 ? 'EXPIRED' : openCount > 0 ? 'OPEN' : 'OK'
+            };
+        });
+
+        return { success: true, data: summary };
     } catch (error) {
-        return { success: false, error: 'Failed to fetch periods' };
+        console.error("Error fetching summary:", error);
+        return { success: false, error: 'Failed to fetch vacation summary' };
     }
 }
 

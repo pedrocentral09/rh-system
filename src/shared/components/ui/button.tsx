@@ -12,8 +12,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant 
     const variants = {
         primary: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm',
         secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200',
-        outline: 'border border-zinc-200 bg-transparent hover:bg-zinc-100 text-zinc-900',
-        ghost: 'hover:bg-zinc-100 hover:text-zinc-900',
+        outline: 'border border-zinc-200 bg-transparent hover:bg-zinc-100 text-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-800',
+        ghost: 'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
     };
 
     const sizes = {

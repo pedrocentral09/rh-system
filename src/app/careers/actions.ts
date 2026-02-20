@@ -1,35 +1,29 @@
 
 'use server';
 
-import { registerCandidate } from '@/modules/recruitment/actions/candidates';
-import { prisma } from '@/lib/prisma'; // Directly use prisma if needed for job details, or reuse getJobDetails
-import { getJobDetails } from '@/modules/recruitment/actions/candidates';
+import { registerCandidatePublic } from '@/modules/recruitment/actions/candidates';
+import { getPublicJobs, getPublicJobDetails } from '@/modules/recruitment/actions/jobs';
 
 export async function submitApplication(formData: FormData) {
-    // This is a public action wrapping registerCandidate but handling file "upload" logic (mock for now)
-
-    // In a real app with Firebase Storage:
-    // 1. Client uploads file to Firebase -> gets URL.
-    // 2. Client sends URL to this action.
-    // OR
-    // 1. Form sends File object -> We upload here (not supported in Server Actions directly for large files usually, better client-side).
-
-    // For MVP: We accept a link OR we pretend to upload.
-    // Since user asked to "attach curriculum", we need a File Input on frontend.
-    // We will convert file to Base64 on client and send as string, or just simulate.
-
-    // Let's assume the Client Component handles the upload or sends the Resume Link.
-
-    return await registerCandidate({
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        linkedin: formData.get('linkedin'),
-        jobId: formData.get('jobId'),
-        // resumeUrl: ... 
+    return await registerCandidatePublic({
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        linkedin: formData.get('linkedin') as string,
+        jobId: formData.get('jobId') as string,
+        resumeUrl: formData.get('resumeUrl') as string,
     });
 }
 
 export async function getPublicJob(id: string) {
-    return await getJobDetails(id);
+    return await getPublicJobDetails(id);
+}
+
+export async function getJobs() {
+    return await getPublicJobs();
+}
+import { getTalentBankJob as getTalentBankJobInternal } from '@/modules/recruitment/actions/jobs';
+
+export async function getTalentBankJob() {
+    return await getTalentBankJobInternal();
 }

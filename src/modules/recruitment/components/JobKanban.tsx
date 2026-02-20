@@ -13,6 +13,7 @@ type Application = {
     candidate: {
         name: string;
         email: string;
+        resumeUrl?: string | null;
     };
     appliedAt: Date;
 };
@@ -24,13 +25,19 @@ type Job = {
 };
 
 const COLUMNS = [
-    { id: 'NEW', title: 'Novos', color: 'bg-blue-50 border-blue-200' },
-    { id: 'SCREENING', title: 'Triagem', color: 'bg-indigo-50 border-indigo-200' },
-    { id: 'INTERVIEW', title: 'Entrevista', color: 'bg-purple-50 border-purple-200' },
-    { id: 'OFFER', title: 'Proposta', color: 'bg-orange-50 border-orange-200' },
-    { id: 'HIRED', title: 'Contratado', color: 'bg-green-50 border-green-200' },
-    { id: 'REJECTED', title: 'Reprovado', color: 'bg-red-50 border-red-200' },
+    { id: 'NEW', title: 'Novos', color: 'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/50' },
+    { id: 'SCREENING', title: 'Triagem', color: 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-900/10 dark:border-indigo-800/50' },
+    { id: 'INTERVIEW', title: 'Entrevista', color: 'bg-purple-50/50 border-purple-200 dark:bg-purple-900/10 dark:border-purple-800/50' },
+    { id: 'OFFER', title: 'Proposta', color: 'bg-orange-50/50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800/50' },
+    { id: 'HIRED', title: 'Contratado', color: 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50' },
+    { id: 'REJECTED', title: 'Reprovado', color: 'bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-800/50' },
 ];
+
+const normalizeUrl = (url: string | null | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+};
 
 export function JobKanban({ job }: { job: Job }) {
     // Optimistic UI state could be added here
@@ -55,28 +62,38 @@ export function JobKanban({ job }: { job: Job }) {
                 return (
                     <div key={col.id} className={`flex-shrink-0 w-72 rounded-lg border ${col.color} p-3 flex flex-col gap-3`}>
                         <div className="flex justify-between items-center px-1">
-                            <h3 className="font-semibold text-slate-700 text-sm">{col.title}</h3>
-                            <span className="bg-white/50 px-2 py-0.5 rounded text-xs font-bold text-slate-600">
+                            <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-sm">{col.title}</h3>
+                            <span className="bg-white/50 dark:bg-slate-800/50 px-2 py-0.5 rounded text-xs font-bold text-slate-600 dark:text-slate-400">
                                 {apps.length}
                             </span>
                         </div>
 
                         <div className="flex-1 space-y-2">
                             {apps.map(app => (
-                                <Card key={app.id} className="bg-white shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing border-slate-200/60 p-3">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-sm text-slate-800">{app.candidate.name}</span>
+                                <Card key={app.id} className="bg-white dark:bg-slate-900 shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing border-slate-200/60 dark:border-slate-800/60 p-3">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="font-bold text-sm text-slate-800 dark:text-slate-100">{app.candidate.name}</span>
+                                        {app.candidate.resumeUrl && (
+                                            <a
+                                                href={normalizeUrl(app.candidate.resumeUrl)}
+                                                target="_blank"
+                                                className="text-indigo-600 dark:text-indigo-400 hover:scale-110 transition-transform"
+                                                title="Ver Currículo"
+                                            >
+                                                📄
+                                            </a>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-slate-500 mb-3 truncate">{app.candidate.email}</p>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-3 truncate">{app.candidate.email}</p>
 
                                     <div className="flex justify-end gap-1">
                                         {/* Simple Move Buttons for MVP */}
                                         {col.id !== 'NEW' && (
                                             <button
                                                 onClick={() => handleMove(app.id, getPrevStatus(col.id))}
-                                                className="text-[10px] bg-slate-100 hover:bg-slate-200 p-1 rounded px-2"
+                                                className="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 p-1 rounded px-2 border dark:border-slate-700"
                                             >
-                                                Skill "←"
+                                                ←
                                             </button>
                                         )}
                                         {col.id !== 'HIRED' && (

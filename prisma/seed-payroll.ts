@@ -16,6 +16,7 @@ async function main() {
         { code: '1012', name: 'Cargo de Confiança', type: 'EARNING', description: 'Gratificação de função', isSystem: true },
         { code: '1013', name: 'Quebra de Caixa', type: 'EARNING', description: 'Gratificação para caixas', isSystem: true },
         { code: '1014', name: 'Salário Família', type: 'EARNING', description: 'Benefício cota INSS', isSystem: true },
+        { code: '1020', name: 'Bônus Mensal', type: 'EARNING', description: 'Gratificações e bônus fixos', isSystem: true },
 
         // DEDUCTIONS (Descontos) - 5000 to 8999
         { code: '5001', name: 'INSS', type: 'DEDUCTION', description: 'Contribuição Previdenciária', isSystem: true },

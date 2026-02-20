@@ -1,18 +1,20 @@
 'use client';
 
 import { useEffect, useState, ChangeEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getEmployees, terminateEmployee } from '../actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { EmployeeDetailsModal } from './EmployeeDetailsModal';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { EmployeeEditModal } from './EmployeeEditModal';
-import { EmployeeTransferModal } from './EmployeeTransferModal';
+import EmployeeTransferModal from './EmployeeTransferModal';
 import { EmployeeTimeTrackingModal } from './EmployeeTimeTrackingModal';
 import { VacationModal } from './VacationModal';
 import { MobileEmployeeCard } from './MobileEmployeeCard';
 import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
+import { toast } from 'sonner';
 
 /*
 Vacation Improvements:
@@ -25,7 +27,11 @@ Vacation Improvements:
 - [ ] Implement `VacationCalendar` component for Dashboard
 - [ ] (Optional) Generate Vacation Notice PDF
 */
-export function EmployeeList() {
+interface EmployeeListProps {
+    refreshTrigger?: number;
+}
+
+export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     const [employees, setEmployees] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
@@ -39,7 +45,7 @@ export function EmployeeList() {
     // Filters
     const [filterStore, setFilterStore] = useState('');
     const [filterCompany, setFilterCompany] = useState('');
-    const [filterDept, setFilterDept] = useState('');
+    const [filterSector, setFilterSector] = useState('');
 
     const [error, setError] = useState<string | null>(null);
 
@@ -62,9 +68,32 @@ export function EmployeeList() {
         setLoading(false);
     };
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
         loadEmployees();
-    }, []);
+    }, [refreshTrigger]);
+
+    // Handle initial navigation from Dashboard
+    useEffect(() => {
+        if (!loading && employees.length > 0) {
+            const empId = searchParams.get('id');
+            const tabParam = searchParams.get('tab');
+            const modeParam = searchParams.get('mode');
+
+            if (empId) {
+                const targetEmp = employees.find(e => e.id === empId);
+                if (targetEmp) {
+                    if (modeParam === 'edit') {
+                        setEditingEmployee(targetEmp);
+                    } else {
+                        setSelectedEmployee(targetEmp);
+                    }
+                    // The tab handling will be done via props passed to the modals
+                }
+            }
+        }
+    }, [loading, employees, searchParams]);
 
     const translateStatus = (status: string) => {
         const map: Record<string, string> = {
@@ -81,7 +110,7 @@ export function EmployeeList() {
         const matchesSearch = (
             emp.name.toLowerCase().includes(searchLower) ||
             emp.cpf.includes(searchTerm) ||
-            emp.department?.toLowerCase().includes(searchLower) ||
+            (emp.contract?.sectorDef?.name || emp.department || "").toLowerCase().includes(searchLower) ||
             emp.jobTitle?.toLowerCase().includes(searchLower)
         );
 
@@ -93,24 +122,24 @@ export function EmployeeList() {
 
         const matchesStore = !filterStore || emp.contract?.store?.name === filterStore;
         const matchesCompany = !filterCompany || emp.contract?.company?.name === filterCompany;
-        const matchesDept = !filterDept || emp.department === filterDept;
+        const matchesSector = !filterSector || (emp.contract?.sectorDef?.name || emp.department) === filterSector;
 
         const matchesStatus = activeTab === 'active' ? emp.status === 'ACTIVE' : emp.status !== 'ACTIVE';
 
-        return matchesSearch && matchesStatus && matchesStore && matchesCompany && matchesDept;
+        return matchesSearch && matchesStatus && matchesStore && matchesCompany && matchesSector;
     });
 
     // Extract Unique Options for Dropdowns
     const uniqueStores = Array.from(new Set(employees.map(e => e.contract?.store?.name).filter(Boolean)));
     const uniqueCompanies = Array.from(new Set(employees.map(e => e.contract?.company?.name).filter(Boolean)));
-    const uniqueDepts = Array.from(new Set(employees.map(e => e.department).filter(Boolean)));
+    const uniqueSectors = Array.from(new Set(employees.map(e => e.contract?.sectorDef?.name || e.department).filter(Boolean)));
 
     const handleExportExcel = () => {
         const exportData = filteredEmployees.map(emp => ({
             'Nome': emp.name,
             'CPF': emp.cpf || '-',
             'Cargo': emp.jobTitle || '-',
-            'Departamento': emp.department || '-',
+            'Setor': emp.contract?.sectorDef?.name || emp.department || '-',
             'Loja': emp.contract?.store?.name || emp.contract?.store || '-',
             'Status': translateStatus(emp.status),
             'Admissão': emp.contract?.admissionDate ? formatDateForExport(emp.contract.admissionDate) : '-'
@@ -123,7 +152,7 @@ export function EmployeeList() {
             nome: emp.name,
             cpf: emp.cpf || '-',
             cargo: emp.jobTitle || '-',
-            departamento: emp.department || '-',
+            setor: emp.contract?.sectorDef?.name || emp.department || '-',
             loja: emp.contract?.store?.name || emp.contract?.store || '-',
             status: translateStatus(emp.status)
         }));
@@ -132,7 +161,7 @@ export function EmployeeList() {
             { header: 'Nome', dataKey: 'nome' as const },
             { header: 'CPF', dataKey: 'cpf' as const },
             { header: 'Cargo', dataKey: 'cargo' as const },
-            { header: 'Departamento', dataKey: 'departamento' as const },
+            { header: 'Setor', dataKey: 'setor' as const },
             { header: 'Loja', dataKey: 'loja' as const },
             { header: 'Status', dataKey: 'status' as const }
         ];
@@ -221,16 +250,16 @@ export function EmployeeList() {
 
                         <select
                             className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-md px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 w-full"
-                            value={filterDept}
-                            onChange={e => setFilterDept(e.target.value)}
+                            value={filterSector}
+                            onChange={e => setFilterSector(e.target.value)}
                         >
-                            <option value="">Dept: Todos</option>
-                            {uniqueDepts.map((d: any) => <option key={d} value={d}>{d}</option>)}
+                            <option value="">Setores: Todos</option>
+                            {uniqueSectors.map((s: any) => <option key={s} value={s}>{s}</option>)}
                         </select>
 
-                        {(filterStore || filterCompany || filterDept || searchTerm) && (
+                        {(filterStore || filterCompany || filterSector || searchTerm) && (
                             <button
-                                onClick={() => { setFilterStore(''); setFilterCompany(''); setFilterDept(''); setSearchTerm(''); }}
+                                onClick={() => { setFilterStore(''); setFilterCompany(''); setFilterSector(''); setSearchTerm(''); }}
                                 className="text-xs text-red-500 hover:text-red-700 font-medium text-center sm:text-left flex items-center justify-center sm:justify-start"
                             >
                                 🗑️ Limpar
@@ -271,11 +300,13 @@ export function EmployeeList() {
                         <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
                             <thead className="bg-slate-50 dark:bg-slate-800">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[35%]">Nome</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[20%]">Depto</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[20%]">Cargo</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[25%]">Nome</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Loja</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Setor</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Cargo</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Admissão</th>
                                     <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Status</th>
-                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Ações</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
@@ -296,8 +327,12 @@ export function EmployeeList() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.department}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.jobTitle}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.contract?.store?.name || '-'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.contract?.sectorDef?.name || emp.department}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.jobTitle || emp.jobRole?.name || '-'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap text-center text-xs text-slate-600 dark:text-slate-400">
+                                            {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '-'}
+                                        </td>
                                         <td className="px-4 py-2 whitespace-nowrap text-center">
                                             <span className={`px-2 py-0.5 inline-flex text-[10px] font-bold uppercase rounded-full 
                           ${emp.status === 'ACTIVE' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-600'}`}>
@@ -316,7 +351,7 @@ export function EmployeeList() {
                                 ))}
                                 {filteredEmployees.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500 flex flex-col items-center justify-center">
+                                        <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500 flex flex-col items-center justify-center">
                                             <span className="text-4xl mb-2">🔍</span>
                                             {searchTerm ? 'Nenhum funcionário encontrado para sua busca.' : 'Nenhum funcionário cadastrado.'}
                                         </td>
@@ -331,41 +366,50 @@ export function EmployeeList() {
             <EmployeeDetailsModal
                 isOpen={!!selectedEmployee}
                 onClose={() => setSelectedEmployee(null)}
+                onSuccess={loadEmployees}
                 employee={selectedEmployee}
+                defaultTab={searchParams.get('tab') || undefined}
             />
 
             <EmployeeEditModal
                 isOpen={!!editingEmployee}
                 onClose={() => setEditingEmployee(null)}
                 employee={editingEmployee}
+                defaultTab={searchParams.get('tab') || undefined}
                 onSuccess={() => {
                     setEditingEmployee(null);
-                    window.location.reload();
+                    loadEmployees();
                 }}
             />
 
-            <EmployeeTransferModal
-                isOpen={!!transferringEmployee}
-                onClose={() => setTransferringEmployee(null)}
-                employee={transferringEmployee}
-                onSuccess={() => {
-                    setTransferringEmployee(null);
-                    window.location.reload();
-                }}
-            />
+            {transferringEmployee && (
+                <EmployeeTransferModal
+                    isOpen={!!transferringEmployee}
+                    onClose={() => setTransferringEmployee(null)}
+                    employee={transferringEmployee}
+                    onSuccess={() => {
+                        setTransferringEmployee(null);
+                        loadEmployees();
+                    }}
+                />
+            )}
 
-            <EmployeeTimeTrackingModal
-                isOpen={!!timeTrackingEmployee}
-                onClose={() => setTimeTrackingEmployee(null)}
-                employee={timeTrackingEmployee}
-            />
+            {timeTrackingEmployee && (
+                <EmployeeTimeTrackingModal
+                    isOpen={!!timeTrackingEmployee}
+                    onClose={() => setTimeTrackingEmployee(null)}
+                    employee={timeTrackingEmployee}
+                />
+            )}
 
-            <VacationModal
-                isOpen={!!vacationEmployee}
-                onClose={() => setVacationEmployee(null)}
-                employeeId={vacationEmployee?.id}
-                employeeName={vacationEmployee?.name}
-            />
+            {vacationEmployee && (
+                <VacationModal
+                    isOpen={!!vacationEmployee}
+                    onClose={() => setVacationEmployee(null)}
+                    employeeId={vacationEmployee?.id}
+                    employeeName={vacationEmployee?.name}
+                />
+            )}
         </>
     );
 }

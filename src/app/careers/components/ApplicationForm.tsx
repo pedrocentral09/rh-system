@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,23 +6,34 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { submitApplication } from '../actions';
 import { toast } from 'sonner';
+import { FileUpload } from '@/shared/components/FileUpload';
 
-export function ApplicationForm({ job }: { job: any }) {
+export function ApplicationForm({ job, onSuccess }: { job: any, onSuccess?: () => void }) {
     const [isLoading, setIsLoading] = useState(false);
-    const [fileName, setFileName] = useState<string | null>(null);
+    const [resumeUrl, setResumeUrl] = useState('');
+    const [name, setName] = useState('');
 
     async function handleSubmit(formData: FormData) {
+        if (!resumeUrl) {
+            toast.error('Por favor, faça o upload do seu currículo em formato PDF/DOC');
+            return;
+        }
+
         setIsLoading(true);
 
-        // Append Job ID
+        // Append Job ID and Resume URL
         formData.append('jobId', job.id);
+        formData.append('resumeUrl', resumeUrl);
 
         const result = await submitApplication(formData);
 
         if (result.success) {
             toast.success('Candidatura enviada com sucesso! Boa sorte.');
-            // Reset form or redirect
-            window.location.href = '/careers?success=true';
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                window.location.href = '/careers?success=true';
+            }
         } else {
             toast.error(result.error || 'Erro ao enviar candidatura.');
         }
@@ -36,7 +46,14 @@ export function ApplicationForm({ job }: { job: any }) {
 
             <div className="space-y-2">
                 <Label htmlFor="name">Nome Completo</Label>
-                <Input id="name" name="name" required placeholder="Seu nome" />
+                <Input
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
             </div>
 
             <div className="space-y-2">
@@ -55,26 +72,14 @@ export function ApplicationForm({ job }: { job: any }) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="resume">Currículo (PDF)</Label>
-                <div className="flex items-center gap-2">
-                    <label className="flex-1 cursor-pointer">
-                        <div className="flex w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 hover:bg-slate-50">
-                            {fileName || "Clique para anexar arquivo..."}
-                        </div>
-                        <input
-                            type="file"
-                            id="resume"
-                            name="resume"
-                            accept=".pdf,.doc,.docx"
-                            className="hidden"
-                            onChange={(e) => setFileName(e.target.files?.[0]?.name || null)}
-                        />
-                    </label>
-                </div>
-                <p className="text-xs text-slate-400">* Apenas simulação de upload por enquanto.</p>
+                <FileUpload
+                    label="Currículo (PDF)"
+                    candidateName={name}
+                    onUploadComplete={setResumeUrl}
+                />
             </div>
 
-            <Button type="submit" className="w-full bg-[#FF7800] hover:bg-orange-600 text-white mt-4" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-[#FF7800] hover:bg-orange-600 text-white mt-4" disabled={isLoading || !resumeUrl}>
                 {isLoading ? 'Enviando...' : 'Enviar Candidatura'}
             </Button>
         </form>

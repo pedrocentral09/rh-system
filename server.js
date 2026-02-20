@@ -7,7 +7,7 @@ const { Client } = require('pg');
 const open = require('open');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3001;
 const CONFIG_FILE = 'config.json';
 const LOCAL_SAVE_PATH = './afds';
 

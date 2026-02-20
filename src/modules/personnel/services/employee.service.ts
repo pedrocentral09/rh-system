@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { BaseService, ServiceResult } from '@/lib/BaseService';
 import { AuditService } from '../../core/services/audit.service';
 import { parseCurrency, parseDate } from '@/shared/utils/parsing-utils';
+import { adminAuth } from '@/lib/firebase/admin';
+import { sendMail } from '@/lib/mail';
 
 export class EmployeeService extends BaseService {
 
@@ -34,7 +36,8 @@ export class EmployeeService extends BaseService {
                             sector: true,
                             sectorId: true,
                             sectorDef: { select: { name: true } },
-                            baseSalary: true
+                            baseSalary: true,
+                            admissionDate: true
                         }
                     }
                 }
@@ -42,8 +45,9 @@ export class EmployeeService extends BaseService {
 
             const serialized = JSON.parse(JSON.stringify(employees));
             return this.success(serialized);
-        } catch (error) {
-            return this.error(error, 'Falha ao buscar lista de colaboradores');
+        } catch (error: any) {
+            console.error('EmployeeService.getAll error:', error);
+            return this.error(error, `Falha ao buscar lista de colaboradores: ${error.message || 'Erro desconhecido'}`);
         }
     }
 
@@ -180,17 +184,26 @@ export class EmployeeService extends BaseService {
 
             // Map Root Fields
             if (rawData.name !== undefined) data.name = rawData.name;
-            if (rawData.email !== undefined) data.email = rawData.email;
+            if (rawData.email !== undefined) data.email = rawData.email?.trim() || null;
             if (rawData.cpf !== undefined) data.cpf = rawData.cpf;
             if (rawData.rg !== undefined) data.rg = rawData.rg;
             if (rawData.dateOfBirth !== undefined) data.dateOfBirth = new Date(rawData.dateOfBirth);
             if (rawData.gender !== undefined) data.gender = rawData.gender;
             if (rawData.maritalStatus !== undefined) data.maritalStatus = rawData.maritalStatus;
+            if (rawData.photoUrl !== undefined) data.photoUrl = rawData.photoUrl;
+            if (rawData.photo !== undefined) data.photoUrl = rawData.photo; // Alias
+
+            // Check for Access Creation
+            if (rawData.accessEmail && rawData.accessPassword) {
+                // This will be handled after the employee is updated to ensure we have an ID
+                // or we can prepare the user creation data here if it's a new employee.
+                // For now, let's keep it in the update/create flow.
+            }
+
             if (rawData.jobTitle !== undefined) data.jobTitle = rawData.jobTitle;
             if (rawData.jobRoleId !== undefined) data.jobRoleId = rawData.jobRoleId;
             if (rawData.department !== undefined) data.department = rawData.department;
             if (rawData.hireDate !== undefined) data.hireDate = parseDate(rawData.hireDate);
-            if (rawData.photoUrl !== undefined) data.photoUrl = rawData.photoUrl;
             if (rawData.landline !== undefined) data.landline = rawData.landline;
             if (rawData.phone !== undefined) data.phone = rawData.phone;
             if (rawData.emergencyContactName !== undefined) data.emergencyContactName = rawData.emergencyContactName;
@@ -226,7 +239,14 @@ export class EmployeeService extends BaseService {
             }
 
             // Handle Contract
-            if (rawData.companyId || rawData.baseSalary || rawData.hireDate || rawData.workShiftId) {
+            if (
+                rawData.companyId || rawData.storeId || rawData.jobRoleId || rawData.sectorId ||
+                rawData.baseSalary || rawData.hireDate || rawData.workShiftId ||
+                rawData.hasTransportVoucher !== undefined || rawData.mealVoucherValue !== undefined || rawData.foodVoucherValue !== undefined ||
+                rawData.hasFamilySalary !== undefined || rawData.hasInsalubrity !== undefined ||
+                rawData.hasDangerousness !== undefined || rawData.hasTrustPosition !== undefined ||
+                rawData.hasCashHandling !== undefined || rawData.monthlyBonus !== undefined
+            ) {
                 const contractData: any = {};
                 if (rawData.companyId) contractData.companyId = rawData.companyId;
                 if (rawData.storeId) contractData.storeId = rawData.storeId;
@@ -368,11 +388,51 @@ export class EmployeeService extends BaseService {
                 };
             }
 
+            // Handle Documents
+            if (rawData.documents) {
+                try {
+                    const docs = typeof rawData.documents === 'string' ? JSON.parse(rawData.documents) : rawData.documents;
+                    if (Array.isArray(docs)) {
+                        // Delete existing to replace (fully sync)
+                        await prisma.document.deleteMany({ where: { employeeId: id } });
+
+                        // Use a separate createMany or similar if nested create is problematic with deleteMany in same update?
+                        // Prisma allows nested create, but deleteMany must be done before.
+                        // Since we are in an update, we can't deleteMany inside the 'data' object.
+                        // We already did deleteMany above.
+                        data.documents = {
+                            create: docs.map((d: any) => ({
+                                type: d.type || 'Geral',
+                                fileName: d.fileName || 'document.pdf',
+                                fileUrl: d.fileUrl || '',
+                                uploadedAt: d.uploadedAt ? new Date(d.uploadedAt) : new Date()
+                            }))
+                        };
+                    }
+                } catch (e) {
+                    console.error("Error parsing documents JSON:", e);
+                }
+            }
+
             const employee = await prisma.employee.update({
                 where: { id },
                 data,
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true }
+                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, user: true }
             });
+
+            // ... (Handle Access/User Creation logic)
+            if (rawData.accessEmail && rawData.accessPassword) {
+                try {
+                    console.log('EmployeeService.update - Attempting to upsert user for email:', rawData.accessEmail);
+                    await this.upsertEmployeeUser(employee.id, {
+                        email: rawData.accessEmail,
+                        password: rawData.accessPassword,
+                        role: rawData.accessRole || 'EMPLOYEE'
+                    });
+                } catch (userErr) {
+                    console.error("Failed to create/link user:", userErr);
+                }
+            }
 
             // Audit Log
             await AuditService.log({
@@ -386,7 +446,11 @@ export class EmployeeService extends BaseService {
 
             const serialized = JSON.parse(JSON.stringify(employee));
             return this.success(serialized);
-        } catch (error) {
+        } catch (error: any) {
+            console.error('EmployeeService.update - COMPLETE ERROR OBJECT:', error);
+            if (error.code === 'P2002') {
+                console.error('Unique constraint failed on fields:', error.meta?.target);
+            }
             return this.error(error, 'Erro ao atualizar registro do colaborador');
         }
     }
@@ -491,4 +555,92 @@ export class EmployeeService extends BaseService {
             return this.error(error, 'Erro ao recontratar colaborador');
         }
     }
+
+    private static async upsertEmployeeUser(employeeId: string, userData: any) {
+        try {
+            console.log(`[ACCESS] Processing user for ${employeeId} with email ${userData.email}`);
+
+            let firebaseUid: string;
+
+            try {
+                // 1. Check if user already exists in Firebase
+                const userRecord = await adminAuth.getUserByEmail(userData.email);
+                firebaseUid = userRecord.uid;
+                console.log(`[ACCESS] User found in Firebase: ${firebaseUid}`);
+
+                // Optionally update password if provided
+                if (userData.password) {
+                    await adminAuth.updateUser(firebaseUid, {
+                        password: userData.password
+                    });
+                }
+            } catch (error: any) {
+                if (error.code === 'auth/user-not-found') {
+                    // 2. Create new user in Firebase Auth
+                    const newUser = await adminAuth.createUser({
+                        email: userData.email,
+                        password: userData.password,
+                        displayName: userData.name || userData.email.split('@')[0],
+                    });
+                    firebaseUid = newUser.uid;
+                    console.log(`[ACCESS] New Firebase user created: ${firebaseUid}`);
+                } else {
+                    throw error;
+                }
+            }
+
+            // 3. Link/Upsert in Prisma User table
+            await prisma.user.upsert({
+                where: { email: userData.email },
+                create: {
+                    email: userData.email,
+                    firebaseUid: firebaseUid,
+                    role: userData.role,
+                    employee: { connect: { id: employeeId } }
+                },
+                update: {
+                    role: userData.role,
+                    firebaseUid: firebaseUid, // Ensure UID matches
+                    employee: { connect: { id: employeeId } }
+                }
+            });
+
+            // 4. Send Welcome Email if password was provided (new or updated)
+            if (userData.password) {
+                const html = `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">Bem-vindo ao Sistema RH</h1>
+                        </div>
+                        <div style="padding: 24px; color: #1e293b; line-height: 1.6;">
+                            <p>Olá,</p>
+                            <p>Suas credenciais de acesso ao Portal do Colaborador foram geradas com sucesso.</p>
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 6px; margin: 24px 0;">
+                                <p style="margin: 0 0 8px 0;"><strong>E-mail:</strong> ${userData.email}</p>
+                                <p style="margin: 0;"><strong>Senha Inicial:</strong> <span style="font-family: monospace; background: #eee; padding: 2px 4px;">${userData.password}</span></p>
+                            </div>
+                            <p>Recomendamos que você altere sua senha no primeiro acesso para sua segurança.</p>
+                            <div style="text-align: center; margin-top: 32px;">
+                                <a href="${process.env.NEXTAUTH_URL || 'https://sistema.rh.com.br'}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Acessar o Portal</a>
+                            </div>
+                        </div>
+                        <div style="background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b;">
+                            Este é um e-mail automático do Sistema de Gestão de RH. Por favor, não responda.
+                        </div>
+                    </div>
+                `;
+
+                await sendMail({
+                    to: userData.email,
+                    subject: '🎫 Suas credenciais de acesso - Sistema RH',
+                    html
+                });
+                console.log(`[EMAIL] Welcome email sent to: ${userData.email}`);
+            }
+        } catch (error) {
+            console.error("Critical failure in upsertEmployeeUser:", error);
+            throw error; // Re-throw to be handled by the service caller
+        }
+    }
+
 }

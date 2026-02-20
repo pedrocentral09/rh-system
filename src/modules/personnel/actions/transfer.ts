@@ -6,22 +6,20 @@ import { revalidatePath } from 'next/cache';
 interface TransferData {
     employeeId: string;
     date: Date;
-    newStore: string;
+    newStoreId: string;
     reason: string;
     notes?: string;
 }
 
 export async function registerTransfer(data: TransferData) {
     try {
-        const { employeeId, date, newStore, reason, notes } = data;
+        const { employeeId, date, newStoreId, reason, notes } = data;
 
-        // 1. Get current contract to find previous store
+        // 1. Get current contract to find previous store name and current store ID
         const contract = await prisma.contract.findUnique({
             where: { employeeId },
-            select: {
-                store: {
-                    select: { name: true }
-                }
+            include: {
+                store: true
             }
         });
 
@@ -29,28 +27,28 @@ export async function registerTransfer(data: TransferData) {
             return { success: false, error: 'Funcionário sem contrato ativo.' };
         }
 
-        const previousStore = (contract.store && contract.store.name) ? contract.store.name : 'Não Informado';
+        const previousStore = contract.store?.name || 'Não Informado';
 
-        if (previousStore === newStore) {
-            return { success: false, error: 'A nova loja deve ser diferente da atual.' };
-        }
-
-        // Find new store ID
-        const targetStore = await prisma.store.findFirst({
-            where: { name: newStore }
+        // Find new store to get its name for history
+        const targetStore = await prisma.store.findUnique({
+            where: { id: newStoreId }
         });
 
         if (!targetStore) {
             return { success: false, error: 'Loja de destino não encontrada.' };
         }
 
-        // 2. Transaction: Update Store + Create History
+        if (contract.storeId === newStoreId) {
+            return { success: false, error: 'A nova loja deve ser diferente da atual.' };
+        }
+
+        // 2. Transaction: Update Store ID in Contract + Create Transfer History
         await prisma.$transaction([
             // Update Contract
             prisma.contract.update({
                 where: { employeeId },
                 data: {
-                    storeId: targetStore.id
+                    storeId: newStoreId
                 }
             }),
             // Create History
@@ -59,7 +57,7 @@ export async function registerTransfer(data: TransferData) {
                     employeeId,
                     date,
                     previousStore,
-                    newStore,
+                    newStore: targetStore.name,
                     reason,
                     notes
                 }

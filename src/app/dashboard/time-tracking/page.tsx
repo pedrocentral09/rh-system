@@ -11,12 +11,13 @@ import { Button } from '@/shared/components/ui/button';
 import { TimeTrackingSyncButton } from '@/modules/time-tracking/components/TimeTrackingSyncButton';
 import { TimeTrackingReportsTab } from '@/modules/time-tracking/components/TimeTrackingReportsTab';
 import { TimeTrackingClosingTab } from '@/modules/time-tracking/components/TimeTrackingClosingTab';
+import { OrphanPunchesTab } from '@/modules/time-tracking/components/OrphanPunchesTab';
 
 export default function TimeTrackingPage() {
-    const [activeTab, setActiveTab] = useState<'daily' | 'bank' | 'import' | 'reports' | 'closing'>('daily');
+    const [activeTab, setActiveTab] = useState<'daily' | 'bank' | 'import' | 'reports' | 'closing' | 'orphans'>('daily');
 
     return (
-        <div className="p-8 space-y-8">
+        <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Controle de Ponto</h1>
@@ -26,38 +27,48 @@ export default function TimeTrackingPage() {
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit">
+            <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('daily')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'daily' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'daily' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
                     Visão Diária
                 </button>
                 <button
                     onClick={() => setActiveTab('bank')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'bank' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'bank' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
                     Banco de Horas
                 </button>
                 <button
                     onClick={() => setActiveTab('import')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'import' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'import' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
                     Importar Arquivo
                 </button>
                 <button
+                    onClick={() => setActiveTab('orphans')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'orphans' ? 'bg-white text-orange-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                >
+                    <div className="flex items-center">
+                        Sem Vínculo
+                        <span className="ml-2 w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                    </div>
+                </button>
+                <button
                     onClick={() => setActiveTab('reports')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'reports' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'reports' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
                     Relatórios
                 </button>
                 <button
                     onClick={() => setActiveTab('closing')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'closing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'closing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
                     Fechamento
@@ -99,6 +110,10 @@ export default function TimeTrackingPage() {
                             </Card>
                         </div>
                     </div>
+                )}
+
+                {activeTab === 'orphans' && (
+                    <OrphanPunchesTab />
                 )}
 
                 {activeTab === 'reports' && (

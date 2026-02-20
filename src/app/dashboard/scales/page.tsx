@@ -19,6 +19,7 @@ export default async function ScalesPage() {
 
             <Tabs
                 defaultValue="builder"
+                fullContent={true}
                 tabs={[
                     {
                         id: 'builder',

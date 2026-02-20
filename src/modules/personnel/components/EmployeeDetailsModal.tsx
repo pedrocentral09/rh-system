@@ -4,21 +4,24 @@ import { Modal } from '@/shared/components/ui/modal';
 import { Button } from '@/shared/components/ui/button';
 import { Tabs } from '@/shared/components/ui/tabs';
 import { useState, useEffect } from 'react';
-import { EmployeeTransferModal } from './EmployeeTransferModal';
+import EmployeeTransferModal from './EmployeeTransferModal';
 import { EmployeeEditModal } from './EmployeeEditModal';
 import { getTransferHistory, getEmployee } from '../actions';
 import { Loader2 } from 'lucide-react';
 import { EmployeeTerminationModal } from './EmployeeTerminationModal';
 import { EmployeeRehireModal } from './EmployeeRehireModal';
 import { EmployeeTimeSheetTab } from '@/modules/time-tracking/components/EmployeeTimeSheetTab';
+import { MedicalLeaveTab } from './MedicalLeaveTab';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
     employee: any;
+    defaultTab?: string;
 }
 
-export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDetailsModalProps) {
+export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, defaultTab }: EmployeeDetailsModalProps) {
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isTerminationModalOpen, setIsTerminationModalOpen] = useState(false);
@@ -48,7 +51,8 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
 
     const formatDate = (date: string | Date) => {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('pt-BR');
+        const d = new Date(date);
+        return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
     };
 
     const translateGender = (gender: string) => {
@@ -62,7 +66,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             label: '👤 Pessoal',
             content: (
                 <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Dados Pessoais & Contato</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Dados Pessoais & Contato</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
                         <div>
                             <p className="text-xs text-slate-500 dark:text-slate-400">CPF</p>
@@ -105,7 +109,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             label: '🚑 Emergência',
             content: (
                 <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Contato de Emergência</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Contato de Emergência</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
                         <div>
                             <p className="text-xs text-slate-500">Nome</p>
@@ -130,7 +134,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 <div className="space-y-4">
                     {displayEmployee.address ? (
                         <>
-                            <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Endereço Residencial</h4>
+                            <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Endereço Residencial</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
                                 <div className="col-span-2">
                                     <p className="text-xs text-slate-500">Logradouro</p>
@@ -161,7 +165,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 <div className="space-y-4">
                     {displayEmployee.bankData ? (
                         <>
-                            <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Dados Bancários</h4>
+                            <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Dados Bancários</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
                                 <div>
                                     <p className="text-xs text-slate-500">Banco</p>
@@ -194,15 +198,15 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             label: '💼 Contratual',
             content: (
                 <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Informações do Contrato</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Informações do Contrato</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
                         <div>
                             <p className="text-xs text-slate-500">Cargo</p>
-                            <p className="text-sm font-medium">{displayEmployee.jobTitle}</p>
+                            <p className="text-sm font-medium">{displayEmployee.jobRole?.name || displayEmployee.jobTitle || '-'}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-slate-500">Departamento</p>
-                            <p className="text-sm font-medium">{displayEmployee.department}</p>
+                            <p className="text-xs text-slate-500">Setor</p>
+                            <p className="text-sm font-medium">{displayEmployee.contract?.sectorDef?.name || displayEmployee.department}</p>
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Admissão</p>
@@ -224,7 +228,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             label: '🕒 Histórico',
             content: (
                 <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Histórico de Transferências</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Histórico de Transferências</h4>
                     {history.length > 0 ? (
                         <div className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-3 space-y-6 pb-2">
                             {history.map((item, index) => (
@@ -260,7 +264,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             label: '📁 Documentos',
             content: (
                 <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">Documentos Digitalizados</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Documentos Digitalizados</h4>
                     {displayEmployee.documents && displayEmployee.documents.length > 0 ? (
                         <ul className="divide-y divide-slate-100 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
                             {displayEmployee.documents.map((doc: any) => (
@@ -292,11 +296,16 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
             id: 'details_timesheet',
             label: '⏰ Ponto',
             content: <EmployeeTimeSheetTab employeeId={displayEmployee.id} />
+        },
+        {
+            id: 'details_medical',
+            label: '🩺 Atestados',
+            content: <MedicalLeaveTab employeeId={displayEmployee.id} />
         }
     ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Detalhes do Funcionário" width="2xl">
+        <Modal isOpen={isOpen} onClose={onClose} title="Detalhes do Funcionário" width="5xl">
             <div className="space-y-6">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
@@ -305,8 +314,8 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 ) : (
                     <>
                         {/* Header Profile - Compact */}
-                        <div className="flex items-center space-x-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-                            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-lg font-bold border border-indigo-200 dark:border-indigo-700 overflow-hidden">
+                        <div className="flex flex-col items-center justify-center space-y-3 pb-8 border-b border-slate-200 dark:border-slate-700 text-center">
+                            <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-3xl font-bold border-2 border-indigo-200 dark:border-indigo-700 shadow-sm overflow-hidden">
                                 {displayEmployee.photoUrl ? (
                                     <img src={displayEmployee.photoUrl} alt={displayEmployee.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -314,53 +323,53 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                                 )}
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-800 dark:text-white">{displayEmployee.name}</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{displayEmployee.jobTitle}</p>
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white uppercase tracking-tight">{displayEmployee.name}</h3>
+                                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                                    {displayEmployee.jobRole?.name || displayEmployee.jobTitle || 'Sem cargo'}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{displayEmployee.contract?.store?.name || '-'}</p>
                             </div>
                         </div>
 
                         <div className="min-h-[300px]">
-                            <Tabs tabs={tabs} />
+                            <Tabs tabs={tabs} defaultValue={defaultTab} />
                         </div>
                     </>
                 )}
 
-                <div className="pt-4 flex justify-between border-t border-slate-200">
+                <div className="pt-6 flex justify-center space-x-3 border-t border-slate-200 dark:border-slate-800">
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsTransferModalOpen(true)}
+                        className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                    >
+                        🚚 Transferir
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                        ✏️ Editar
+                    </Button>
 
-                    <div className="flex space-x-2">
+                    {employee.status === 'ACTIVE' ? (
                         <Button
                             variant="outline"
-                            onClick={() => setIsTransferModalOpen(true)}
-                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                            onClick={() => setIsTerminationModalOpen(true)}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
                         >
-                            🚚 Transferir
+                            🚫 Desligar
                         </Button>
+                    ) : (
                         <Button
                             variant="outline"
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                            onClick={() => setIsRehireModalOpen(true)}
+                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                         >
-                            ✏️ Editar
+                            ♻️ Recontratar
                         </Button>
-
-                        {employee.status === 'ACTIVE' ? (
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsTerminationModalOpen(true)}
-                                className="text-red-600 border-red-200 hover:bg-red-50"
-                            >
-                                🚫 Desligar
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsRehireModalOpen(true)}
-                                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                            >
-                                ♻️ Recontratar
-                            </Button>
-                        )}
-                    </div>
+                    )}
                     <Button variant="outline" onClick={onClose} className="text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800">Fechar</Button>
                 </div>
             </div>
@@ -372,7 +381,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 onSuccess={() => {
                     setIsTransferModalOpen(false);
                     onClose();
-                    window.location.reload();
+                    if (onSuccess) onSuccess();
                 }}
             />
 
@@ -383,7 +392,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 onSuccess={() => {
                     setIsEditModalOpen(false);
                     onClose();
-                    window.location.reload();
+                    if (onSuccess) onSuccess();
                 }}
             />
 
@@ -394,7 +403,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 onSuccess={() => {
                     setIsTerminationModalOpen(false);
                     onClose();
-                    window.location.reload();
+                    if (onSuccess) onSuccess();
                 }}
             />
 
@@ -405,7 +414,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, employee }: EmployeeDeta
                 onSuccess={() => {
                     setIsRehireModalOpen(false);
                     onClose();
-                    window.location.reload();
+                    if (onSuccess) onSuccess();
                 }}
             />
         </Modal >

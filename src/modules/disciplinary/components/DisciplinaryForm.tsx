@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
-import { createDisciplinaryRecord } from '../actions/records';
+import { createDisciplinaryRecord, updateDisciplinaryRecord } from '../actions/records';
 import { toast } from 'sonner';
 import { storage } from '@/lib/firebase/client';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -16,15 +17,50 @@ import { cn } from '@/lib/utils';
 
 interface DisciplinaryFormProps {
     employees: any[];
+    initialData?: any;
+    isOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    onSuccess?: () => void;
 }
 
-export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
-    const [open, setOpen] = useState(false);
+export function DisciplinaryForm({ employees, initialData, isOpen: controlledOpen, onOpenChange: setControlledOpen, onSuccess }: DisciplinaryFormProps) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const [internalOpen, setInternalOpen] = useState(false);
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+    const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
+
+    const isEditing = !!initialData;
     const [openCombobox, setOpenCombobox] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [type, setType] = useState('VERBAL_WARNING');
+    const [type, setType] = useState(initialData?.type || 'VERBAL_WARNING');
     const [file, setFile] = useState<File | null>(null);
-    const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(initialData?.employeeId || '');
+
+    // State for pre-filled data from URL
+    const [prefilledReason, setPrefilledReason] = useState(initialData?.reason || '');
+    const [prefilledDesc, setPrefilledDesc] = useState(initialData?.description || '');
+    const [prefilledDate, setPrefilledDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+
+    useEffect(() => {
+        const action = searchParams.get('action');
+        if (action === 'create' && !isEditing) {
+            const empId = searchParams.get('empId');
+            const date = searchParams.get('date');
+            const reason = searchParams.get('reason');
+            const desc = searchParams.get('desc');
+
+            if (empId) setSelectedEmployeeId(empId);
+            if (date) setPrefilledDate(date);
+            if (reason) setPrefilledReason(reason);
+            if (desc) setPrefilledDesc(desc);
+
+            setOpen(true);
+
+            // Clean URL after capturing params to avoid re-opening on manual refresh if not intended
+            // router.replace('/dashboard/disciplinary'); 
+        }
+    }, [searchParams, isEditing]);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -60,19 +96,26 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
                 reason: formData.get('reason') as string,
                 description: formData.get('description') as string,
                 daysSuspended: formData.get('daysSuspended') ? parseInt(formData.get('daysSuspended') as string) : 0,
-                documents: documentsJson
+                documents: documentsJson !== '[]' ? documentsJson : (isEditing ? initialData.documents : '[]')
             };
 
-            const res = await createDisciplinaryRecord(data);
+            const res = isEditing
+                ? await updateDisciplinaryRecord(initialData.id, data)
+                : await createDisciplinaryRecord(data);
 
             if (res.success) {
-                toast.success('Ocorrência registrada com sucesso.');
+                toast.success(isEditing ? 'Ocorrência atualizada com sucesso.' : 'Ocorrência registrada com sucesso.');
                 setOpen(false);
-                setFile(null);
-                setSelectedEmployeeId('');
-                setType('VERBAL_WARNING');
+                if (!isEditing) {
+                    setFile(null);
+                    setSelectedEmployeeId('');
+                    setType('VERBAL_WARNING');
+                    setPrefilledReason('');
+                    setPrefilledDesc('');
+                }
+                onSuccess?.();
             } else {
-                toast.error('Erro ao registrar ocorrência.');
+                toast.error(res.error || 'Erro ao processar solicitação.');
             }
         } catch (error) {
             console.error("Upload error:", error);
@@ -84,14 +127,16 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="bg-red-600 hover:bg-red-700 text-white shadow-md">
-                    + Nova Ocorrência
-                </Button>
-            </DialogTrigger>
+            {!isEditing && (
+                <DialogTrigger asChild>
+                    <Button className="bg-red-600 hover:bg-red-700 text-white shadow-md">
+                        + Nova Ocorrência
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Registrar Ocorrência Disciplinar</DialogTitle>
+                    <DialogTitle>{isEditing ? 'Editar Ocorrência Disciplinar' : 'Registrar Ocorrência Disciplinar'}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -146,7 +191,13 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="date">Data do Ocorrido</Label>
-                            <Input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
+                            <Input
+                                name="date"
+                                type="date"
+                                required
+                                value={prefilledDate}
+                                onChange={(e) => setPrefilledDate(e.target.value)}
+                            />
                         </div>
                     </div>
 
@@ -184,14 +235,20 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
                     {type === 'SUSPENSION' && (
                         <div className="bg-red-50 dark:bg-red-900/30 p-3 rounded-md border border-red-100 dark:border-red-900 space-y-2">
                             <Label htmlFor="daysSuspended" className="text-red-700 dark:text-red-400">Dias de Suspensão (Desconto em Folha)</Label>
-                            <Input name="daysSuspended" type="number" min="1" max="30" className="bg-white dark:bg-slate-900 border-red-200 dark:border-red-800 text-slate-900 dark:text-slate-100" required />
+                            <Input name="daysSuspended" type="number" min="1" max="30" className="bg-white dark:bg-slate-900 border-red-200 dark:border-red-800 text-slate-900 dark:text-slate-100" required defaultValue={initialData?.daysSuspended} />
                             <p className="text-xs text-red-500 dark:text-red-400">O colaborador ficará afastado e os dias serão descontados automaticamente.</p>
                         </div>
                     )}
 
                     <div className="space-y-2">
                         <Label htmlFor="reason">Motivo Resumido</Label>
-                        <Input name="reason" placeholder="Ex: Atraso recorrente, Insubordinação..." required />
+                        <Input
+                            name="reason"
+                            placeholder="Ex: Atraso recorrente, Insubordinação..."
+                            required
+                            value={prefilledReason}
+                            onChange={(e) => setPrefilledReason(e.target.value)}
+                        />
                     </div>
 
                     <div className="space-y-2">
@@ -201,6 +258,8 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
                             className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Descreva o que aconteceu, horário, local e testemunhas se houver."
                             required
+                            value={prefilledDesc}
+                            onChange={(e) => setPrefilledDesc(e.target.value)}
                         />
                     </div>
 
@@ -226,7 +285,7 @@ export function DisciplinaryForm({ employees }: DisciplinaryFormProps) {
                     <div className="flex justify-end space-x-2 pt-4">
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={loading} className={type === 'SUSPENSION' || type === 'WRITTEN_WARNING' ? 'bg-red-600 hover:bg-red-700' : ''}>
-                            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : 'Confirmar Ocorrência'}
+                            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : (isEditing ? 'Salvar Alterações' : 'Confirmar Ocorrência')}
                         </Button>
                     </div>
                 </form>

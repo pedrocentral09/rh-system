@@ -10,8 +10,9 @@ import { DashboardStatsGrid } from '@/modules/core/components/DashboardStatsGrid
 import { QuickAccessGrid } from '@/modules/core/components/QuickAccessGrid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import Link from 'next/link';
+import { EventMural } from '@/modules/core/components/EventMural';
 
-export default async function DashboardPage({ searchParams }: { searchParams: { companyId?: string, storeId?: string, sigStatus?: string } }) {
+export default async function DashboardPage({ searchParams }: { searchParams: { companyId?: string, storeId?: string } }) {
     const filters = await searchParams; // Next.js 15+ searchParams are async
 
     const { success: statsSuccess, data: statsData } = await getDashboardStats(filters);
@@ -24,7 +25,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     // Fetch Daily Overview for today
     // Format YYYY-MM-DD for local time
     const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-    const dailyResult = await getDailyOverview(todayStr);
+    const dailyResult = await getDailyOverview(todayStr, filters);
     const dailyOverview = (dailyResult.success && dailyResult.data) ? dailyResult.data : [];
 
     // Default values if fetch fails
@@ -33,15 +34,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
         activeEmployees: 0,
         terminatedEmployees: 0,
         storeCount: 0,
-        departmentCount: 0,
-        departmentStats: [],
+        sectorCount: 0,
+        sectorStats: [],
         upcomingBirthdays: [],
         birthdaysCount: 0,
-        probationAlerts: []
+        probationAlerts: [],
+        eventMural: []
     };
 
     return (
-        <div className="p-8 space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter uppercase">RH <span className="text-orange-500">EXCEPCIONAL</span></h1>
@@ -87,11 +89,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                 {/* Department Distribution */}
                 <Card className="border-slate-200">
                     <CardHeader>
-                        <CardTitle>Departamentos</CardTitle>
+                        <CardTitle>Setores</CardTitle>
                         <CardDescription>Distribuição da equipe.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {(stats.departmentStats || []).slice(0, 5).map((dept: any) => (
+                        {(stats.sectorStats || []).slice(0, 5).map((dept: any) => (
                             <div key={dept.name} className="space-y-1">
                                 <div className="flex justify-between text-sm">
                                     <span className="font-medium text-slate-700">{dept.name}</span>
@@ -120,20 +122,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                         {(stats.probationAlerts || []).length > 0 ? (
                             <div className="space-y-3">
                                 {stats.probationAlerts.map((emp: any) => (
-                                    <div key={emp.id} className="flex justify-between items-center bg-white p-2 rounded border border-amber-100 shadow-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs overflow-hidden">
-                                                {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
+                                    <Link key={emp.id} href={`/dashboard/personnel?id=${emp.id}&tab=contract&mode=edit`} className="block group">
+                                        <div className="flex justify-between items-center bg-white p-2 rounded border border-amber-100 shadow-sm group-hover:border-amber-400 group-hover:translate-x-1 transition-all">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs overflow-hidden">
+                                                    {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-800">{emp.name}</p>
+                                                    <p className="text-[10px] text-amber-600 uppercase font-semibold">{emp.period}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-slate-800">{emp.name}</p>
-                                                <p className="text-[10px] text-amber-600 uppercase font-semibold">{emp.period}</p>
+                                            <div className="text-right">
+                                                <span className="text-xs font-bold text-amber-700">{emp.days} dias</span>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-xs font-bold text-amber-700">{emp.days} dias</span>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (
@@ -143,9 +147,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                         )}
                     </CardContent>
                 </Card>
-
-                {/* Evolution Chart Placeholder */}
-                <div className="lg:col-span-1" />
+                {/* Event Mural */}
+                <div className="lg:col-span-1">
+                    <EventMural events={stats.eventMural || []} />
+                </div>
             </div>
 
             {/* New Section for Evolution Chart */}

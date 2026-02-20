@@ -5,8 +5,8 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Modal } from '@/shared/components/ui/modal';
 import { registerTransfer } from '../actions';
+import { getStores } from '../../configuration/actions/stores';
 import { toast } from 'sonner';
-// import { getCompanySettings } from '@/modules/configuration/actions/settings'; // Not exported yet, using mock for now
 
 interface EmployeeTransferModalProps {
     isOpen: boolean;
@@ -15,21 +15,23 @@ interface EmployeeTransferModalProps {
         id: string;
         name: string;
         contract?: {
-            store: string;
+            store?: {
+                name: string;
+            } | string;
         };
     };
     onSuccess: () => void;
 }
 
-export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: EmployeeTransferModalProps) {
+export default function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: EmployeeTransferModalProps) {
     if (!employee) return null;
 
     const [loading, setLoading] = useState(false);
-    const [stores, setStores] = useState<string[]>([]);
+    const [stores, setStores] = useState<any[]>([]);
 
     // Form State
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [newStore, setNewStore] = useState('');
+    const [newStoreId, setNewStoreId] = useState('');
     const [reason, setReason] = useState('Transferência');
     const [notes, setNotes] = useState('');
 
@@ -38,18 +40,21 @@ export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: 
             loadStores();
             // Reset form
             setDate(new Date().toISOString().split('T')[0]);
-            setNewStore('');
+            setNewStoreId('');
             setReason('Transferência');
             setNotes('');
         }
     }, [isOpen]);
 
     const loadStores = async () => {
-        // In a real app, we would fetch active stores from a Store module.
-        // For now, we can fetch from Company Settings or hardcoded list if not yet implemented.
-        // Let's assume we have a list of stores in settings or we mock it for now as per "Corporate Light" theme standard.
-        // TODO: Replace with real store fetch
-        setStores(['Matriz', 'Filial Centro', 'Filial Norte', 'Filial Sul', 'GAMELEIRA', 'CONTAGEM', 'BETIM']);
+        try {
+            const result = await getStores();
+            if (result.success) {
+                setStores(result.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to load stores:", error);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +64,7 @@ export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: 
         const result = await registerTransfer({
             employeeId: employee.id,
             date: new Date(date),
-            newStore,
+            newStoreId,
             reason,
             notes
         });
@@ -75,7 +80,7 @@ export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Transferência" width="md">
+        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Transferência" width="5xl">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="bg-slate-50 p-3 rounded-md border border-slate-200 mb-4">
                     <p className="text-sm text-slate-500">Colaborador</p>
@@ -96,7 +101,11 @@ export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: 
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Loja Atual</label>
                     <Input
-                        value={employee.contract?.store || 'N/A'}
+                        value={
+                            typeof employee.contract?.store === 'object'
+                                ? employee.contract?.store?.name
+                                : (employee.contract?.store || 'N/A')
+                        }
                         disabled
                         className="bg-slate-100 text-slate-500"
                     />
@@ -105,17 +114,23 @@ export function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: 
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nova Loja *</label>
                     <select
-                        value={newStore}
-                        onChange={(e) => setNewStore(e.target.value)}
+                        value={newStoreId}
+                        onChange={(e) => setNewStoreId(e.target.value)}
                         className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                         required
                     >
                         <option value="">Selecione</option>
-                        {stores.map(store => (
-                            <option key={store} value={store} disabled={store === employee.contract?.store}>
-                                {store}
-                            </option>
-                        ))}
+                        {stores.map(store => {
+                            const currentStoreId = typeof employee.contract?.store === 'object'
+                                ? (employee.contract?.store as any)?.id
+                                : null;
+
+                            return (
+                                <option key={store.id} value={store.id} disabled={store.id === currentStoreId}>
+                                    {store.name}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 

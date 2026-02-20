@@ -10,13 +10,15 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Tabs } from '@/shared/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap } from 'lucide-react';
+import { uploadEmployeePhoto, uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
 
 interface EmployeeFormProps {
     onSuccess?: () => void;
     onCancel?: () => void;
     initialData?: any;
     employeeId?: string;
+    defaultTab?: string;
 }
 
 // Mask Utility Functions
@@ -44,6 +46,23 @@ const maskCep = (value: string) => {
         .replace(/(-\d{3})\d+?$/, '$1');
 };
 
+const maskPIS = (value: string) => {
+    return value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{5})(\d)/, '$1.$2')
+        .replace(/(\d{2})(\d)/, '$1-$2')
+        .replace(/(-\d{1})\d+?$/, '$1');
+};
+
+const maskCTPS = (value: string) => {
+    return value
+        .replace(/\D/g, '')
+        .replace(/(\d{7})(\d)/, '$1 $2')
+        .replace(/(\s\d{3})(\d)/, '$1-$2')
+        .replace(/(-\d{1})\d+?$/, '$1');
+};
+
 const maskLandline = (value: string) => {
     return value
         .replace(/\D/g, '')
@@ -52,16 +71,17 @@ const maskLandline = (value: string) => {
         .replace(/(-\d{4})\d+?$/, '$1');
 };
 
-export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: EmployeeFormProps) {
+export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, defaultTab }: EmployeeFormProps) {
     const [loading, setLoading] = useState(false);
     const [refsLoading, setRefsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    const [activeTab, setActiveTab] = useState('personal');
+    const [activeTab, setActiveTab] = useState(defaultTab || 'personal');
     const [currentId, setCurrentId] = useState<string | null>(employeeId || null);
 
     // Form States for masked inputs
     const [cpf, setCpf] = useState(initialData?.cpf || '');
+    const [employeeName, setEmployeeName] = useState(initialData?.name || '');
     const [phone, setPhone] = useState(initialData?.phone || '');
     const [landline, setLandline] = useState(initialData?.landline || '');
     const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl || null);
@@ -75,6 +95,15 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
         state: initialData?.address?.state || ''
     });
     const [isCepLoading, setIsCepLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+
+    // Sync email to accessEmail
+    const [personalEmail, setPersonalEmail] = useState(initialData?.email || '');
+    const [accessEmail, setAccessEmail] = useState(initialData?.email || '');
+
+    const [pis, setPis] = useState(initialData?.pis || '');
+    const [ctps, setCtps] = useState(initialData?.ctps || '');
 
     const [companiesList, setCompaniesList] = useState<any[]>([]);
     const [storesList, setStoresList] = useState<any[]>([]);
@@ -124,17 +153,29 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
         { id: 'other_docs', label: 'Outros', icon: '📂' },
     ];
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, category: string) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, category: string) => {
         const files = e.target.files;
-        if (files && files.length > 0) {
-            // Mock Upload Process
-            const newFiles = Array.from(files).map(file => ({
-                fileName: file.name,
-                type: category, // Save the category here
-                fileUrl: URL.createObjectURL(file), // Mock URL
-                uploadedAt: new Date().toISOString()
-            }));
-            setUploadedFiles(prev => [...prev, ...newFiles]);
+        if (!files || files.length === 0) return;
+
+        if (!currentId) {
+            toast.error("Salve os dados básicos antes de enviar documentos.");
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const uploadPromises = Array.from(files).map(file =>
+                uploadEmployeeDocument(file, currentId, employeeName, category)
+            );
+
+            const uploadedResults = await Promise.all(uploadPromises);
+            setUploadedFiles(prev => [...prev, ...uploadedResults]);
+            toast.success(`${files.length} arquivo(s) enviado(s) com sucesso!`);
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast.error("Falha ao enviar arquivos para o Firebase.");
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -262,26 +303,43 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
     async function handleSaveStep(event: React.MouseEvent<HTMLButtonElement> | React.FormEvent<HTMLFormElement>) {
         if (event.type === 'submit') event.preventDefault();
 
-        const form = (event.currentTarget as any).form || event.currentTarget;
+        const form = (event.currentTarget as any).form || (event.currentTarget.tagName === 'FORM' ? event.currentTarget : null);
+        if (!form) return;
+
         const formData = new FormData(form);
 
-        // Validation per tab
-        console.log('--- handleSaveStep ---');
-        console.log('activeTab:', activeTab);
-        console.log('currentId:', currentId);
+        // --- Checkbox Persistence Logic ---
+        // Explicitly handle all known checkboxes across all tabs to ensure 'false' is sent when unchecked.
+        const allCheckboxFields = [
+            'isExperienceContract', 'isExperienceExtended', 'hasCashHandling',
+            'hasInsalubrity', 'hasDangerousness', 'hasTrustPosition',
+            'hasTransportVoucher', 'hasFamilySalary'
+        ];
+
+        allCheckboxFields.forEach(field => {
+            const element = form.querySelector(`input[name="${field}"]`) as HTMLInputElement;
+            if (element) {
+                formData.set(field, String(element.checked));
+            }
+        });
+
+        // --- PIX Key Mandatory Check ---
+        if (activeTab === 'bank' && !formData.get('pixKey')) {
+            toast.error("A Chave PIX é obrigatória.");
+            return;
+        }
 
         const tabRequiredFields: Record<string, string[]> = {
-            personal: ['name', 'cpf', 'rg', 'dateOfBirth', 'gender', 'phone'],
+            personal: ['name', 'cpf', 'rg', 'dateOfBirth', 'gender', 'maritalStatus', 'email', 'phone', 'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelationship'],
             address: ['zipCode', 'city', 'state', 'street', 'number', 'neighborhood'],
             contract: ['companyId', 'jobRoleId', 'sectorId', 'storeId', 'hireDate', 'baseSalary', 'workShiftId'],
-            bank: ['bankName', 'accountType', 'agency', 'accountNumber'],
+            bank: ['bankName', 'accountType', 'agency', 'accountNumber', 'pixKey'],
             health: ['asoType', 'lastAsoDate'],
+            access: ['accessEmail', 'accessPassword'],
             legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianPhone', 'guardianRelationship'] : []
         };
 
         const missingFields = tabRequiredFields[activeTab]?.filter(field => !formData.get(field));
-        console.log('missingFields:', missingFields);
-        console.log('formData entries:', Array.from(formData.entries()));
 
         if (missingFields?.length) {
             toast.error(`Preencha os campos obrigatórios: ${missingFields.join(', ')}`);
@@ -290,51 +348,58 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
         setLoading(true);
         setError(null);
-        setSuccess(false);
 
         try {
-            // Append Documents as JSON
             if (uploadedFiles.length > 0) {
                 formData.append('documents', JSON.stringify(uploadedFiles));
             }
 
+            // Sync emails if we are in access tab
+            if (activeTab === 'access' && accessEmail) {
+                formData.set('email', accessEmail);
+            }
+
             let result;
             if (currentId) {
-                console.log('Calling updateEmployee...');
                 result = await updateEmployee(currentId, formData);
             } else {
-                console.log('Calling createEmployee...');
                 result = await createEmployee(formData);
             }
 
-            console.log('Server Result:', result);
-
             if (result.success) {
                 if (!currentId && result.data?.id) {
-                    setCurrentId(result.data.id);
+                    const newId = result.data.id;
+                    setCurrentId(newId);
+
+                    // Handle pending photo upload if this was a new creation
+                    if (pendingPhotoFile) {
+                        try {
+                            const url = await uploadEmployeePhoto(pendingPhotoFile, newId, employeeName);
+                            const photoFormData = new FormData();
+                            photoFormData.append('photoUrl', url);
+                            await updateEmployee(newId, photoFormData);
+                            setPhotoPreview(url);
+                            setPendingPhotoFile(null);
+                        } catch (err) {
+                            console.error("Failed to upload pending photo:", err);
+                        }
+                    }
                 }
 
-                toast.success("Progresso salvo com sucesso!");
+                toast.success("Dados salvos com sucesso!");
 
-                // Advance to next tab using the VISIBLE tabs list
                 const visibleTabs = tabs.filter(t => t.id !== 'legal_guardian' || isMinor);
                 const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
 
-                console.log('Current Index:', currentIndex);
-                console.log('Visible Tabs:', visibleTabs.map(t => t.id));
-
                 if (currentIndex !== -1 && currentIndex < visibleTabs.length - 1) {
                     const nextTabId = visibleTabs[currentIndex + 1].id;
-                    console.log('Moving to:', nextTabId);
                     setActiveTab(nextTabId);
                 } else if (currentIndex === visibleTabs.length - 1) {
-                    console.log('Last tab reached');
                     setSuccess(true);
                     if (onSuccess) onSuccess();
                 }
             } else {
-                const msg = typeof result.error === 'string' ? result.error : 'Erro técnico ao salvar.';
-                console.error('Save failed:', result.error);
+                const msg = typeof result.error === 'string' ? result.error : (result.error?.message || 'Erro técnico ao salvar.');
                 setError(msg);
                 toast.error(msg);
             }
@@ -363,7 +428,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         {/* Avatar Column */}
                         <div className="md:col-span-3 flex flex-col items-center space-y-3">
                             <div className="relative w-32 h-40 bg-slate-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden group cursor-pointer hover:border-indigo-500 transition-colors">
-                                {photoPreview ? (
+                                {isUploading ? (
+                                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                                ) : photoPreview ? (
                                     <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="text-slate-400 text-center p-2">
@@ -373,17 +440,36 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                                 )}
                                 <input
                                     type="file"
-                                    name="photo" // Handled separately or just via dummy for now if using URL in prototype
                                     className="absolute inset-0 opacity-0 cursor-pointer"
-                                    onChange={(e) => {
+                                    disabled={isUploading}
+                                    onChange={async (e) => {
                                         const file = e.target.files?.[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setPhotoPreview(reader.result as string);
-                                                // In a real app, upload here and set hidden input "photoUrl"
-                                            };
-                                            reader.readAsDataURL(file);
+                                        if (!file) return;
+
+                                        if (currentId) {
+                                            // Existing employee: Upload immediately and sync with DB
+                                            setIsUploading(true);
+                                            try {
+                                                const url = await uploadEmployeePhoto(file, currentId, employeeName);
+                                                setPhotoPreview(url);
+
+                                                // Sync with DB immediately so user doesn't lose the photo if they don't click Save
+                                                const formData = new FormData();
+                                                formData.append('photoUrl', url);
+                                                await updateEmployee(currentId, formData);
+
+                                                toast.success("Foto atualizada e salva!");
+                                            } catch (error) {
+                                                toast.error("Erro ao subir foto");
+                                            } finally {
+                                                setIsUploading(false);
+                                            }
+                                        } else {
+                                            // New employee: Save for later and show local preview
+                                            setPendingPhotoFile(file);
+                                            const localUrl = URL.createObjectURL(file);
+                                            setPhotoPreview(localUrl);
+                                            toast.info("Foto selecionada. Ela será salva ao finalizar o cadastro.");
                                         }
                                     }}
                                 />
@@ -397,7 +483,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nome Completo *</label>
-                                <Input name="name" defaultValue={initialData?.name} placeholder="Ex: Pedro Henrique" required />
+                                <Input
+                                    name="name"
+                                    value={employeeName}
+                                    onChange={(e) => setEmployeeName(e.target.value)}
+                                    placeholder="Ex: Pedro Henrique"
+                                    required
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -445,7 +537,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Estado Civil</label>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Estado Civil *</label>
                                 <select
                                     name="maritalStatus"
                                     defaultValue={initialData?.maritalStatus || ""}
@@ -464,7 +556,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                     {/* Section 2: Contacts */}
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                        <h4 className="text-slate-800 dark:text-slate-200 font-medium mb-4 flex items-center">
+                        <h4 className="text-slate-800 dark:text-slate-200 font-bold mb-6 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">
                             <span className="mr-2">📞</span> Contatos
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -490,8 +582,17 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700">E-mail</label>
-                                <Input name="email" type="email" defaultValue={initialData?.email} placeholder="colaborador@email.com" />
+                                <label className="text-sm font-medium text-slate-700">E-mail *</label>
+                                <Input
+                                    name="email"
+                                    type="email"
+                                    value={personalEmail}
+                                    onChange={(e) => {
+                                        setPersonalEmail(e.target.value);
+                                        setAccessEmail(e.target.value);
+                                    }}
+                                    placeholder="colaborador@email.com"
+                                />
                             </div>
                         </div>
 
@@ -504,7 +605,12 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                                 </h5>
                                 <p className="text-indigo-100 text-sm mt-1">Cadastre o colaborador na escola de supermercado.</p>
                             </div>
-                            <Button size="sm" variant="secondary" className="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold border-none">
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                className="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold border-none"
+                                onClick={() => window.open('https://docs.google.com/spreadsheets/d/1qSD136wZnuJ8-ZHUb20UwYOxTBxJ5Nw0/edit?gid=1946873591#gid=1946873591', '_blank')}
+                            >
                                 Acessar Impulso →
                             </Button>
                         </div>
@@ -512,20 +618,20 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                     {/* Section 3: Emergency Contact */}
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                        <h4 className="text-slate-800 dark:text-slate-200 font-medium mb-4 flex items-center">
+                        <h4 className="text-slate-800 dark:text-slate-200 font-bold mb-6 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">
                             <span className="mr-2">🚑</span> Contato de Emergência
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Nome do Contato</label>
+                                <label className="text-sm font-medium text-slate-700">Nome do Contato *</label>
                                 <Input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} placeholder="Nome do familiar/amigo" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Telefone de Emergência</label>
+                                <label className="text-sm font-medium text-slate-700">Telefone de Emergência *</label>
                                 <Input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} placeholder="(00) 00000-0000" />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco</label>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco *</label>
                                 <select
                                     name="emergencyContactRelationship"
                                     defaultValue={initialData?.emergencyContactRelationship || ""}
@@ -787,7 +893,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                     {/* Experience Contract Section */}
                     <div className="border-t border-slate-800 pt-6 mt-6">
-                        <h4 className="text-white font-medium mb-4 flex items-center">
+                        <h4 className="text-white font-bold mb-6 flex items-center justify-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">
                             <span className="mr-2">📋</span> Contrato de Experiência
                         </h4>
 
@@ -857,7 +963,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
 
                     {/* Additional Benefits Section - Matching the Image List Style */}
                     <div className="border-t border-slate-800 pt-6 mt-6">
-                        <h4 className="text-white font-medium mb-4">Adicionais e Benefícios</h4>
+                        <h4 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Adicionais e Benefícios</h4>
 
                         <div className="space-y-3">
                             {/* Quebra de Caixa */}
@@ -928,7 +1034,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             label: '💰 Dados Bancários',
             content: (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-sm text-slate-400 mb-4">Informe os dados para pagamento de salário.</p>
+                    <p className="text-sm text-slate-400 mb-6 text-center italic">Informe os dados para pagamento de salário.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">Banco *</label>
@@ -957,8 +1063,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                             <Input name="accountNumber" defaultValue={initialData?.bankData?.accountNumber} placeholder="00000-0" required />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-medium text-slate-300">Chave PIX (Opcional)</label>
-                            <Input name="pixKey" defaultValue={initialData?.bankData?.pixKey} placeholder="CPF, Email ou Aleatória" />
+                            <label className="text-sm font-medium text-slate-300">Chave PIX *</label>
+                            <Input name="pixKey" defaultValue={initialData?.bankData?.pixKey} placeholder="CPF, Email ou Aleatória" required />
                         </div>
                     </div>
                 </div>
@@ -969,7 +1075,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             label: '🎁 Benefícios',
             content: (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-medium mb-2">Benefícios do Colaborador</h3>
+                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Benefícios do Colaborador</h3>
 
                     <div className="grid grid-cols-1 gap-4">
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
@@ -1018,9 +1124,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
                             <div className="flex items-center space-x-3">
                                 <div className="flex items-center">
-                                    <input type="checkbox" name="hasFamilySalary" defaultChecked={initialData?.contract?.hasFamilySalary} className="mr-3 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500" />
+                                    <input type="checkbox" name="hasFamilySalary" defaultChecked={initialData?.contract?.hasFamilySalary} id="familySalary" className="mr-3 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500" />
                                     <span className="text-xl mr-2">👨‍👩‍👧</span>
-                                    <label className="text-sm text-slate-200">Salário Família</label>
+                                    <label htmlFor="familySalary" className="text-sm text-slate-200 cursor-pointer">Salário Família</label>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -1050,7 +1156,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             label: '🩺 Saúde (ASO)',
             content: (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-medium flex items-center mb-4">
+                    <h3 className="text-white font-bold mb-6 flex items-center justify-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">
                         🩺 Atestado de Saúde Ocupacional (ASO)
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1114,16 +1220,28 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             label: '📂 Documentos',
             content: (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-medium mb-4">Documentação Complementar</h3>
+                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Documentação Complementar</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">PIS/PASEP</label>
-                            <Input name="pis" defaultValue={initialData?.pis} placeholder="000.00000.00-0" />
+                            <Input
+                                name="pis"
+                                value={pis}
+                                onChange={(e) => setPis(maskPIS(e.target.value))}
+                                placeholder="000.00000.00-0"
+                                maxLength={14}
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">CTPS (Número/Série)</label>
-                            <Input name="ctps" defaultValue={initialData?.ctps} placeholder="1234567 000-0" />
+                            <Input
+                                name="ctps"
+                                value={ctps}
+                                onChange={(e) => setCtps(maskCTPS(e.target.value))}
+                                placeholder="1234567 000-0"
+                                maxLength={12}
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300">Título de Eleitor</label>
@@ -1131,45 +1249,40 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                         </div>
                     </div>
 
-                    <div className="border-t border-slate-800 pt-6">
-                        <h4 className="text-white font-medium mb-4 flex items-center">
-                            <span className="mr-2">📁</span> Arquivos Anexados
-                        </h4>
-
-                        {uploadedFiles.length === 0 && (
-                            <p className="text-slate-500 text-sm italic mb-4">Nenhum documento anexado ainda.</p>
-                        )}
-
-                        <div className="grid grid-cols-1 gap-3 mb-4">
-                            {uploadedFiles.map((file, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-md">
-                                    <div className="flex items-center">
-                                        <span className="text-xl mr-3">📄</span>
-                                        <div>
-                                            <p className="text-slate-200 text-sm font-medium">{file.fileName}</p>
-                                            <p className="text-slate-500 text-xs">{file.type} • {new Date(file.uploadedAt || Date.now()).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
-                                        🗑️
-                                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {docCategories.map(cat => (
+                            <div key={cat.id} className="p-4 border border-slate-800 rounded-lg bg-slate-900/50 hover:border-indigo-500/50 transition-colors">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h5 className="text-white font-medium flex items-center">
+                                        <span className="mr-2">{cat.icon}</span> {cat.label}
+                                    </h5>
+                                    <span className="text-xs text-slate-500">{uploadedFiles.filter(f => f.type === cat.label).length} arquivos</span>
                                 </div>
-                            ))}
-                        </div>
-
-                        <div className="border-2 border-dashed border-slate-700 bg-slate-900/30 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-slate-900/50 transition-all relative">
-                            <input
-                                type="file"
-                                multiple
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                onChange={(e) => handleFileSelect(e, 'Geral')}
-                            />
-                            <div className="bg-slate-800 p-3 rounded-full mb-3">
-                                <span className="text-2xl">☁️</span>
+                                <div className="space-y-2 mb-3">
+                                    {uploadedFiles.filter(f => f.type === cat.label).map((file, idx) => (
+                                        <div key={idx} className="flex items-center justify-between text-xs bg-slate-800 p-2 rounded">
+                                            <span className="text-slate-300 truncate max-w-[150px]">{file.fileName}</span>
+                                            <div className="flex space-x-2">
+                                                <a href={file.fileUrl} target="_blank" className="text-indigo-400 hover:underline">Ver</a>
+                                                <button type="button" onClick={() => removeFile(uploadedFiles.indexOf(file))} className="text-red-400">Excluir</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="relative border border-dashed border-slate-700 rounded p-2 text-center hover:bg-slate-800 cursor-pointer">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        onChange={(e) => handleFileSelect(e, cat.label)}
+                                        disabled={isUploading}
+                                    />
+                                    <p className="text-[10px] text-slate-500 flex items-center justify-center">
+                                        <CloudUpload className="w-3 h-3 mr-1" /> Carregar {cat.label}
+                                    </p>
+                                </div>
                             </div>
-                            <p className="text-indigo-400 font-medium">Clique para enviar arquivos</p>
-                            <p className="text-slate-500 text-xs mt-1">PDF, JPG, PNG (máx. 10MB)</p>
-                        </div>
+                        ))}
                     </div>
                 </div>
             )
@@ -1179,7 +1292,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
             label: '🔐 Acesso',
             content: (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-medium mb-4">Credenciais de Acesso ao Portal</h3>
+                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Credenciais de Acesso ao Portal</h3>
 
                     <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
                         <p className="text-sm text-slate-400 mb-6">
@@ -1191,19 +1304,38 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                                 <label className="text-sm font-medium text-slate-300">Email de Acesso *</label>
                                 <Input
                                     name="accessEmail"
-                                    defaultValue={initialData?.email}
+                                    value={accessEmail}
+                                    onChange={(e) => setAccessEmail(e.target.value)}
                                     placeholder="email@empresa.com.br"
                                     className="bg-slate-950 border-slate-700 text-slate-300"
+                                    required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-300">Senha Inicial *</label>
-                                <Input
-                                    name="accessPassword"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="bg-slate-950 border-slate-700"
-                                />
+                                <div className="flex space-x-2">
+                                    <Input
+                                        id="accessPassword"
+                                        name="accessPassword"
+                                        type="text"
+                                        placeholder="••••••••"
+                                        className="bg-slate-950 border-slate-700"
+                                        required
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="text-xs"
+                                        onClick={() => {
+                                            const pass = Math.random().toString(36).slice(-10) + Math.floor(Math.random() * 100);
+                                            const el = document.getElementById('accessPassword') as HTMLInputElement;
+                                            if (el) el.value = pass;
+                                            toast.success("Senha gerada!");
+                                        }}
+                                    >
+                                        Gerar
+                                    </Button>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-300">Nível de Permissão</label>
@@ -1258,38 +1390,34 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId }: E
                     />
                 )}
 
-                <div className="mt-8 pt-4 flex justify-between items-center border-t border-slate-800">
-                    <div>
-                        {onCancel && (
-                            <Button type="button" variant="outline" onClick={onCancel} className="text-slate-300 border-slate-700 hover:bg-slate-800">
-                                Cancelar
-                            </Button>
-                        )}
-                    </div>
+                <div className="mt-8 pt-6 flex justify-center items-center space-x-4 border-t border-slate-200 dark:border-slate-800">
+                    {onCancel && (
+                        <Button type="button" variant="outline" onClick={onCancel} className="text-slate-500 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-8">
+                            Cancelar
+                        </Button>
+                    )}
 
-                    <div className="flex space-x-4">
-                        {activeTab !== 'personal' && (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => {
-                                    const idx = tabs.findIndex(t => t.id === activeTab);
-                                    if (idx > 0) setActiveTab(tabs[idx - 1].id);
-                                }}
-                                className="text-slate-400 hover:text-white"
-                            >
-                                ← Voltar
-                            </Button>
-                        )}
+                    {activeTab !== 'personal' && (
                         <Button
                             type="button"
-                            disabled={loading}
-                            onClick={handleSaveStep}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6"
+                            variant="ghost"
+                            onClick={() => {
+                                const idx = tabs.findIndex(t => t.id === activeTab);
+                                if (idx > 0) setActiveTab(tabs[idx - 1].id);
+                            }}
+                            className="text-slate-500 hover:text-white"
                         >
-                            {loading ? 'Salvando...' : (activeTab === tabs[tabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
+                            ← Voltar
                         </Button>
-                    </div>
+                    )}
+                    <Button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleSaveStep}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-10 shadow-lg shadow-indigo-500/20"
+                    >
+                        {loading ? 'Salvando...' : (activeTab === tabs[tabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
+                    </Button>
                 </div>
             </form>
         </div>

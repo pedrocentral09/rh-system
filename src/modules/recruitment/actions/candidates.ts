@@ -6,8 +6,11 @@ import { revalidatePath } from 'next/cache';
 import { requireAuth } from '@/modules/core/actions/auth';
 import { logAction } from '@/modules/core/actions/audit';
 
-export async function registerCandidate(data: any) {
-    // This might be public or internal. For now, let's assume internal HR usage.
+/**
+ * Internal candidate registration (used by HR/Admin in dashboard)
+ * Requires authentication and allows setting all fields including source.
+ */
+export async function registerCandidateInternal(data: any) {
     const user = await requireAuth(['ADMIN', 'HR']);
 
     try {
@@ -18,11 +21,11 @@ export async function registerCandidate(data: any) {
                 phone: data.phone,
                 linkedin: data.linkedin,
                 notes: data.notes,
-                // resumeUrl: ... (Need file upload logic later)
+                resumeUrl: data.resumeUrl,
+                source: data.source,
             }
         });
 
-        // Optionally create an application immediately if jobId is provided
         if (data.jobId) {
             await prisma.jobApplication.create({
                 data: {
@@ -37,8 +40,72 @@ export async function registerCandidate(data: any) {
         revalidatePath('/dashboard/recruitment');
         return { success: true, data: candidate };
     } catch (error) {
-        console.error('Error registering candidate:', error);
-        return { success: false, error: 'Failed to register candidate (Email might be duplicate)' };
+        console.error('Error registering candidate internal:', error);
+        return { success: false, error: 'Falha ao registrar candidato (E-mail duplicado?)' };
+    }
+}
+
+/**
+ * Public candidate registration (used by Careers Site)
+ * NO AUTH required. Source is hardcoded to "Site".
+ * Only essential fields are allowed.
+ */
+export async function registerCandidatePublic(data: {
+    name: string;
+    email: string;
+    phone?: string;
+    linkedin?: string;
+    resumeUrl: string;
+    jobId: string;
+}) {
+    // Basic validation
+    if (!data.name || !data.email || !data.resumeUrl || !data.jobId) {
+        return { success: false, error: 'Dados incompletos para candidatura.' };
+    }
+
+    try {
+        // Find existing candidate or create new one
+        const candidate = await prisma.candidate.upsert({
+            where: { email: data.email },
+            update: {
+                name: data.name,
+                phone: data.phone || undefined,
+                linkedin: data.linkedin || undefined,
+                resumeUrl: data.resumeUrl,
+            },
+            create: {
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                linkedin: data.linkedin,
+                resumeUrl: data.resumeUrl,
+                source: 'Site'
+            }
+        });
+
+        // Check if already applied to this specific job
+        const existingApp = await prisma.jobApplication.findFirst({
+            where: {
+                candidateId: candidate.id,
+                jobId: data.jobId
+            }
+        });
+
+        if (!existingApp) {
+            await prisma.jobApplication.create({
+                data: {
+                    jobId: data.jobId,
+                    candidateId: candidate.id,
+                    status: 'NEW'
+                }
+            });
+        }
+
+        revalidatePath('/dashboard/recruitment');
+        return { success: true };
+    } catch (error) {
+        console.error('Error registering candidate public:', error);
+        return { success: false, error: 'Erro ao processar sua candidatura. Tente novamente.' };
     }
 }
 
@@ -59,19 +126,33 @@ export async function moveApplication(applicationId: string, newStatus: string) 
 }
 
 export async function getJobDetails(jobId: string) {
-    await requireAuth();
+    if (!jobId) return { success: false, error: 'Job ID is required' };
 
-    const job = await prisma.jobOpening.findUnique({
-        where: { id: jobId },
-        include: {
-            applications: {
-                include: {
-                    candidate: true
-                },
-                orderBy: { appliedAt: 'desc' }
-            }
+    try {
+        // Only include applications if the user is authenticated and is HR/Admin
+        let includeApplications = false;
+        try {
+            await requireAuth(['ADMIN', 'HR']);
+            includeApplications = true;
+        } catch (e) {
+            includeApplications = false;
         }
-    });
 
-    return { success: true, data: job };
+        const job = await prisma.jobOpening.findUnique({
+            where: { id: jobId },
+            include: includeApplications ? {
+                applications: {
+                    include: {
+                        candidate: true
+                    },
+                    orderBy: { appliedAt: 'desc' }
+                }
+            } : undefined
+        });
+
+        return { success: true, data: job };
+    } catch (error) {
+        console.error('Error fetching job details:', error);
+        return { success: false, error: 'Failed to fetch job details' };
+    }
 }

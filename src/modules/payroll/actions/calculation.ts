@@ -3,78 +3,32 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { calculateINSS, calculateIRRF, calculateVT } from '../utils/calculations';
+import { PayrollEngine } from '../services/PayrollEngine';
 
 // Calculate Single Employee Payslip
 export async function calculatePayslip(employeeId: string, periodId: string) {
     try {
         const period = await prisma.payrollPeriod.findUnique({ where: { id: periodId } });
         if (!period || period.status === 'CLOSED') {
-            return { success: false, error: 'Period is closed or invalid' };
+            return { success: false, error: 'Período encerrado ou inválido.' };
         }
 
-        const employee = await prisma.employee.findUnique({
-            where: { id: employeeId },
-            include: {
-                contract: true,
-                bankData: true
-            }
-        });
-
-        if (!employee || !employee.contract) {
-            return { success: false, error: 'Employee or Contract not found' };
+        // 1. Orquestrar cálculos via PayrollEngine
+        const calc = await PayrollEngine.calculatePayslip(employeeId, periodId, true);
+        if (!calc.success || !calc.items || !calc.totals) {
+            return { success: false, error: calc.error || 'Falha no cálculo.' };
         }
 
-        // 1. Initial Data
-        const baseSalary = Number(employee.contract.baseSalary); // Convert Decimal to Number
-        const dependents = employee.contract.familySalaryDependents || 0;
-
-        // 2. Earnings Calculation
-        // Standard Salary (Code 1001)
-        const earnings = [
-            { code: '1001', value: baseSalary, reference: 30 } // 30 Days
-        ];
-
-        // TODO: Add other earnings (Overtime, Bonus) manually or from TimeTracking later.
-
-        const totalGross = earnings.reduce((acc, curr) => acc + curr.value, 0);
-
-        // 3. Deductions Calculation
-        const deductions: { code: string; value: number; reference: number }[] = [];
-
-        // INSS (Code 5001)
-        const inss = calculateINSS(totalGross);
-        if (inss.value > 0) {
-            deductions.push({ code: '5001', value: inss.value, reference: inss.rate });
-        }
-
-        // IRRF (Code 5002)
-        // Base for IRRF = Gross - INSS - Dependents
-        const baseIRRF = totalGross - inss.value;
-        const irrf = calculateIRRF(baseIRRF, dependents);
-        if (irrf.value > 0) {
-            deductions.push({ code: '5002', value: irrf.value, reference: irrf.rate });
-        }
-
-        // VT (Code 6001) - If enabled in Contract (assuming logic: we don't have a boolean in schema yet, let's assume always for now or skip)
-        // Let's Skip VT auto-calc unless we add a flag "optInVT" to Contract later.
-
-        // Total Deductions
-        const totalDeductions = deductions.reduce((acc, curr) => acc + curr.value, 0);
-        const netSalary = totalGross - totalDeductions;
-
-        // 4. Save to Database (Upsert Payslip)
-        // First, get Event IDs
-        const eventCodes = [...earnings.map(e => e.code), ...deductions.map(d => d.code)];
+        // 2. Mapear Rubricas (Eventos) para obter os IDs
+        const eventCodes = calc.items.map((i: any) => i.code);
         const events = await prisma.payrollEvent.findMany({
             where: { code: { in: eventCodes } }
         });
-
         const eventMap = new Map(events.map(e => [e.code, e]));
 
-        // Transaction to ensure consistency
+        // 3. Persistir no Banco de Dados via Transação
         await prisma.$transaction(async (tx) => {
-            // Upsert Payslip Header
+            // Upsert do cabeçalho do Holerite
             const payslip = await tx.payslip.upsert({
                 where: {
                     periodId_employeeId: {
@@ -83,71 +37,62 @@ export async function calculatePayslip(employeeId: string, periodId: string) {
                     }
                 },
                 update: {
-                    grossSalary: totalGross,
-                    netSalary: netSalary,
-                    totalAdditions: totalGross, // Simplified for now
-                    totalDeductions: totalDeductions,
+                    grossSalary: calc.totals!.gross,
+                    netSalary: calc.totals!.net,
+                    totalAdditions: calc.totals!.additions,
+                    totalDeductions: calc.totals!.deductions,
                     status: 'CALCULATED',
                     updatedAt: new Date()
                 },
                 create: {
                     periodId,
                     employeeId,
-                    grossSalary: totalGross,
-                    netSalary: netSalary,
-                    totalAdditions: totalGross,
-                    totalDeductions: totalDeductions,
+                    grossSalary: calc.totals!.gross,
+                    netSalary: calc.totals!.net,
+                    totalAdditions: calc.totals!.additions,
+                    totalDeductions: calc.totals!.deductions,
                     status: 'CALCULATED'
                 }
             });
 
-            // Delete old items to fully replace (simplest strategy for recalculation)
+            // Limpar itens antigos que NÃO foram lançados manualmente (somente AUTO e SYNC)
+            // Para um refactory radical, vamos limpar tudo e os itens manuais terão que ser relançados
+            // mas o ideal é preservar MANUAL futuramente. Por enquanto, limpamos tudo conforme o plano.
             await tx.payslipItem.deleteMany({
                 where: { payslipId: payslip.id }
             });
 
-            // Insert New Items
-            // Earnings
-            for (const item of earnings) {
-                const evt = eventMap.get(item.code);
-                if (evt) {
+            // Inserir novos itens calculados
+            console.log(`[Payroll] Persistindo ${calc.items!.length} itens para ${employeeId}`);
+            let createdCount = 0;
+            for (const item of calc.items!) {
+                const event = eventMap.get(item.code);
+                if (event) {
                     await tx.payslipItem.create({
                         data: {
                             payslipId: payslip.id,
-                            eventId: evt.id,
-                            name: evt.name,
-                            type: evt.type,
+                            eventId: event.id,
+                            name: event.name,
+                            type: event.type,
                             value: item.value,
-                            reference: item.reference
+                            reference: item.reference,
+                            // source: item.source || 'AUTO' // Removido para evitar erro de lint/prisma generate
                         }
                     });
+                    createdCount++;
+                } else {
+                    console.warn(`[Payroll] Evento não encontrado para código: ${item.code}`);
                 }
             }
-
-            // Deductions
-            for (const item of deductions) {
-                const evt = eventMap.get(item.code);
-                if (evt) {
-                    await tx.payslipItem.create({
-                        data: {
-                            payslipId: payslip.id,
-                            eventId: evt.id,
-                            name: evt.name,
-                            type: evt.type,
-                            value: item.value,
-                            reference: item.reference // Rate %
-                        }
-                    });
-                }
-            }
+            console.log(`[Payroll] Sucesso: ${createdCount} itens salvos.`);
         });
 
         revalidatePath(`/dashboard/payroll/${periodId}`);
         return { success: true };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Calculation Error:", error);
-        return { success: false, error: 'Calculation Failed' };
+        return { success: false, error: error.message || 'Falha no cálculo' };
     }
 }
 

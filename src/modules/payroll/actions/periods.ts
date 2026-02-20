@@ -11,10 +11,29 @@ export async function getPayrollPeriods() {
             include: {
                 _count: {
                     select: { payslips: true }
+                },
+                payslips: {
+                    select: { grossSalary: true, netSalary: true }
                 }
             }
         });
-        return { success: true, data: periods };
+
+        // Agregação manual e limpeza de objetos Decimal para evitar erro de serialização no Next.js
+        const data = periods.map(p => {
+            const totalGross = p.payslips.reduce((acc, curr) => acc + Number(curr.grossSalary), 0);
+            const totalNet = p.payslips.reduce((acc, curr) => acc + Number(curr.netSalary), 0);
+
+            // Removemos a lista bruta de payslips que contém objetos Decimal do Prisma
+            const { payslips, ...periodData } = p;
+
+            return {
+                ...periodData,
+                totalGross,
+                totalNet,
+            };
+        });
+
+        return { success: true, data };
     } catch (error) {
         console.error('Error fetching periods:', error);
         return { success: false, error: 'Failed to fetch periods' };
@@ -61,7 +80,10 @@ export async function getPayrollPeriodById(id: string) {
             include: {
                 payslips: {
                     include: {
-                        employee: true,
+                        period: true, // Adicionado para resolver Ref: /
+                        employee: {
+                            include: { contract: { include: { company: true, store: true } } }
+                        },
                         items: {
                             include: { event: true },
                             orderBy: { type: 'asc' } // Earnings first usually? Or code?
@@ -71,7 +93,41 @@ export async function getPayrollPeriodById(id: string) {
                 }
             }
         });
-        return { success: true, data: period };
+        if (!period) return { success: true, data: null };
+
+        // Serialização: converter Decimal para number (Next.js Client Components não aceitam objetos Decimal)
+        const serializedData = {
+            ...period,
+            payslips: period.payslips.map(p => ({
+                ...p,
+                grossSalary: Number(p.grossSalary),
+                netSalary: Number(p.netSalary),
+                totalAdditions: Number(p.totalAdditions),
+                totalDeductions: Number(p.totalDeductions),
+                employee: {
+                    ...p.employee,
+                    contract: p.employee.contract ? {
+                        ...p.employee.contract,
+                        baseSalary: Number(p.employee.contract.baseSalary),
+                        insalubrityBase: Number(p.employee.contract.insalubrityBase || 0),
+                        dangerousnessBase: Number(p.employee.contract.dangerousnessBase || 0),
+                        trustPositionBase: Number(p.employee.contract.trustPositionBase || 0),
+                        cashHandlingBase: Number(p.employee.contract.cashHandlingBase || 0),
+                        monthlyBonus: Number(p.employee.contract.monthlyBonus || 0),
+                        transportVoucherValue: Number(p.employee.contract.transportVoucherValue || 0),
+                        mealVoucherValue: Number(p.employee.contract.mealVoucherValue || 0),
+                        foodVoucherValue: Number(p.employee.contract.foodVoucherValue || 0),
+                    } : null
+                },
+                items: p.items.map(i => ({
+                    ...i,
+                    value: Number(i.value),
+                    reference: i.reference ? Number(i.reference) : null,
+                }))
+            }))
+        };
+
+        return { success: true, data: serializedData };
     } catch (error) {
         console.error('Error fetching period:', error);
         return { success: false, error: 'Failed to fetch period' };
@@ -114,13 +170,46 @@ export async function getPayslipDetails(payslipId: string) {
             where: { id: payslipId },
             include: {
                 period: true,
-                employee: true,
+                employee: {
+                    include: { contract: { include: { company: true, store: true } } }
+                },
                 items: {
                     include: { event: true },
                     orderBy: { type: 'asc' }
                 }
             }
         });
+
+        if (!payslip) return { success: true, data: null };
+
+        // Serialização
+        const serializedPayslip = {
+            ...payslip,
+            grossSalary: Number(payslip.grossSalary),
+            netSalary: Number(payslip.netSalary),
+            totalAdditions: Number(payslip.totalAdditions),
+            totalDeductions: Number(payslip.totalDeductions),
+            employee: {
+                ...payslip.employee,
+                contract: payslip.employee.contract ? {
+                    ...payslip.employee.contract,
+                    baseSalary: Number(payslip.employee.contract.baseSalary),
+                    insalubrityBase: Number(payslip.employee.contract.insalubrityBase || 0),
+                    dangerousnessBase: Number(payslip.employee.contract.dangerousnessBase || 0),
+                    trustPositionBase: Number(payslip.employee.contract.trustPositionBase || 0),
+                    cashHandlingBase: Number(payslip.employee.contract.cashHandlingBase || 0),
+                    monthlyBonus: Number(payslip.employee.contract.monthlyBonus || 0),
+                    transportVoucherValue: Number(payslip.employee.contract.transportVoucherValue || 0),
+                    mealVoucherValue: Number(payslip.employee.contract.mealVoucherValue || 0),
+                    foodVoucherValue: Number(payslip.employee.contract.foodVoucherValue || 0),
+                } : null
+            },
+            items: payslip.items.map(i => ({
+                ...i,
+                value: Number(i.value),
+                reference: i.reference ? Number(i.reference) : null,
+            }))
+        };
 
         // Mock Company Info (since it's in config table)
         // In real world, fetch from CompanySettings
@@ -132,7 +221,7 @@ export async function getPayslipDetails(payslipId: string) {
             cnpj: '12.345.678/0001-99'
         };
 
-        return { success: true, data: payslip, company };
+        return { success: true, data: serializedPayslip, company };
     } catch (error) {
         return { success: false, error: 'Failed' };
     }

@@ -19,7 +19,13 @@ function timeToMinutes(time: string): number {
     return h * 60 + m;
 }
 
-export async function calculateDay(employeeId: string, date: Date, records?: any[], scale?: any): Promise<DailyStatus> {
+export async function calculateDay(
+    employeeId: string,
+    date: Date,
+    records?: any[],
+    scale?: any,
+    holidays?: any[]
+): Promise<DailyStatus> {
     // 1. Get Scale (Expected)
     // If not provided, fetch it
     let dayScale = scale;
@@ -60,7 +66,22 @@ export async function calculateDay(employeeId: string, date: Date, records?: any
     let shiftName = null;
     let isDayOff = false;
 
-    if (!dayScale || !dayScale.shiftType) {
+    // 2.5. Get Holidays
+    let dayHolidays = holidays;
+    if (!dayHolidays) {
+        dayHolidays = await prisma.holiday.findMany();
+    }
+
+    const isoDateStr = date.toISOString().split('T')[0];
+    const holiday = dayHolidays.find((h: any) => {
+        const hIso = h.date instanceof Date ? h.date.toISOString().split('T')[0] : h.date.split('T')[0];
+        return hIso === isoDateStr;
+    });
+
+    if (holiday) {
+        isDayOff = true;
+        shiftName = `Feriado: ${holiday.name}`;
+    } else if (!dayScale || !dayScale.shiftType) {
         isDayOff = true; // No scale or null shift = Day Off
         shiftName = 'Folga';
     } else {
@@ -112,6 +133,17 @@ export async function calculateDay(employeeId: string, date: Date, records?: any
     } else {
         // Regular Work Day
         balanceMinutes = workedMinutes - expectedMinutes;
+
+        // --- FUTURE DATE PROTECTION ---
+        // If the date is in the future, we don't count balance yet.
+        // This avoids "absences" being counted before they happen.
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        if (date > today) {
+            balanceMinutes = 0;
+        }
+        // ------------------------------
+
         const tolerance = 10; // 10 mins tolerance
 
         if (punches.length === 0) {

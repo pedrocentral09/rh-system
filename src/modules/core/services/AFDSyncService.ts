@@ -34,106 +34,84 @@ export class AFDSyncService {
         try {
             await client.connect();
 
-            // 1. Get all AFD files from external DB
+            // 1. Get the highest NSR already in our DB to avoid duplicates and speed up
+            const lastRecord = await prisma.timeRecord.findFirst({
+                where: { nsr: { not: null } },
+                orderBy: { nsr: 'desc' },
+                select: { nsr: true }
+            });
+            const lastNSR = lastRecord?.nsr ? parseInt(lastRecord.nsr) : 0;
+
+            // 2. Load all employees into memory for fast matching
+            const employees = await prisma.employee.findMany({
+                where: { status: { in: ['ACTIVE', 'TERMINATED'] } },
+                select: { id: true, pis: true, cpf: true, name: true }
+            });
+
+            const pisMap = new Map<string, string>();
+            const cpfMap = new Map<string, string>();
+
+            employees.forEach(emp => {
+                if (emp.pis) {
+                    const cleanPis = emp.pis.replace(/\D/g, '').replace(/^0+/, '');
+                    if (cleanPis) pisMap.set(cleanPis, emp.id);
+                }
+                if (emp.cpf) {
+                    const cleanCpf = emp.cpf.replace(/\D/g, '').replace(/^0+/, '');
+                    if (cleanCpf) cpfMap.set(cleanCpf, emp.id);
+                }
+            });
+
+            // 3. Get all AFD files from external DB (Only recent ones to avoid massive memory usage)
+            // We order by ID desc to get the latest first, but we need to process in order if possible.
+            // Actually, if we filter by content length or just take the top X, it might be safer.
             const { rows: afdFiles } = await client.query(
-                'SELECT id, filename, content, created_at FROM afd_files ORDER BY id'
+                'SELECT id, filename, content FROM afd_files ORDER BY id DESC LIMIT 20'
             );
 
-            // 2. Get already-imported file hashes to avoid re-processing
-            const importedFiles = await prisma.timeClockFile.findMany({
-                select: { fileHash: true }
-            });
-            const importedHashes = new Set(importedFiles.map((f: { fileHash: string }) => f.fileHash));
-
-            // 3. Process each file
+            // 4. Process each file
             for (const afdFile of afdFiles) {
-                const fileHash = crypto
-                    .createHash('md5')
-                    .update(afdFile.content)
-                    .digest('hex');
-
-                if (importedHashes.has(fileHash)) {
-                    result.punchesSkipped++;
-                    continue; // Already imported
-                }
-
                 try {
                     const parsed = AFDParser.parseFile(afdFile.content);
+                    const recordsToCreate: any[] = [];
 
-                    // Create file record
-                    const clockFile = await prisma.timeClockFile.create({
-                        data: {
-                            fileName: afdFile.filename || `afd_external_${afdFile.id}`,
-                            fileHash,
-                            status: 'PROCESSING'
-                        }
+                    // Filter only new punches (NSR > lastNSR)
+                    const newPunches = parsed.punches.filter(p => {
+                        const nsrVal = p.nsr ? parseInt(p.nsr) : 0;
+                        return nsrVal > lastNSR;
                     });
 
-                    // 4. Resolve PIS/CPF -> EmployeeID
-                    // Fetch all active/terminated employees for matching
-                    const employees = await prisma.employee.findMany({
-                        where: { status: { in: ['ACTIVE', 'TERMINATED'] } },
-                        select: { id: true, pis: true, cpf: true }
-                    });
+                    if (newPunches.length === 0) {
+                        result.punchesSkipped += parsed.punches.length;
+                        continue;
+                    }
 
-                    const pisMap = new Map<string, string>();
-                    const cpfMap = new Map<string, string>();
-
-                    employees.forEach(emp => {
-                        if (emp.pis) pisMap.set(emp.pis.replace(/\D/g, ''), emp.id);
-                        if (emp.cpf) cpfMap.set(emp.cpf.replace(/\D/g, ''), emp.id);
-                    });
-
-                    // 5. Build Records Data
-                    const recordsToCreate = [];
-                    const uniquePunches = new Set<string>();
-
-                    for (const punch of parsed.punches) {
-                        const rawId = punch.pis.replace(/\D/g, '');
-                        let empId = pisMap.get(rawId);
-
-                        // Robust Matching Logic
-                        if (!empId) {
-                            const c1 = rawId.startsWith('0') ? rawId.substring(1) : rawId;
-                            if (cpfMap.has(c1)) empId = cpfMap.get(c1);
+                    for (const punch of newPunches) {
+                        // Basic Validation
+                        if (!punch.date || !punch.time || !punch.pis) {
+                            result.errors.push(`File ${afdFile.filename}: Incomplete punch data skipped (NSR: ${punch.nsr})`);
+                            continue;
                         }
-                        if (!empId && rawId.length >= 11) {
-                            const c2 = rawId.slice(-11);
-                            if (cpfMap.has(c2)) empId = cpfMap.get(c2);
-                        }
-                        if (!empId) {
-                            const asNum = rawId.replace(/^0+/, '');
-                            if (cpfMap.has(asNum)) empId = cpfMap.get(asNum);
+
+                        const rawId = punch.pis.replace(/\D/g, '').replace(/^0+/, '');
+                        let empId = pisMap.get(rawId) || cpfMap.get(rawId);
+
+                        // Fallback matching
+                        if (!empId && rawId.length > 11) {
+                            const shortId = rawId.slice(-11).replace(/^0+/, '');
+                            empId = pisMap.get(shortId) || cpfMap.get(shortId);
                         }
 
                         if (empId) {
                             result.employeesFound++;
-                        } else if (!result.employeesNotFound.includes(punch.pis)) {
-                            result.employeesNotFound.push(punch.pis);
-                        }
-
-                        // Check for duplicate in current build or DB
-                        const punchKey = `${punch.pis}_${punch.date.toISOString().split('T')[0]}_${punch.time}`;
-                        if (uniquePunches.has(punchKey)) continue;
-                        uniquePunches.add(punchKey);
-
-                        // Partial check against DB (slow but necessary for atomicity here)
-                        const existing = await prisma.timeRecord.findFirst({
-                            where: {
-                                pis: punch.pis,
-                                date: punch.date,
-                                time: punch.time
-                            },
-                            select: { id: true }
-                        });
-
-                        if (existing) {
-                            result.punchesSkipped++;
-                            continue;
+                        } else {
+                            if (!result.employeesNotFound.includes(punch.pis)) {
+                                result.employeesNotFound.push(punch.pis);
+                                console.warn(`[SYNC] Employee not found for ID: ${punch.pis} (Parsed: ${rawId}) in file ${afdFile.filename}`);
+                            }
                         }
 
                         recordsToCreate.push({
-                            fileId: clockFile.id,
                             pis: punch.pis,
                             employeeId: empId || null,
                             date: punch.date,
@@ -144,27 +122,47 @@ export class AFDSyncService {
                         });
                     }
 
-                    // 6. Batch Insert
+                    // 5. Atomic Batch Insert and Log for this file
                     if (recordsToCreate.length > 0) {
-                        await prisma.timeRecord.createMany({
-                            data: recordsToCreate
+                        await prisma.$transaction(async (tx) => {
+                            await tx.timeRecord.createMany({
+                                data: recordsToCreate,
+                                skipDuplicates: true
+                            });
+
+                            // Create an individual file record for traceability
+                            await tx.timeClockFile.create({
+                                data: {
+                                    fileName: afdFile.filename,
+                                    fileHash: `sync_${afdFile.id}_${Date.now()}`,
+                                    status: 'DONE',
+                                    store: 'Sincronização Externa',
+                                    errorLog: `Importados ${recordsToCreate.length} pontos (NSRs: ${newPunches[0]?.nsr} a ${newPunches[newPunches.length - 1]?.nsr})`
+                                }
+                            });
                         });
                         result.punchesImported += recordsToCreate.length;
                     }
 
-                    // Update file status
-                    await prisma.timeClockFile.update({
-                        where: { id: clockFile.id },
-                        data: { status: 'DONE' }
-                    });
-
                     result.filesProcessed++;
                 } catch (fileError: any) {
-                    result.errors.push(
-                        `File ${afdFile.filename}: ${fileError.message}`
-                    );
+                    result.errors.push(`File ${afdFile.filename}: ${fileError.message}`);
                 }
             }
+
+            // 6. Log the overall sync summary if anything was imported
+            if (result.punchesImported > 0 || result.errors.length > 0) {
+                await prisma.timeClockFile.create({
+                    data: {
+                        fileName: `Sync Automático: ${new Date().toLocaleDateString('pt-BR')}`,
+                        fileHash: `sync_${Date.now()}_${result.punchesImported}`,
+                        status: result.errors.length > 0 ? 'PARTIAL' : 'DONE',
+                        errorLog: result.errors.length > 0 ? result.errors.join('\n') : `Importados ${result.punchesImported} novos pontos.`,
+                        store: 'Sistema'
+                    }
+                });
+            }
+
         } catch (error: any) {
             result.errors.push(`Connection error: ${error.message}`);
         } finally {

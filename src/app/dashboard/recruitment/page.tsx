@@ -21,6 +21,11 @@ export default async function RecruitmentPage() {
                     <p className="text-slate-500 dark:text-slate-400">Gestão de Vagas e Banco de Talentos</p>
                 </div>
                 <div className="flex gap-2">
+                    <Link href="/dashboard/recruitment/talent-bank-redirect">
+                        <Button variant="outline" className="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                            ✨ Banco de Talentos
+                        </Button>
+                    </Link>
                     <Link href="/careers" target="_blank">
                         <Button variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">
                             🌐 Ver Site de Vagas

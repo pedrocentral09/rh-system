@@ -35,7 +35,7 @@ export default async function DisciplinaryPage() {
                 </div>
             </div>
 
-            <DisciplinaryList records={records || []} />
+            <DisciplinaryList records={records || []} employees={employees || []} />
         </div>
     );
 }

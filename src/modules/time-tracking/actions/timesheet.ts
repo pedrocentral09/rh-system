@@ -30,6 +30,11 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
             endDate = new Date(Date.UTC(year, month, closingDay, 23, 59, 59, 999));
         }
 
+        // 1.5 Fetch Holidays for the period
+        const holidays = await prisma.holiday.findMany({
+            where: { date: { gte: startDate, lte: endDate } }
+        });
+
         // 2. Fetch all records for the period
         const records = await prisma.timeRecord.findMany({
             where: {
@@ -66,7 +71,7 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
                 s.date.getUTCDate() === dayNum && s.date.getUTCMonth() === monthNum
             );
 
-            const calc = await calculateDay(employeeId, loopDate, dayRecords, dayScale);
+            const calc = await calculateDay(employeeId, loopDate, dayRecords, dayScale, holidays);
 
             sheet.push({
                 day: dayNum,
@@ -76,8 +81,12 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
             current.setUTCDate(current.getUTCDate() + 1);
         }
 
-        // Calculate Totals
-        const totalBalance = sheet.reduce((acc, day) => acc + day.balanceMinutes, 0);
+        // Calculate Totals (Only up to yesterday to avoid misleading daily balances)
+        const now = new Date();
+        const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+        const totalBalance = sheet
+            .filter(day => day.date <= yesterday)
+            .reduce((acc, day) => acc + day.balanceMinutes, 0);
 
         return { success: true, data: { days: sheet, totalBalance } };
 
@@ -87,16 +96,32 @@ export async function getTimeSheet(employeeId: string, month: number, year: numb
     }
 }
 
-export async function getDailyOverview(dateString: string) {
+export async function getDailyOverview(dateString: string, filters?: { companyId?: string, storeId?: string }) {
     try {
         // Parse "YYYY-MM-DD" explicitly to UTC Midnight
         const [y, m, d] = dateString.split('-').map(Number);
         const queryDate = new Date(Date.UTC(y, m - 1, d));
 
-        // Fetch all active employees
+        // Prepare where clause
+        const whereClause: any = { status: 'ACTIVE' };
+        if (filters?.companyId) whereClause.contract = { companyId: filters.companyId };
+        if (filters?.storeId) {
+            whereClause.contract = { ...whereClause.contract, storeId: filters.storeId };
+        }
+
+        // Fetch all active employees matching filters
         const employees = await prisma.employee.findMany({
-            where: { status: 'ACTIVE' },
-            select: { id: true, name: true, department: true }
+            where: whereClause,
+            select: {
+                id: true,
+                name: true,
+                department: true,
+                contract: {
+                    select: {
+                        sectorDef: { select: { name: true } }
+                    }
+                }
+            }
         });
 
         // Fetch all scales for this day
@@ -111,16 +136,21 @@ export async function getDailyOverview(dateString: string) {
             orderBy: { time: 'asc' }
         });
 
+        // Fetch holidays for this specific day
+        const holidays = await prisma.holiday.findMany({
+            where: { date: queryDate }
+        });
+
         // Calculate for each employee
         const overview = [];
         for (const emp of employees) {
             const empScale = scales.find((s: { employeeId: string }) => s.employeeId === emp.id);
             const empRecords = records.filter((r: { employeeId: string | null }) => r.employeeId === emp.id);
 
-            const calc = await calculateDay(emp.id, queryDate, empRecords, empScale);
+            const calc = await calculateDay(emp.id, queryDate, empRecords, empScale, holidays);
 
             overview.push({
-                employee: { id: emp.id, name: emp.name, department: emp.department },
+                employee: { id: emp.id, name: emp.name, department: (emp as any).contract?.sectorDef?.name || emp.department },
                 ...calc
             });
         }
@@ -153,11 +183,11 @@ export async function getBankOverview(month: number, year: number) {
         let endDate: Date;   // End of period (usually today or end of cycle)
 
         if (closingDay >= 28) {
-            startDate = new Date(year, month, 1);
-            endDate = new Date(year, month + 1, 0);
+            startDate = new Date(Date.UTC(year, month, 1));
+            endDate = new Date(Date.UTC(year, month + 1, 0));
         } else {
-            startDate = new Date(year, month - 1, closingDay + 1);
-            endDate = new Date(year, month, closingDay);
+            startDate = new Date(Date.UTC(year, month - 1, closingDay + 1));
+            endDate = new Date(Date.UTC(year, month, closingDay));
         }
 
         const employees = await prisma.employee.findMany({
@@ -175,6 +205,9 @@ export async function getBankOverview(month: number, year: number) {
             where: { date: { gte: startDate, lte: endDate } },
             include: { shiftType: true }
         });
+        const holidays = await prisma.holiday.findMany({
+            where: { date: { gte: startDate, lte: endDate } }
+        });
 
         for (const emp of employees) {
             let balance = 0;
@@ -185,13 +218,14 @@ export async function getBankOverview(month: number, year: number) {
             // If today is 15th, and cycle ends 20th, do we count 16-20 as 0 or ignore?
             // Usually we ignore future days.
 
-            const realEndDate = (endDate > new Date()) ? new Date() : endDate;
-            // Ensure we don't go backwards if start is also in future (unlikely for current dashboard)
+            const now = new Date();
+            const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+            const realEndDate = (endDate > yesterday) ? yesterday : endDate;
 
             const current = new Date(startDate);
             while (current <= realEndDate) {
-                // Check if actually future (ignoring time)
-                if (current > new Date()) break;
+                // Check if actually future (ignoring time) in UTC
+                if (current.getTime() > Date.now()) break;
 
                 const dayNum = current.getDate();
                 // Filter by date object comparison or compatible day/month check
@@ -209,18 +243,18 @@ export async function getBankOverview(month: number, year: number) {
                 // checking only `getDate` is wrong because Jan 21 and Feb 21 are different.
 
                 // Fix: Filter by comparing date objects or full parts.
-                const isSameDay = (d1: Date, d2: Date) =>
-                    d1.getDate() === d2.getDate() &&
-                    d1.getMonth() === d2.getMonth() &&
-                    d1.getFullYear() === d2.getFullYear();
+                const isSameDayUTC = (d1: Date, d2: Date) =>
+                    d1.getUTCDate() === d2.getUTCDate() &&
+                    d1.getUTCMonth() === d2.getUTCMonth() &&
+                    d1.getUTCFullYear() === d2.getUTCFullYear();
 
-                const empScale = allScales.find((s: { employeeId: string; date: Date }) => s.employeeId === emp.id && isSameDay(s.date, current));
-                const empRecords = allRecords.filter((r: { employeeId: string | null; date: Date }) => r.employeeId === emp.id && isSameDay(r.date, current));
+                const empScale = allScales.find((s: { employeeId: string; date: Date }) => s.employeeId === emp.id && isSameDayUTC(s.date, current));
+                const empRecords = allRecords.filter((r: { employeeId: string | null; date: Date }) => r.employeeId === emp.id && isSameDayUTC(r.date, current));
 
-                const calc = await calculateDay(emp.id, new Date(current), empRecords, empScale);
+                const calc = await calculateDay(emp.id, new Date(current), empRecords, empScale, holidays);
                 balance += calc.balanceMinutes;
 
-                current.setDate(current.getDate() + 1);
+                current.setUTCDate(current.getUTCDate() + 1);
             }
 
             bankList.push({
@@ -228,8 +262,6 @@ export async function getBankOverview(month: number, year: number) {
                 balance
             });
         }
-
-        return { success: true, data: bankList.sort((a, b) => a.balance - b.balance) };
 
         return { success: true, data: bankList.sort((a, b) => a.balance - b.balance) };
 
@@ -243,7 +275,7 @@ export async function adjustTimeRecords(employeeId: string, dateString: string, 
     try {
         // Ensure date is start of day (Local)
         const [y, m, d] = dateString.split('-').map(Number);
-        const queryDate = new Date(y, m - 1, d);
+        const queryDate = new Date(Date.UTC(y, m - 1, d));
 
         // Fetch employee to get PIS (needed for TimeRecord) or just use empty if manual
         const emp = await prisma.employee.findUnique({ where: { id: employeeId } });

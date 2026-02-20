@@ -3,6 +3,7 @@ import { getPayrollPeriods } from '@/modules/payroll/actions/periods';
 import { PayrollStatCards } from '@/modules/payroll/components/PayrollStatCards';
 import { PeriodList } from '@/modules/payroll/components/PeriodList';
 import { CreatePeriodButton } from '@/modules/payroll/components/CreatePeriodButton';
+import { PayrollSettingsModal } from '@/modules/payroll/components/PayrollSettingsModal';
 
 import { prisma } from '@/lib/prisma';
 
@@ -19,7 +20,10 @@ export default async function PayrollPage() {
                     <h1 className="text-3xl font-bold">Folha de Pagamento</h1>
                     <p className="text-slate-500 mt-1">Gerencie competências, holerites e pagamentos.</p>
                 </div>
-                <CreatePeriodButton />
+                <div className="flex items-center gap-3">
+                    <PayrollSettingsModal />
+                    <CreatePeriodButton />
+                </div>
             </div>
 
             <PayrollStatCards periods={periods || []} activeEmployeeCount={activeEmployeeCount} />

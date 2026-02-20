@@ -34,7 +34,7 @@ export function parseAFD(content: string): AFDMarking[] {
             const day = parseInt(dateStr.substring(0, 2));
             const month = parseInt(dateStr.substring(2, 4)) - 1; // JS Month is 0-indexed
             const year = parseInt(dateStr.substring(4, 8));
-            const date = new Date(year, month, day);
+            const date = new Date(Date.UTC(year, month, day));
 
             // Format Time
             const time = `${timeStr.substring(0, 2)}:${timeStr.substring(2, 4)}`;

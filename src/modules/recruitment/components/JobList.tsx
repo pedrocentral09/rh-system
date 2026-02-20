@@ -7,11 +7,14 @@ export function JobList({ jobs }: { jobs: any[] }) {
     return (
         <div className="space-y-4">
             {jobs.map((job) => (
-                <Card key={job.id} className="hover:shadow-md transition-shadow">
+                <Card
+                    key={job.id}
+                    className={`hover:shadow-md transition-shadow ${job.title === 'Banco de Talentos' ? 'border-2 border-indigo-500/50 bg-indigo-50/10' : ''}`}
+                >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div className="space-y-1">
-                            <CardTitle className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                                {job.title}
+                            <CardTitle className={`text-lg font-bold ${job.title === 'Banco de Talentos' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                                {job.title === 'Banco de Talentos' ? `✨ ${job.title}` : job.title}
                             </CardTitle>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
                                 {job.department} • {job.type} • {new Date(job.createdAt).toLocaleDateString()}
@@ -25,12 +28,12 @@ export function JobList({ jobs }: { jobs: any[] }) {
                     </CardHeader>
                     <CardContent>
                         <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium text-indigo-600">
+                            <span className={`text-sm font-medium ${job.title === 'Banco de Talentos' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400'}`}>
                                 {job._count.applications} Candidatos
                             </span>
                             <div className="flex gap-2">
                                 <Link href={`/dashboard/recruitment/${job.id}`}>
-                                    <Button variant="outline" size="sm">Gerenciar</Button>
+                                    <Button variant="outline" size="sm" className={job.title === 'Banco de Talentos' ? 'border-indigo-200 dark:border-indigo-800' : ''}>Gerenciar</Button>
                                 </Link>
                                 <Link href={`/dashboard/recruitment/${job.id}/edit`}>
                                     <Button variant="ghost" size="sm">Editar</Button>

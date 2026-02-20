@@ -60,25 +60,39 @@ interface TabItem {
 
 interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
     tabs?: TabItem[];
+    fullContent?: boolean;
 }
 
 const Tabs = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Root>,
     TabsProps
->(({ className, tabs, children, ...props }, ref) => {
+>(({ className, tabs, fullContent = false, children, ...props }, ref) => {
     if (tabs && tabs.length > 0) {
         return (
             <TabsRoot ref={ref} className={className} defaultValue={tabs[0]?.id} {...props}>
-                <div className="overflow-x-auto pb-2 mb-2">
-                    <TabsList className="inline-flex h-auto w-auto justify-start p-1">
+                <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                    <TabsList className="inline-flex h-auto w-auto justify-center p-1 bg-transparent">
                         {tabs.map(tab => (
-                            <TabsTrigger key={tab.id} value={tab.id}>{tab.label}</TabsTrigger>
+                            <TabsTrigger
+                                key={tab.id}
+                                value={tab.id}
+                                className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-2 transition-all whitespace-nowrap"
+                            >
+                                {tab.label}
+                            </TabsTrigger>
                         ))}
                     </TabsList>
                 </div>
                 {tabs.map(tab => (
-                    <TabsContent key={tab.id} value={tab.id} className="mt-4 focus-visible:ring-0 outline-none">
-                        {tab.content}
+                    <TabsContent
+                        key={tab.id}
+                        value={tab.id}
+                        forceMount
+                        className="mt-4 focus-visible:ring-0 outline-none data-[state=inactive]:hidden"
+                    >
+                        <div className={cn("mx-auto w-full", fullContent ? "max-w-none" : "max-w-3xl")}>
+                            {tab.content}
+                        </div>
                     </TabsContent>
                 ))}
             </TabsRoot>

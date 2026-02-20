@@ -76,14 +76,6 @@ export default async function DashboardLayout({
                     </Link>
 
                     <Link
-                        href="/dashboard/onboarding"
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
-                    >
-                        <span className="text-xl group-hover:scale-110 transition-transform">👋</span>
-                        <span className="font-medium text-sm">Onboarding</span>
-                    </Link>
-
-                    <Link
                         href="/dashboard/time-tracking"
                         className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
                     >
@@ -96,8 +88,8 @@ export default async function DashboardLayout({
                         href="/dashboard/vacations"
                         className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
                     >
-                        <span className="text-xl group-hover:scale-110 transition-transform">🏖️</span>
-                        <span className="font-medium text-sm">Férias</span>
+                        <span className="text-xl group-hover:scale-110 transition-transform">🏖️🩺</span>
+                        <span className="font-medium text-sm">Férias e Afastamentos</span>
                     </Link>
 
                     <Link

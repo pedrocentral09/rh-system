@@ -90,7 +90,7 @@ model UserStoreAccess {
 model Employee {
   id            String   @id @default(uuid())
   name          String
-  email         String   @unique
+  email         String?  @unique
   cpf           String   @unique
   rg            String
   dateOfBirth   DateTime
@@ -132,6 +132,7 @@ model Employee {
   timeSheetClosings TimeSheetClosing[]
   vacationPeriods   VacationPeriod[]
   vacationRequests  VacationRequest[]
+  medicalLeaves     MedicalLeave[]
 
   // System Access
   userId String? @unique
@@ -212,6 +213,34 @@ model HealthData {
   @@map("personnel_health_data")
 }
 
+model MedicalLeave {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type      String   // ATESTADO, LICENCA_MATERNIDADE, LICENCA_PATERNIDADE, ACIDENTE_TRABALHO...
+  startDate DateTime
+  endDate   DateTime
+  daysCount Int
+
+  crm       String?  // Doctor's registry
+  doctorName String?
+  cid       String?  // Optional CID code
+
+  documentUrl String   // Forced document upload
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  submittedByType String // HR, EMPLOYEE
+  submittedById   String // User ID of who submitted
+
+  notes       String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("personnel_medical_leaves")
+}
+
 // enum ContractType {
 //   CLT
 //   PJ
@@ -261,6 +290,7 @@ model Contract {
   isExperienceContract Boolean @default(false)
   experienceDays       Int?
   isExperienceExtended Boolean @default(false)
+  experienceExtensionDays Int?
 
   // Benefits
   hasTransportVoucher   Boolean  @default(false)
@@ -474,6 +504,14 @@ model TerminationReason {
   @@map("config_termination_reasons")
 }
 
+model Holiday {
+  id   String @id @default(uuid())
+  date DateTime @unique // Midnight UTC
+  name String
+
+  @@map("config_holidays")
+}
+
 // --- MODULE: SCALES (Escalas) ---
 
 model ShiftType {
@@ -564,6 +602,7 @@ model TimeRecord {
 
   createdAt DateTime @default(now())
 
+  @@unique([employeeId, date, time, nsr], name: "unique_punch")
   @@index([employeeId, date])
   @@map("time_records")
 }
@@ -711,6 +750,8 @@ model PayslipItem {
   reference Decimal? // Qtde (ex: 50% extra) or Days
   value     Decimal // The final calculated value
 
+  source    String  @default("AUTO") // AUTO, MANUAL, SYNC
+
   createdAt DateTime @default(now())
 
   @@map("payroll_payslip_items")
@@ -724,13 +765,51 @@ model PayrollImport {
 
   type   String // CONVENIO_PHARMACY, PLR, QUEBRA_CAIXA
   status String // PENDING, PROCESSED
-
   processedCount Int     @default(0)
   totalValue     Decimal @default(0)
-
   uploadedAt DateTime @default(now())
 
   @@map("payroll_imports")
+}
+
+model PayrollSettings {
+  id String @id @default(uuid())
+
+  minimumWage     Decimal @default(1412.00)
+  familySalaryLimit Decimal @default(1819.26)
+  familySalaryValue Decimal @default(62.04)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("payroll_settings")
+}
+
+model TaxTable {
+  id   String @id @default(uuid())
+  name String // INSS, IRRF
+  year Int
+
+  brackets TaxBracket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, year])
+  @@map("payroll_tax_tables")
+}
+
+model TaxBracket {
+  id         String   @id @default(uuid())
+  tableId    String
+  table      TaxTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  limit      Decimal // Até quanto incide
+  rate       Decimal // Alíquota
+  deduction  Decimal  @default(0) // Parcela a deduzir (IRRF)
+
+  order      Int      @default(0) // Para garantir ordem progressiva
+
+  @@map("payroll_tax_brackets")
 }
 
 // --- MODULE: DISCIPLINARY (Gestão Disciplinar) ---
@@ -794,6 +873,7 @@ model Candidate {
   phone     String?
   linkedin  String?
   resumeUrl String? // Storage URL
+  source    String? // Método de Cadastro (ex: Site, LinkedIn, Presencial)
 
   notes String?
 

@@ -44,7 +44,7 @@ export function JobForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="department">Departamento</Label>
+                    <Label htmlFor="department">Setor</Label>
                     <Input id="department" name="department" placeholder="Ex: Tecnologia" required />
                 </div>
 

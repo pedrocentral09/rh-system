@@ -8,10 +8,11 @@ import { AuditLogViewer } from './AuditLogViewer';
 import { CompanyList } from './CompanyList';
 import { StoreList } from './StoreList';
 import { AuxiliaryTablesManager } from './AuxiliaryTablesManager';
+import { HolidayManager } from './HolidayManager';
 import { Card, CardContent } from '@/shared/components/ui/card';
 
 export function ConfigurationTabs() {
-    const [activeTab, setActiveTab] = useState<'company' | 'users' | 'tables' | 'audit'>('company');
+    const [activeTab, setActiveTab] = useState<'company' | 'users' | 'tables' | 'audit' | 'holidays'>('company');
 
     return (
         <div className="space-y-6">
@@ -53,6 +54,15 @@ export function ConfigurationTabs() {
                 >
                     🛡️ Auditoria
                 </button>
+                <button
+                    onClick={() => setActiveTab('holidays')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'holidays'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                >
+                    📅 Feriados
+                </button>
             </div>
 
             {/* Content Area */}
@@ -88,6 +98,10 @@ export function ConfigurationTabs() {
 
                 {activeTab === 'audit' && (
                     <AuditLogViewer />
+                )}
+
+                {activeTab === 'holidays' && (
+                    <HolidayManager />
                 )}
             </div>
         </div>

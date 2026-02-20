@@ -48,7 +48,7 @@ export function MobileEmployeeCard({
                         )}
                         <div>
                             <h3 className="font-semibold text-slate-800 dark:text-slate-100">{employee.name}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{employee.jobTitle || 'Sem cargo'}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{employee.jobTitle || (employee as any).jobRole?.name || 'Sem cargo'}</p>
                         </div>
                     </div>
                     <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full 
@@ -59,12 +59,12 @@ export function MobileEmployeeCard({
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-900 p-2 rounded">
                     <div>
-                        <span className="block text-slate-400 dark:text-slate-500">Departamento</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-200">{employee.department || '-'}</span>
+                        <span className="block text-slate-400 dark:text-slate-500">Loja</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-200">{(employee as any).contract?.store?.name || '-'}</span>
                     </div>
                     <div>
-                        <span className="block text-slate-400 dark:text-slate-500">CPF</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-200">{employee.cpf}</span>
+                        <span className="block text-slate-400 dark:text-slate-500">Setor</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-200">{(employee as any).contract?.sectorDef?.name || employee.department || '-'}</span>
                     </div>
                 </div>
 

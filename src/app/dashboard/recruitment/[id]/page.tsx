@@ -5,7 +5,8 @@ import { CandidateForm } from '@/modules/recruitment/components/CandidateForm';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 
-export default async function JobDetailsPage({ params }: { params: { id: string } }) {
+export default async function JobDetailsPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const { data: job } = await getJobDetails(params.id);
 
     if (!job) {
@@ -14,9 +15,16 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
 
     return (
         <div className="flex flex-col h-[calc(100vh-100px)]">
+            <div className="mb-4">
+                <Link href="/dashboard/recruitment" className="text-sm text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                    ← Voltar para Recrutamento
+                </Link>
+            </div>
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{job.title}</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {job.title === 'Banco de Talentos' ? `✨ ${job.title}` : job.title}
+                    </h1>
                     <p className="text-slate-500 dark:text-slate-400">
                         {job.department} • {job.status}
                     </p>
@@ -43,3 +51,5 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
         </div>
     );
 }
+
+import Link from 'next/link';

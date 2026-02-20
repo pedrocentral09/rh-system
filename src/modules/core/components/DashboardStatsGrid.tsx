@@ -8,7 +8,7 @@ interface StatsGridProps {
         totalEmployees: number;
         activeEmployees: number;
         storeCount: number;
-        departmentCount: number;
+        sectorCount: number;
     };
 }
 
@@ -17,7 +17,7 @@ export function DashboardStatsGrid({ stats }: StatsGridProps) {
         { label: 'Total Colaboradores', value: stats.totalEmployees, color: 'orange', sub: 'Cadastrados no sistema' },
         { label: 'Ativos', value: stats.activeEmployees, color: 'emerald', sub: 'Atualmente trabalhando' },
         { label: 'Lojas / Unidades', value: stats.storeCount, color: 'blue', sub: 'Lojas ativas com equipe' },
-        { label: 'Departamentos', value: stats.departmentCount, color: 'amber', sub: 'Setores operacionais' }
+        { label: 'Setores', value: stats.sectorCount, color: 'amber', sub: 'Divisões operacionais' }
     ];
 
     return (

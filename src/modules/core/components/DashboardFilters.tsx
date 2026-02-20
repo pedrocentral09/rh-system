@@ -53,21 +53,6 @@ export function DashboardFilters({ companies, stores }: FiltersProps) {
                     ))}
                 </select>
             </div>
-
-            <div className="w-[1px] bg-slate-200 dark:bg-slate-800" />
-
-            <div className="flex flex-col gap-1">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Assinaturas</Label>
-                <select
-                    className="bg-transparent text-sm font-bold text-slate-900 dark:text-white outline-none cursor-pointer pr-4"
-                    onChange={(e) => handleFilterChange('sigStatus', e.target.value)}
-                    value={searchParams.get('sigStatus') || 'all'}
-                >
-                    <option value="all">TODOS DOCS</option>
-                    <option value="PENDING">PENDENTES</option>
-                    <option value="SIGNED">ASSINADOS</option>
-                </select>
-            </div>
         </div>
     );
 }

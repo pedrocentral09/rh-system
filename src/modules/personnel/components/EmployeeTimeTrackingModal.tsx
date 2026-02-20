@@ -15,7 +15,7 @@ export function EmployeeTimeTrackingModal({ isOpen, onClose, employee }: Employe
             isOpen={isOpen}
             onClose={onClose}
             title={`Controle de Ponto: ${employee.name}`}
-            width="4xl"
+            width="5xl"
         >
             <div className="mt-4">
                 {/* 

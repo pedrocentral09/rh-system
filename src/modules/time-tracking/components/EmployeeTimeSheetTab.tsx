@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { getTimeSheet } from '../actions/timesheet';
 import { closeTimeSheet, getClosingStatus } from '../actions/closing';
 
-import { Loader2, Printer, Lock, AlertTriangle } from 'lucide-react';
+import { Loader2, Printer, Lock, AlertTriangle, Scale } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface EmployeeTimeSheetTabProps {
     employeeId: string;
@@ -140,6 +141,7 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                             <th className="px-2 py-2 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Saída</th>
                             <th className="px-4 py-2 text-center">Saldo</th>
                             <th className="px-4 py-2 text-center w-24">Status</th>
+                            <th className="px-2 py-2 text-center w-10">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -150,6 +152,9 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                             const displayDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0);
                             const isWeekend = displayDate.getDay() === 0 || displayDate.getDay() === 6;
 
+                            // Formatting date string for the link
+                            const isoDate = d.toISOString().split('T')[0];
+
                             // Mock Inter-shift Check (Needs backend support for accuracy)
                             // We check if "previous day end" and "current day start" is < 11h
                             // This is complex on frontend without full previous data. 
@@ -157,7 +162,7 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                             const hasInterShiftViolation = false;
 
                             return (
-                                <tr key={day.day} className={`hover:bg-slate-50 ${isWeekend ? 'bg-slate-50/50' : ''}`}>
+                                <tr key={`${day.day}-${idx}`} className={`hover:bg-slate-50 group ${isWeekend ? 'bg-slate-50/50' : ''}`}>
                                     <td className="px-4 py-2 text-center font-bold text-slate-700">{day.day}</td>
                                     <td className={`px-4 py-2 text-xs ${isWeekend ? 'text-red-400' : 'text-slate-500'}`}>
                                         {mounted ? displayDate.toLocaleDateString('pt-BR', { weekday: 'short' }) : '---'}
@@ -197,6 +202,17 @@ export function EmployeeTimeSheetTab({ employeeId }: EmployeeTimeSheetTabProps) 
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${day.statusColor}`}>
                                             {day.status}
                                         </span>
+                                    </td>
+                                    <td className="px-2 py-2 text-center text-xs">
+                                        {day.balanceMinutes < -5 && (
+                                            <Link
+                                                href={`/dashboard/disciplinary?action=create&empId=${employeeId}&date=${isoDate}&reason=Atraso de ${Math.abs(day.balanceMinutes)} min&desc=O colaborador apresentou um atraso de ${Math.abs(day.balanceMinutes)} minutos no dia ${displayDate.toLocaleDateString('pt-BR')}.`}
+                                                className="bg-red-50 hover:bg-red-100 text-red-600 p-1 rounded border border-red-100 transition-colors inline-block"
+                                                title="Gerar Ato Disciplinar"
+                                            >
+                                                ⚖️
+                                            </Link>
+                                        )}
                                     </td>
                                 </tr>
                             );

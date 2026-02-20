@@ -8,7 +8,7 @@ export default async function ReportsPage() {
     const stores = await prisma.store.findMany({ select: { id: true, name: true } });
 
     return (
-        <div className="p-8 space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="space-y-8 bg-slate-50 dark:bg-slate-950">
             <div>
                 <h1 className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter uppercase">
                     Centro de <span className="text-orange-500">Relatórios</span>

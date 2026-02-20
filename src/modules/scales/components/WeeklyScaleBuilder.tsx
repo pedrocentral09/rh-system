@@ -23,6 +23,7 @@ interface Employee {
     department: string;
     contract?: {
         store: { id: string; name: string };
+        sectorDef?: { name: string };
     };
 }
 
@@ -42,6 +43,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStore, setSelectedStore] = useState('ALL');
     const [selectedSector, setSelectedSector] = useState('ALL');
+    const [scalePattern, setScalePattern] = useState<'5x2' | '6x1'>('5x2');
 
     // NEW Edit Mode States
     const [isEditing, setIsEditing] = useState(false);
@@ -58,12 +60,13 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     });
 
     const stores = Array.from(storesMap.entries()).map(([id, name]) => ({ id, name }));
-    const sectors = Array.from(new Set(employees.map(e => e.department).filter(Boolean))) as string[];
+    const sectors = Array.from(new Set(employees.map(e => e.contract?.sectorDef?.name || e.department).filter(Boolean))) as string[];
 
     const filteredEmployees = employees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStore = selectedStore === 'ALL' || emp.contract?.store?.id === selectedStore;
-        const matchesSector = selectedSector === 'ALL' || emp.department === selectedSector;
+        const matchesSector = selectedSector === 'ALL' ||
+            (emp.contract?.sectorDef?.name === selectedSector || emp.department === selectedSector);
         return matchesSearch && matchesStore && matchesSector;
     });
 
@@ -74,7 +77,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     async function loadData() {
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
-        const normalizedEnd = new Date(format(addDays(weekStart, 6), 'yyyy-MM-dd') + 'T00:00:00Z');
+        const normalizedEnd = new Date(format(addDays(weekStart, 6), 'yyyy-MM-dd') + 'T23:59:59.999Z');
 
         const [empResult, scaleResult] = await Promise.all([
             getEmployeesForScale(),
@@ -120,13 +123,25 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     }
 
     async function handleAutoGenerate() {
-        if (!confirm('Deseja gerar uma escala automática padrão (5x2) para TODOS os funcionários nesta semana? Isso substituirá registros existentes.')) return;
+        if (filteredEmployees.length === 0) {
+            toast.error('Nenhum funcionário filtrado para gerar escala.');
+            return;
+        }
+
+        const msg = filteredEmployees.length === employees.length
+            ? `Deseja gerar uma escala automática padrão (${scalePattern}) para TODOS os funcionários nesta semana?`
+            : `Deseja gerar uma escala automática padrão (${scalePattern}) apenas para os ${filteredEmployees.length} funcionários filtrados?`;
+
+        if (!confirm(msg + ' Isso substituirá registros existentes.')) return;
 
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
-        const result = await generateAutomaticScale(normalizedStart);
+        const filterIds = filteredEmployees.map(e => e.id);
+
+        const result = await generateAutomaticScale(normalizedStart, filterIds, scalePattern);
+
         if (result.success) {
-            toast.success('Escala automática gerada com sucesso!');
+            toast.success(`Escala automática (${scalePattern}) gerada com sucesso!`);
             await loadData();
         } else {
             toast.error(result.error || 'Erro ao gerar escala');
@@ -152,9 +167,11 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
 
         const scale = scales.find(s => {
             if (!s.date) return false;
-            // Ensure we compare using the same format
-            const sDateIso = format(new Date(s.date), 'yyyy-MM-dd');
-            return s.employeeId === employeeId && sDateIso === dayIso;
+            // Robust ISO comparison: s.date can be a Date object or an ISO string from JSON
+            const sDateStr = s.date instanceof Date
+                ? s.date.toISOString().split('T')[0]
+                : new Date(s.date).toISOString().split('T')[0];
+            return s.employeeId === employeeId && sDateStr === dayIso;
         });
         return scale;
     }
@@ -235,10 +252,21 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                             <Button variant="outline" onClick={handleClone} disabled={loading} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50" title="Copiar escala da semana passada">
                                 📋 Copiar Anterior
                             </Button>
-                            <Button variant="outline" onClick={handleAutoGenerate} disabled={loading} className="text-emerald-600 border-emerald-200 hover:bg-emerald-50" title="Gerar escala padrão 5x2">
-                                🤖 Escala Auto
-                            </Button>
-                            <Button variant="outline" onClick={() => window.print()} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50" title="Imprimir escala">
+                            <div className="flex items-center space-x-2 border-r pr-2 border-slate-200">
+                                <span className="text-xs font-medium text-slate-500">Padrão:</span>
+                                <select
+                                    className="text-xs border-slate-300 rounded-md bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-900 dark:text-white p-1 outline-none"
+                                    value={scalePattern}
+                                    onChange={(e) => setScalePattern(e.target.value as any)}
+                                >
+                                    <option value="5x2">5x2</option>
+                                    <option value="6x1">6x1</option>
+                                </select>
+                                <Button variant="outline" onClick={handleAutoGenerate} disabled={loading} className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 h-8" title="Gerar escala automática para os filtrados">
+                                    🤖 Gerar
+                                </Button>
+                            </div>
+                            <Button variant="outline" onClick={() => window.print()} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50 h-8" title="Imprimir escala">
                                 🖨️ Imprimir
                             </Button>
                         </>
@@ -336,11 +364,11 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                 <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900">
                         <tr>
-                            <th className="px-4 py-3 sticky left-0 bg-slate-50 dark:bg-slate-900 z-10 w-64 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-b border-slate-200 dark:border-slate-700">
+                            <th className="px-3 py-3 sticky left-0 bg-slate-50 dark:bg-slate-900 z-10 w-72 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-b border-slate-200 dark:border-slate-700">
                                 Colaborador
                             </th>
                             {weekDays.map(day => (
-                                <th key={day.toISOString()} className={`px-2 py-3 text-center min-w-[140px] border-b border-slate-200 dark:border-slate-700 ${isSameDay(day, new Date()) ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : ''}`}>
+                                <th key={day.toISOString()} className={`px-1 py-3 text-center min-w-[110px] border-b border-slate-200 dark:border-slate-700 ${isSameDay(day, new Date()) ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : ''}`}>
                                     <div className="font-bold text-slate-700 dark:text-slate-200">{format(day, "EEE", { locale: ptBR })}</div>
                                     <div className="text-xs opacity-70 text-slate-500 dark:text-slate-400">{format(day, "dd/MM")}</div>
                                 </th>
@@ -359,10 +387,10 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                     const hasViols = daysWorked === 7;
 
                                     return (
-                                        <td className={`px-4 py-3 font-medium text-slate-800 dark:text-slate-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-slate-200 dark:border-slate-700 ${hasViols ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-800'}`}>
-                                            <div className="truncate w-48" title={emp.name}>{emp.name}</div>
+                                        <td className={`px-3 py-3 font-medium text-slate-800 dark:text-slate-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-slate-200 dark:border-slate-700 ${hasViols ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-800'}`}>
+                                            <div className="truncate w-56 font-bold" title={emp.name}>{emp.name}</div>
                                             <div className="flex items-center gap-2">
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate text-[10px]">{emp.jobTitle}</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate text-[10px]">{emp.jobTitle || emp.contract?.sectorDef?.name}</div>
                                                 {hasViols && (
                                                     <span className="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-[10px] px-1 rounded font-bold border border-red-200 dark:border-red-800" title="Alerta: 7 dias de trabalho consecutivos nesta semana (Violação 6x1)">
                                                         ⚠ 7 Dias

@@ -4,12 +4,12 @@ import { prisma } from '@/lib/prisma';
 
 import { StatsService } from '../services/stats.service';
 
-export async function getDashboardStats(filters?: { companyId?: string, storeId?: string, sigStatus?: string }) {
+export async function getDashboardStats(filters?: { companyId?: string, storeId?: string }) {
     const result = await StatsService.getDashboardData(filters);
     return result;
 }
 
-export async function getHiringStats(filters?: { companyId?: string, storeId?: string, sigStatus?: string }) {
+export async function getHiringStats(filters?: { companyId?: string, storeId?: string }) {
     // Note: getHiringStats logic can also be moved to StatsService for consistency.
     // For now, let's keep it simple or migrate it too.
     // Since the goal is performance, I'll migrate it to StatsService in the next step if needed.
@@ -24,18 +24,12 @@ export async function getHiringStats(filters?: { companyId?: string, storeId?: s
         const terminatedWhere: any = { terminationDate: { gte: sixMonthsAgo } };
 
         if (filters?.companyId) {
-            hiredWhere.contract = { companyId: filters.companyId };
+            hiredWhere.contract = { ...hiredWhere.contract, companyId: filters.companyId };
             terminatedWhere.companyId = filters.companyId;
         }
         if (filters?.storeId) {
             hiredWhere.contract = { ...hiredWhere.contract, storeId: filters.storeId };
             terminatedWhere.storeId = filters.storeId;
-        }
-
-        if (filters?.sigStatus && filters.sigStatus !== 'all') {
-            const sigFilter = { some: { status: filters.sigStatus } };
-            hiredWhere.documents = sigFilter;
-            terminatedWhere.employee = { documents: sigFilter };
         }
 
         const [hired, terminated] = await Promise.all([

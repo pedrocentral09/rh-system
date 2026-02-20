@@ -9,9 +9,10 @@ interface EmployeeEditModalProps {
     onClose: () => void;
     onSuccess: () => void;
     employee: any; // The partial employee from list
+    defaultTab?: string;
 }
 
-export function EmployeeEditModal({ isOpen, onClose, onSuccess, employee }: EmployeeEditModalProps) {
+export function EmployeeEditModal({ isOpen, onClose, onSuccess, employee, defaultTab }: EmployeeEditModalProps) {
     const [fullEmployee, setFullEmployee] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -36,7 +37,7 @@ export function EmployeeEditModal({ isOpen, onClose, onSuccess, employee }: Empl
     if (!isOpen) return null;
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Editar: ${employee?.name || 'Colaborador'}`} width="2xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={`Editar: ${employee?.name || 'Colaborador'}`} width="5xl">
             <div className="max-h-[70vh] overflow-y-auto px-1">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
@@ -49,6 +50,7 @@ export function EmployeeEditModal({ isOpen, onClose, onSuccess, employee }: Empl
                             employeeId={fullEmployee.id}
                             onSuccess={onSuccess}
                             onCancel={onClose}
+                            defaultTab={defaultTab}
                         />
                     )
                 )}

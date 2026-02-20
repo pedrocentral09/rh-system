@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+import { addDays } from 'date-fns';
+
 export async function createShiftType(formData: FormData) {
     const name = formData.get('name') as string;
     const startTime = formData.get('startTime') as string;
@@ -73,24 +75,26 @@ export async function getEmployeesForScale() {
                 jobTitle: true,
                 department: true,
                 contract: {
-                    select: { store: true }
+                    select: {
+                        store: { select: { id: true, name: true } },
+                        sectorDef: { select: { name: true } }
+                    }
                 }
             },
             orderBy: { name: 'asc' }
         });
         return { success: true, data: employees };
     } catch (error) {
+        console.error('Error fetching employees for scale:', error);
         return { success: false, error: 'Failed to fetch employees' };
     }
 }
 
 export async function getWeeklyScales(startDate: Date, endDate: Date) {
     try {
-        const start = new Date(startDate);
-        start.setUTCHours(0, 0, 0, 0);
-
-        const end = new Date(endDate);
-        end.setUTCHours(23, 59, 59, 999);
+        // Force absolute UTC range
+        const start = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 0, 0, 0, 0));
+        const end = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 23, 59, 59, 999));
 
         const scales = await prisma.workScale.findMany({
             where: {
@@ -108,9 +112,8 @@ export async function getWeeklyScales(startDate: Date, endDate: Date) {
 
 export async function saveWorkScale(employeeId: string, date: Date, shiftTypeId: string | null) {
     try {
-        // 1. Normalize Date (Start of day UTC-ish for consistency)
-        const normalizedDate = new Date(date);
-        normalizedDate.setUTCHours(0, 0, 0, 0);
+        // 1. Normalize Date (Start of day UTC ALWAYS)
+        const normalizedDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
 
         // 2. Handle empty or "FOLGA" as null
         const finalShiftId = (shiftTypeId === 'FOLGA' || shiftTypeId === '' || shiftTypeId === null)
@@ -145,8 +148,7 @@ export async function saveWorkScale(employeeId: string, date: Date, shiftTypeId:
 export async function saveWorkScalesBatch(employeeId: string, changes: { date: Date, shiftTypeId: string | null }[]) {
     try {
         const operations = changes.map(change => {
-            const normalizedDate = new Date(change.date);
-            normalizedDate.setUTCHours(0, 0, 0, 0);
+            const normalizedDate = new Date(Date.UTC(change.date.getUTCFullYear(), change.date.getUTCMonth(), change.date.getUTCDate(), 0, 0, 0, 0));
 
             const finalShiftId = (change.shiftTypeId === 'FOLGA' || change.shiftTypeId === '' || change.shiftTypeId === null)
                 ? null
@@ -182,12 +184,12 @@ export async function saveWorkScalesBatch(employeeId: string, changes: { date: D
 export async function cloneWeeklyScale(targetWeekStart: Date) {
     try {
         const sourceStart = new Date(targetWeekStart);
-        sourceStart.setDate(sourceStart.getDate() - 7);
-        sourceStart.setHours(0, 0, 0, 0);
+        sourceStart.setUTCDate(sourceStart.getUTCDate() - 7);
+        sourceStart.setUTCHours(0, 0, 0, 0);
 
         const sourceEnd = new Date(sourceStart);
-        sourceEnd.setDate(sourceEnd.getDate() + 6);
-        sourceEnd.setHours(23, 59, 59, 999);
+        sourceEnd.setUTCDate(sourceEnd.getUTCDate() + 6);
+        sourceEnd.setUTCHours(23, 59, 59, 999);
 
         // 1. Fetch source week data
         const sourceScales = await prisma.workScale.findMany({
@@ -205,9 +207,8 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
 
         // 2. Prepare operations for transaction
         const operations = sourceScales.map(scale => {
-            const newDate = new Date(scale.date);
-            newDate.setDate(newDate.getDate() + 7); // Shift 7 days forward
-            newDate.setUTCHours(0, 0, 0, 0); // Ensure normalization
+            const d = new Date(scale.date);
+            const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 7, 0, 0, 0, 0));
 
             const shiftVal = scale.shiftTypeId;
 
@@ -240,12 +241,11 @@ export async function cloneWeeklyScale(targetWeekStart: Date) {
     }
 }
 
-export async function generateAutomaticScale(weekStart: Date) {
+export async function generateAutomaticScale(weekStart: Date, employeeIds: string[], pattern: '5x2' | '6x1' = '5x2') {
     try {
-        const startDate = new Date(weekStart);
-        startDate.setUTCHours(0, 0, 0, 0);
+        const startDate = new Date(Date.UTC(weekStart.getUTCFullYear(), weekStart.getUTCMonth(), weekStart.getUTCDate(), 0, 0, 0, 0));
 
-        // Get standard shift (first one alphabetically for now, or TODO: get from settings)
+        // Get standard shift
         const standardShift = await prisma.shiftType.findFirst({
             orderBy: { name: 'asc' }
         });
@@ -254,36 +254,37 @@ export async function generateAutomaticScale(weekStart: Date) {
             return { success: false, error: 'Nenhum turno cadastrado para usar como padrão.' };
         }
 
-        // Get all active employees
-        const employees = await prisma.employee.findMany({
-            where: { status: 'ACTIVE' },
-            select: { id: true }
-        });
-
         const operations = [];
 
-        // For each employee
-        for (const emp of employees) {
-            // Monday (0) to Sunday (6)
+        // For each specific employee ID provided
+        for (const empId of employeeIds) {
             for (let i = 0; i < 7; i++) {
-                const currentDate = new Date(startDate);
-                currentDate.setDate(currentDate.getDate() + i);
-                currentDate.setUTCHours(0, 0, 0, 0); // Normalize
+                const currentDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() + i, 0, 0, 0, 0));
 
-                // Logic: Mon(0)..Fri(4) = Work, Sat(5)/Sun(6) = Folga (null)
-                const isWeekend = i >= 5;
-                const shiftValue = isWeekend ? null : standardShift.id;
+                const dayOfWeek = currentDate.getUTCDay(); // 0 is Sunday, 1 is Monday...
+
+                let isOffDay = false;
+
+                if (pattern === '6x1') {
+                    // 6x1: Off on Sunday (0)
+                    isOffDay = (dayOfWeek === 0);
+                } else {
+                    // 5x2: Off on Saturday (6) and Sunday (0)
+                    isOffDay = (dayOfWeek === 0 || dayOfWeek === 6);
+                }
+
+                const shiftValue = isOffDay ? null : standardShift.id;
 
                 operations.push(
                     prisma.workScale.upsert({
                         where: {
                             employeeId_date: {
-                                employeeId: emp.id,
+                                employeeId: empId,
                                 date: currentDate
                             }
                         },
                         create: {
-                            employeeId: emp.id,
+                            employeeId: empId,
                             date: currentDate,
                             shiftTypeId: shiftValue
                         },

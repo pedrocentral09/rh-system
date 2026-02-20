@@ -23,6 +23,29 @@ async function migrateDatabase() {
     }
 }
 
+// Auto-Sync Function (Background)
+function startAutoSync() {
+    console.log('🔄 [DEPLOY] Starting Background Auto-Sync...');
+
+    const runSync = () => {
+        console.log('🔄 [AUTO-SYNC] Triggering AFDSyncService...');
+        const { exec } = require('child_process');
+        // Use tsx to run the sync script
+        exec('npx tsx scripts/trigger-sync.js', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ [AUTO-SYNC] Error: ${error.message}`);
+                return;
+            }
+            console.log(`✅ [AUTO-SYNC] Completed: ${stdout.slice(0, 500)}...`);
+        });
+    };
+
+    // Run 1 minute after start
+    setTimeout(runSync, 60 * 1000);
+    // Every 5 minutes
+    setInterval(runSync, 5 * 60 * 1000);
+}
+
 // Start Function
 function startApp() {
     console.log('🚀 [DEPLOY] Starting Next.js Server...');
@@ -38,5 +61,6 @@ function startApp() {
 // Main Execution
 (async () => {
     await migrateDatabase();
+    startAutoSync();
     startApp();
 })();
