@@ -5,17 +5,17 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { createJob } from '../actions/jobs';
+import { createJob, updateJob } from '../actions/jobs';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-export function JobForm() {
+export function JobForm({ initialData }: { initialData?: any }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
     async function handleSubmit(formData: FormData) {
         setIsLoading(true);
-        const data = {
+        const data: any = {
             title: formData.get('title'),
             department: formData.get('department'),
             type: formData.get('type'),
@@ -24,13 +24,19 @@ export function JobForm() {
             salaryRangeMax: formData.get('salaryRangeMax'),
         };
 
-        const result = await createJob(data);
+        if (initialData?.id) {
+            data.status = formData.get('status');
+        }
+
+        const result = initialData?.id
+            ? await updateJob(initialData.id, data)
+            : await createJob(data);
 
         if (result.success) {
-            toast.success('Vaga criada com sucesso!');
+            toast.success(initialData?.id ? 'Vaga atualizada!' : 'Vaga criada com sucesso!');
             router.push('/dashboard/recruitment');
         } else {
-            toast.error('Erro ao criar vaga: ' + result.error);
+            toast.error('Erro ao salvar: ' + result.error);
         }
         setIsLoading(false);
     }
@@ -40,12 +46,12 @@ export function JobForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="title">Título da Vaga</Label>
-                    <Input id="title" name="title" placeholder="Ex: Desenvolvedor Senior" required />
+                    <Input id="title" name="title" defaultValue={initialData?.title} placeholder="Ex: Desenvolvedor Senior" required />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="department">Setor</Label>
-                    <Input id="department" name="department" placeholder="Ex: Tecnologia" required />
+                    <Input id="department" name="department" defaultValue={initialData?.department} placeholder="Ex: Tecnologia" required />
                 </div>
 
                 <div className="space-y-2">
@@ -54,6 +60,7 @@ export function JobForm() {
                         id="type"
                         name="type"
                         className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                        defaultValue={initialData?.type || 'CLT'}
                         required
                     >
                         <option value="CLT">CLT</option>
@@ -63,14 +70,31 @@ export function JobForm() {
                     </select>
                 </div>
 
+                {initialData?.id && (
+                    <div className="space-y-2">
+                        <Label htmlFor="status">Status</Label>
+                        <select
+                            id="status"
+                            name="status"
+                            className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 dark:border-slate-800 dark:bg-slate-950"
+                            defaultValue={initialData?.status}
+                            required
+                        >
+                            <option value="OPEN">Aberta</option>
+                            <option value="DRAFT">Rascunho</option>
+                            <option value="CLOSED">Encerrada</option>
+                        </select>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-2">
                         <Label htmlFor="salaryRangeMin">Salário Min</Label>
-                        <Input id="salaryRangeMin" name="salaryRangeMin" type="number" placeholder="0.00" step="0.01" />
+                        <Input id="salaryRangeMin" name="salaryRangeMin" type="number" defaultValue={initialData?.salaryRangeMin} placeholder="0.00" step="0.01" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="salaryRangeMax">Salário Max</Label>
-                        <Input id="salaryRangeMax" name="salaryRangeMax" type="number" placeholder="0.00" step="0.01" />
+                        <Input id="salaryRangeMax" name="salaryRangeMax" type="number" defaultValue={initialData?.salaryRangeMax} placeholder="0.00" step="0.01" />
                     </div>
                 </div>
             </div>
@@ -83,6 +107,7 @@ export function JobForm() {
                     rows={5}
                     className="flex w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     placeholder="Descreva as responsabilidades e requisitos..."
+                    defaultValue={initialData?.description}
                     required
                 />
             </div>
@@ -92,7 +117,7 @@ export function JobForm() {
                     Cancelar
                 </Button>
                 <Button type="submit" className="bg-[#FF7800] hover:bg-orange-600 text-white" disabled={isLoading}>
-                    {isLoading ? 'Salvando...' : 'Criar Vaga'}
+                    {isLoading ? 'Salvando...' : initialData?.id ? 'Atualizar Vaga' : 'Criar Vaga'}
                 </Button>
             </div>
         </form>

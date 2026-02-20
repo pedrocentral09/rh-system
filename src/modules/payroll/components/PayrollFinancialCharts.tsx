@@ -13,8 +13,10 @@ export function PayrollFinancialCharts({ periodId }: { periodId?: string }) {
     const [trend, setTrend] = useState<any[]>([]);
     const [deptDistro, setDeptDistro] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         async function load() {
             setLoading(true);
             const trendRes = await getPayrollCostTrend();
@@ -31,6 +33,7 @@ export function PayrollFinancialCharts({ periodId }: { periodId?: string }) {
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumSignificantDigits: 3 }).format(val);
 
+    if (!mounted) return null;
     if (loading) return <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>;
 
     return (

@@ -222,7 +222,7 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                                         >
                                             <Pencil className="h-4 w-4 text-slate-400 hover:text-blue-600" />
                                         </Button>
-                                        <Link href={`/print/payroll/${payslip.id}`} target="_blank">
+                                        <Link href={`/dashboard/payroll/print/${payslip.id}`} target="_blank">
                                             <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Imprimir">
                                                 <Printer className="h-4 w-4 text-slate-400 hover:text-slate-900" />
                                             </Button>

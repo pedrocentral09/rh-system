@@ -119,3 +119,57 @@ export async function getPublicJobDetails(jobId: string) {
         return { success: false, error: 'Failed to fetch job details' };
     }
 }
+
+export async function getJobById(id: string) {
+    await requireAuth(['ADMIN', 'HR', 'MANAGER']);
+    try {
+        const job = await prisma.jobOpening.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: { applications: true }
+                }
+            }
+        });
+        return { success: true, data: job };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch job' };
+    }
+}
+
+export async function updateJob(id: string, data: any) {
+    const user = await requireAuth(['ADMIN', 'HR', 'MANAGER']);
+    try {
+        await prisma.jobOpening.update({
+            where: { id },
+            data: {
+                title: data.title,
+                department: data.department,
+                description: data.description,
+                type: data.type,
+                salaryRangeMin: data.salaryRangeMin ? Number(data.salaryRangeMin) : null,
+                salaryRangeMax: data.salaryRangeMax ? Number(data.salaryRangeMax) : null,
+                status: data.status,
+            }
+        });
+
+        await logAction('UPDATE', 'JobOpening', { id, title: data.title }, user.id);
+        revalidatePath('/dashboard/recruitment');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating job:', error);
+        return { success: false, error: 'Failed to update job' };
+    }
+}
+
+export async function deleteJob(id: string) {
+    const user = await requireAuth(['ADMIN', 'HR']);
+    try {
+        await prisma.jobOpening.delete({ where: { id } });
+        await logAction('DELETE', 'JobOpening', { id }, user.id);
+        revalidatePath('/dashboard/recruitment');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to delete job' };
+    }
+}
