@@ -7,7 +7,7 @@ import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { getEmployeesForScale, getWeeklyScales, saveWorkScale, cloneWeeklyScale, generateAutomaticScale, saveWorkScalesBatch } from '../actions';
+import { getEmployeesForScale, getWeeklyScales, cloneWeeklyScale, generateAutomaticScale, saveWorkScalesBatch } from '../actions';
 
 interface ShiftType {
     id: string;
@@ -70,10 +70,6 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
         return matchesSearch && matchesStore && matchesSector;
     });
 
-    useEffect(() => {
-        loadData();
-    }, [weekStart]);
-
     async function loadData() {
         setLoading(true);
         const normalizedStart = new Date(format(weekStart, 'yyyy-MM-dd') + 'T00:00:00Z');
@@ -88,6 +84,10 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
         if (scaleResult.success) setScales(scaleResult.data as any);
         setLoading(false);
     }
+
+    useEffect(() => {
+        loadData();
+    }, [weekStart]);
 
     function handlePrevWeek() {
         if (isEditing && Object.keys(pendingChanges).length > 0) {
@@ -192,7 +192,7 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     async function saveChanges() {
         setLoading(true);
         const employeeIds = Object.keys(pendingChanges);
-        let errorMessages: string[] = [];
+        const errorMessages: string[] = [];
 
         for (const empId of employeeIds) {
             const changes = Object.entries(pendingChanges[empId]).map(([dateIso, val]) => ({
