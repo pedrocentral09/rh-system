@@ -128,8 +128,8 @@ export class EmployeeService extends BaseService {
             if (rawData.companyId || rawData.baseSalary) {
                 data.contract = {
                     create: {
-                        companyId: rawData.companyId,
-                        storeId: rawData.storeId,
+                        companyId: rawData.companyId || undefined,
+                        storeId: rawData.storeId || undefined,
                         jobRoleId: rawData.jobRoleId || undefined,
                         sectorId: rawData.sectorId || undefined,
                         sector: rawData.sector || rawData.department || '',
@@ -248,10 +248,10 @@ export class EmployeeService extends BaseService {
                 rawData.hasCashHandling !== undefined || rawData.monthlyBonus !== undefined
             ) {
                 const contractData: any = {};
-                if (rawData.companyId) contractData.companyId = rawData.companyId;
-                if (rawData.storeId) contractData.storeId = rawData.storeId;
-                if (rawData.jobRoleId) contractData.jobRoleId = rawData.jobRoleId;
-                if (rawData.sectorId) contractData.sectorId = rawData.sectorId;
+                if (rawData.companyId) contractData.companyId = rawData.companyId || undefined;
+                if (rawData.storeId) contractData.storeId = rawData.storeId || undefined;
+                if (rawData.jobRoleId) contractData.jobRoleId = rawData.jobRoleId || undefined;
+                if (rawData.sectorId) contractData.sectorId = rawData.sectorId || undefined;
                 if (rawData.sector) contractData.sector = rawData.sector;
                 if (rawData.baseSalary) contractData.baseSalary = parseCurrency(rawData.baseSalary);
                 if (rawData.contractType) contractData.contractType = rawData.contractType;

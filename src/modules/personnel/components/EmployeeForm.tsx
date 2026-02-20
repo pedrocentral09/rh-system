@@ -1375,7 +1375,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full">
 
                 {refsLoading ? (
                     <div className="flex flex-col items-center justify-center h-64">
