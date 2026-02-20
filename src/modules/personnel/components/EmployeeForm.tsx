@@ -363,6 +363,17 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                 formData.set('email', accessEmail);
             }
 
+            // --- CRITICAL FIX: Only send data from the active tab (+ identity) to prevent FK violations ---
+            // If we are on 'personal' or 'address', we should NOT be sending 'jobRoleId' if it's not yet filled.
+            // However, since we use native FormData, it gets everything. 
+            // We will filter it here or rely on the Service fix. To be safe, let's filter:
+            if (currentId && (activeTab === 'personal' || activeTab === 'address')) {
+                const fieldsToRemove = ['jobRoleId', 'sectorId', 'companyId', 'storeId', 'workShiftId'];
+                fieldsToRemove.forEach(f => {
+                    if (!formData.get(f)) formData.delete(f);
+                });
+            }
+
             let result;
             if (currentId) {
                 result = await updateEmployee(currentId, formData);

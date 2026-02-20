@@ -257,8 +257,8 @@ export class EmployeeService extends BaseService {
                 const contractData: any = {};
                 if (rawData.companyId) contractData.companyId = rawData.companyId || undefined;
                 if (rawData.storeId) contractData.storeId = rawData.storeId || undefined;
-                if (rawData.jobRoleId) contractData.jobRoleId = rawData.jobRoleId || undefined;
-                if (rawData.sectorId) contractData.sectorId = rawData.sectorId || undefined;
+                if (rawData.jobRoleId && rawData.jobRoleId !== "") contractData.jobRoleId = rawData.jobRoleId;
+                if (rawData.sectorId && rawData.sectorId !== "") contractData.sectorId = rawData.sectorId;
                 if (rawData.sector) contractData.sector = rawData.sector;
                 if (rawData.baseSalary) contractData.baseSalary = parseCurrency(rawData.baseSalary);
                 if (rawData.contractType) contractData.contractType = rawData.contractType;
