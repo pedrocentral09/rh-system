@@ -6,9 +6,9 @@ require('dotenv').config();
 // I can try to use 'tsx' to run the service.
 
 async function main() {
-    const externalDbUrl = process.env.RAILWAY_DB_URL;
+    const externalDbUrl = process.env.AFD_DATABASE_URL || process.env.RAILWAY_DB_URL;
     if (!externalDbUrl) {
-        console.error('RAILWAY_DB_URL not found');
+        console.error('❌ AFD_DATABASE_URL or RAILWAY_DB_URL not found in environment');
         return;
     }
 

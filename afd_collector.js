@@ -8,7 +8,7 @@ const { Client } = require('pg');
 const CONTROLID_IP = process.env.CONTROLID_IP;
 const CONTROLID_USER = process.env.CONTROLID_USER;
 const CONTROLID_PASS = process.env.CONTROLID_PASS;
-const RAILWAY_DB_URL = process.env.RAILWAY_DB_URL;
+const RAILWAY_DB_URL = process.env.AFD_DATABASE_URL || process.env.RAILWAY_DB_URL;
 const LOCAL_SAVE_PATH = process.env.LOCAL_SAVE_PATH || './afds';
 
 // Setup logging

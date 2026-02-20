@@ -28,15 +28,25 @@ function startAutoSync() {
     console.log('🔄 [DEPLOY] Starting Background Auto-Sync...');
 
     const runSync = () => {
-        console.log('🔄 [AUTO-SYNC] Triggering AFDSyncService...');
+        console.log('🔄 [AUTO-SYNC] Triggering Collection and Sync...');
         const { exec } = require('child_process');
-        // Use tsx to run the sync script
-        exec('npx tsx scripts/trigger-sync.js', (error, stdout, stderr) => {
-            if (error) {
-                console.error(`❌ [AUTO-SYNC] Error: ${error.message}`);
-                return;
+
+        // 1. Collect from physical clock (if configured)
+        exec('node afd_collector.js', (cErr, cOut) => {
+            if (cErr) {
+                console.warn(`⚠️ [AUTO-SYNC] Collection Step: ${cErr.message}`);
+            } else {
+                console.log(`✅ [AUTO-SYNC] Collection Successful: ${cOut.slice(0, 200)}...`);
             }
-            console.log(`✅ [AUTO-SYNC] Completed: ${stdout.slice(0, 500)}...`);
+
+            // 2. Sync collected files to main database
+            exec('npx tsx scripts/trigger-sync.js', (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`❌ [AUTO-SYNC] Sync Step Error: ${error.message}`);
+                    return;
+                }
+                console.log(`✅ [AUTO-SYNC] Sync Step Completed: ${stdout.slice(0, 500)}...`);
+            });
         });
     };
 
