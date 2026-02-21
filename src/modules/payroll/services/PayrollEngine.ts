@@ -262,6 +262,25 @@ export class PayrollEngine {
                 });
             }
 
+            // 9. Desconto de Adiantamento de Salário (Somente se houver adiantamento pago)
+            const advances: any[] = await prisma.$queryRawUnsafe(`
+                SELECT amount FROM "payroll_salary_advances" 
+                WHERE "employeeId" = $1 AND "periodId" = $2 AND status = 'PAID'
+                LIMIT 1
+            `, employeeId, periodId);
+
+            if (advances && advances.length > 0) {
+                const advanceAmount = Number(advances[0].amount);
+                items.push({
+                    code: '5004',
+                    name: 'Adiantamento de Salário',
+                    type: 'DEDUCTION',
+                    value: advanceAmount,
+                    reference: null,
+                    source: 'AUTO'
+                });
+            }
+
             // 6. Cálculo Final de Totais
             const totalAdditions = items
                 .filter(i => i.type === 'EARNING')

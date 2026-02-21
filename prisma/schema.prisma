@@ -149,6 +149,7 @@ model Employee {
   disciplinaryRecords DisciplinaryRecord[]
 
   onboardingProcesses OnboardingProcess[]
+  salaryAdvances      SalaryAdvance[]
 
   @@index([status])
   @@index([department])
@@ -685,8 +686,9 @@ model PayrollPeriod {
   year   Int
   status String @default("OPEN") // OPEN, PROCESSING, CLOSED, PAID
 
-  payslips Payslip[]
-  imports  PayrollImport[]
+  payslips       Payslip[]
+  salaryAdvances SalaryAdvance[]
+  imports        PayrollImport[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -810,6 +812,26 @@ model TaxBracket {
   order      Int      @default(0) // Para garantir ordem progressiva
 
   @@map("payroll_tax_brackets")
+}
+
+model SalaryAdvance {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  periodId String
+  period   PayrollPeriod @relation(fields: [periodId], references: [id])
+
+  amount      Decimal
+  description String?
+  status      String  @default("PENDING") // PENDING, PAID, CANCELLED
+  paymentDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, periodId])
+  @@map("payroll_salary_advances")
 }
 
 // --- MODULE: DISCIPLINARY (Gestão Disciplinar) ---

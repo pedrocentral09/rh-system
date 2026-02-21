@@ -12,6 +12,9 @@ import { PayrollFinancialCharts } from '@/modules/payroll/components/PayrollFina
 import { CompanyCostBreakdown } from '@/modules/payroll/components/CompanyCostBreakdown';
 import { StoreCostBreakdown } from '@/modules/payroll/components/StoreCostBreakdown';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { SalaryAdvanceTab } from '@/modules/payroll/components/SalaryAdvanceTab';
+
 export default async function PayrollDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const { data: period, error } = await getPayrollPeriodById(params.id);
@@ -46,32 +49,48 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
                 </div>
             </div>
 
-            <PayslipList
-                periodId={period.id}
-                status={period.status}
-                payslips={period.payslips || []}
-            />
+            <Tabs defaultValue="payslips" className="space-y-6">
+                <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-lg">
+                    <TabsTrigger value="summary">Resumo de Custos</TabsTrigger>
+                    <TabsTrigger value="payslips">Holerites Mensais</TabsTrigger>
+                    <TabsTrigger value="advances">Adiantamentos (Vale)</TabsTrigger>
+                </TabsList>
 
-            <div className="mt-8 border-t dark:border-slate-800 pt-8">
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Sumário de Rubricas (Período)</h3>
-                <RubricBreakdown periodId={period.id} />
-            </div>
+                <TabsContent value="summary" className="space-y-8 animate-in fade-in transition-all">
+                    <div>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Sumário de Rubricas (Período)</h3>
+                        <RubricBreakdown periodId={period.id} />
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 border-t dark:border-slate-800 pt-8">
-                <div>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Segmentação por Empresa</h3>
-                    <CompanyCostBreakdown periodId={period.id} />
-                </div>
-                <div>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Segmentação por Loja</h3>
-                    <StoreCostBreakdown periodId={period.id} />
-                </div>
-            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-t dark:border-slate-800 pt-8">
+                        <div>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Segmentação por Empresa</h3>
+                            <CompanyCostBreakdown periodId={period.id} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Segmentação por Loja</h3>
+                            <StoreCostBreakdown periodId={period.id} />
+                        </div>
+                    </div>
 
-            <div className="mt-8 border-t dark:border-slate-800 pt-8">
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Análise Estratégica</h3>
-                <PayrollFinancialCharts periodId={period.id} />
-            </div>
+                    <div className="border-t dark:border-slate-800 pt-8">
+                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-tight">Análise Estratégica</h3>
+                        <PayrollFinancialCharts periodId={period.id} />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="payslips" className="animate-in fade-in transition-all">
+                    <PayslipList
+                        periodId={period.id}
+                        status={period.status}
+                        payslips={period.payslips || []}
+                    />
+                </TabsContent>
+
+                <TabsContent value="advances" className="animate-in fade-in transition-all">
+                    <SalaryAdvanceTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
