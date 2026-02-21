@@ -14,6 +14,8 @@ import { StoreCostBreakdown } from '@/modules/payroll/components/StoreCostBreakd
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { SalaryAdvanceTab } from '@/modules/payroll/components/SalaryAdvanceTab';
+import { LoanTab } from '@/modules/payroll/components/LoanTab';
+import { ERPImportTab } from '@/modules/payroll/components/ERPImportTab';
 
 export default async function PayrollDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -54,6 +56,8 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
                     <TabsTrigger value="summary">Resumo de Custos</TabsTrigger>
                     <TabsTrigger value="payslips">Holerites Mensais</TabsTrigger>
                     <TabsTrigger value="advances">Adiantamentos (Vale)</TabsTrigger>
+                    <TabsTrigger value="loans">Empréstimos</TabsTrigger>
+                    <TabsTrigger value="erp-import">Importação ERP</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="summary" className="space-y-8 animate-in fade-in transition-all">
@@ -89,6 +93,14 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
 
                 <TabsContent value="advances" className="animate-in fade-in transition-all">
                     <SalaryAdvanceTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
+                </TabsContent>
+
+                <TabsContent value="loans" className="animate-in fade-in transition-all">
+                    <LoanTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
+                </TabsContent>
+
+                <TabsContent value="erp-import" className="animate-in fade-in transition-all">
+                    <ERPImportTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
                 </TabsContent>
             </Tabs>
         </div>

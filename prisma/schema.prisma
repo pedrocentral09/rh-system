@@ -150,6 +150,8 @@ model Employee {
 
   onboardingProcesses OnboardingProcess[]
   salaryAdvances      SalaryAdvance[]
+  loans               Loan[]
+  externalImports     ExternalImport[]
 
   @@index([status])
   @@index([department])
@@ -440,6 +442,8 @@ model Store {
   stateRegistration String?
   municipalRegistration String?
   
+  erpId String? // ID da empresa no ERP (usado para importações)
+
   phone       String?
   email       String?
   responsible String?
@@ -688,7 +692,9 @@ model PayrollPeriod {
 
   payslips       Payslip[]
   salaryAdvances SalaryAdvance[]
+  loanInstallments LoanInstallment[]
   imports        PayrollImport[]
+  externalImports ExternalImport[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -832,6 +838,65 @@ model SalaryAdvance {
 
   @@unique([employeeId, periodId])
   @@map("payroll_salary_advances")
+}
+
+model Loan {
+  id               String   @id @default(uuid())
+  employeeId       String
+  employee         Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  totalAmount      Decimal
+  installmentsCount Int
+  reason           String?
+  status           String   @default("ACTIVE") // ACTIVE, FINISHED, CANCELLED
+  startDate        DateTime
+
+  installments LoanInstallment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payroll_loans")
+}
+
+model LoanInstallment {
+  id                String   @id @default(uuid())
+  loanId            String
+  loan              Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  periodId          String
+  period            PayrollPeriod @relation(fields: [periodId], references: [id])
+
+  installmentNumber Int
+  amount            Decimal
+  status            String   @default("PENDING") // PENDING, PAID, CANCELLED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([loanId, periodId])
+  @@map("payroll_loan_installments")
+}
+
+model ExternalImport {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  periodId String
+  period   PayrollPeriod @relation(fields: [periodId], references: [id])
+
+  itemCode String // e.g. 5006, 5007
+  label    String // e.g. Convênio ERP, Quebra de Caixa
+  amount   Decimal
+
+  sourceStore String? // NEW: IDEMPRESA do ERP
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, periodId, itemCode, sourceStore])
+  @@map("payroll_external_imports")
 }
 
 // --- MODULE: DISCIPLINARY (Gestão Disciplinar) ---

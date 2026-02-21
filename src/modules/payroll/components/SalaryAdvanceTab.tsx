@@ -8,6 +8,10 @@ import { Loader2, Plus, Trash2, CheckCircle2, XCircle, Search, UserPlus } from '
 import { Badge } from '@/shared/components/ui/badge';
 import { getAdvancesByPeriod, createSalaryAdvance, updateAdvanceStatus, deleteAdvance } from '../actions/advances';
 import { getEmployees } from '@/modules/personnel/actions/employees';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/shared/components/ui/command';
+import { cn } from '@/lib/utils';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
 interface SalaryAdvanceTabProps {
     periodId: string;
@@ -22,6 +26,7 @@ export function SalaryAdvanceTab({ periodId, isClosed }: SalaryAdvanceTabProps) 
 
     // Form state
     const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+    const [openPopover, setOpenPopover] = useState(false);
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
 
@@ -121,16 +126,50 @@ export function SalaryAdvanceTab({ periodId, isClosed }: SalaryAdvanceTabProps) 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                         <div className="md:col-span-1">
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Colaborador</label>
-                            <select
-                                className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-900"
-                                value={selectedEmployeeId}
-                                onChange={(e) => setSelectedEmployeeId(e.target.value)}
-                            >
-                                <option value="">Selecione...</option>
-                                {employees.map((emp: any) => (
-                                    <option key={emp.id} value={emp.id}>{emp.name}</option>
-                                ))}
-                            </select>
+                            <Popover open={openPopover} onOpenChange={setOpenPopover}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={openPopover}
+                                        className="w-full justify-between font-normal"
+                                    >
+                                        {selectedEmployeeId
+                                            ? employees.find((emp) => emp.id === selectedEmployeeId)?.name
+                                            : "Pesquisar colaborador..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl opacity-100" align="start">
+                                    <Command className="bg-white dark:bg-slate-900">
+                                        <CommandInput placeholder="Digite o nome..." className="bg-white dark:bg-slate-900" />
+                                        <CommandList className="bg-white dark:bg-slate-900">
+                                            <CommandEmpty>Nenhum funcionário encontrado.</CommandEmpty>
+                                            <CommandGroup className="bg-white dark:bg-slate-900">
+                                                {employees.map((emp: any) => (
+                                                    <CommandItem
+                                                        key={emp.id}
+                                                        value={emp.name}
+                                                        className="data-[selected='true']:bg-slate-100 dark:data-[selected='true']:bg-slate-800 cursor-pointer"
+                                                        onSelect={() => {
+                                                            setSelectedEmployeeId(emp.id);
+                                                            setOpenPopover(false);
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                selectedEmployeeId === emp.id ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {emp.name}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div className="md:col-span-1">
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Valor (R$)</label>

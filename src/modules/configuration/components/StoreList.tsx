@@ -35,7 +35,8 @@ export function StoreList() {
         neighborhood: '',
         city: '',
         state: '',
-        zipCode: ''
+        zipCode: '',
+        erpId: ''
     };
 
     const [formData, setFormData] = useState(initialForm);
@@ -87,9 +88,16 @@ export function StoreList() {
     const openModal = (store?: any) => {
         if (store) {
             setEditingStore(store.id);
+
+            // Garantir que todos os nulls do banco virem strings vazias para o React Input
+            const safeStore = Object.keys(store).reduce((acc: any, key) => {
+                acc[key] = store[key] === null ? '' : store[key];
+                return acc;
+            }, {});
+
             setFormData({
                 ...initialForm,
-                ...store
+                ...safeStore
             });
         } else {
             setEditingStore(null);
@@ -158,6 +166,14 @@ export function StoreList() {
                                     <span className="font-semibold text-slate-700 dark:text-slate-300">{store.city || 'S/ Cidade'}</span>
                                     <span className="mx-2 text-slate-300">|</span>
                                     {store.cnpj || 'S/ CNPJ'}
+                                    {store.erpId && (
+                                        <>
+                                            <span className="mx-2 text-slate-300">|</span>
+                                            <span className="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-1.5 rounded uppercase text-[10px] font-bold">
+                                                ERP ID: {store.erpId}
+                                            </span>
+                                        </>
+                                    )}
                                     <span className="mx-2 text-slate-300">|</span>
                                     <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 rounded uppercase text-[10px] font-bold">
                                         {store._count?.contracts || 0} matriculados
@@ -195,10 +211,17 @@ export function StoreList() {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">CNPJ Próprio (Opcional)</label>
-                            <Input value={formData.cnpj} onChange={e => handleChange('cnpj', e.target.value)} placeholder="00.000.000/0001-00" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-orange-600 dark:text-orange-400">ID Empresa (ERP)</label>
+                                <Input value={formData.erpId} onChange={e => handleChange('erpId', e.target.value)} placeholder="0, 6, 7..." className="border-orange-200 focus-visible:ring-orange-500" />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-sm font-medium">CNPJ Próprio (Opcional)</label>
+                                <Input value={formData.cnpj} onChange={e => handleChange('cnpj', e.target.value)} placeholder="00.000.000/0001-00" />
+                            </div>
                         </div>
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Código Interno</label>
                             <Input value={formData.code} onChange={e => handleChange('code', e.target.value)} placeholder="LJ01" />

@@ -58,15 +58,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                     <AttendanceWidget overview={dailyOverview} />
                 </div>
 
-                <Card className="bg-slate-950 border-none shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] rounded-none hover:translate-x-1 hover:-translate-y-1 transition-transform duration-300">
+                <Card className="bg-white dark:bg-slate-900 border-none shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] rounded-none hover:translate-x-1 hover:-translate-y-1 transition-transform duration-300">
                     <CardHeader>
                         <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-black text-white uppercase tracking-tighter">👋 Olá, Gestor!</CardTitle>
+                            <CardTitle className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">👋 Olá, Gestor!</CardTitle>
                             <div className="w-8 h-8 rounded-none bg-orange-500 flex items-center justify-center animate-pulse">
                                 <span className="text-slate-950 text-xs font-black">!</span>
                             </div>
                         </div>
-                        <CardDescription className="text-slate-400 font-medium">
+                        <CardDescription className="text-slate-500 dark:text-slate-400 font-medium">
                             Você tem <span className="text-orange-500 font-bold">{stats.probationAlerts?.length || 0}</span> contratos vencendo em breve e <span className="text-emerald-400 font-bold">{stats.activeEmployees}</span> colaboradores ativos.
                         </CardDescription>
                     </CardHeader>
@@ -87,17 +87,17 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Department Distribution */}
-                <Card className="border-slate-200">
+                <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50">
                     <CardHeader>
-                        <CardTitle>Setores</CardTitle>
-                        <CardDescription>Distribuição da equipe.</CardDescription>
+                        <CardTitle className="dark:text-white">Setores</CardTitle>
+                        <CardDescription className="dark:text-slate-400">Distribuição da equipe.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {(stats.sectorStats || []).slice(0, 5).map((dept: any) => (
                             <div key={dept.name} className="space-y-1">
                                 <div className="flex justify-between text-sm">
-                                    <span className="font-medium text-slate-700">{dept.name}</span>
-                                    <span className="text-slate-500">{dept.percentage}%</span>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">{dept.name}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">{dept.percentage}%</span>
                                 </div>
                                 <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-none overflow-hidden">
                                     <div
@@ -111,30 +111,30 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                 </Card>
 
                 {/* Probation Alerts */}
-                <Card className="border-amber-200 bg-amber-50/50">
+                <Card className="border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-amber-800">
+                        <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
                             <span>⚠️</span> Fim de Experiência
                         </CardTitle>
-                        <CardDescription className="text-amber-600/80">Contratos vencendo em breve.</CardDescription>
+                        <CardDescription className="text-amber-600/80 dark:text-amber-500/60">Contratos vencendo em breve.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {(stats.probationAlerts || []).length > 0 ? (
                             <div className="space-y-3">
                                 {stats.probationAlerts.map((emp: any) => (
                                     <Link key={emp.id} href={`/dashboard/personnel?id=${emp.id}&tab=contract&mode=edit`} className="block group">
-                                        <div className="flex justify-between items-center bg-white p-2 rounded border border-amber-100 shadow-sm group-hover:border-amber-400 group-hover:translate-x-1 transition-all">
+                                        <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 rounded border border-amber-100 dark:border-amber-900/30 shadow-sm group-hover:border-amber-400 group-hover:translate-x-1 transition-all">
                                             <div className="flex items-center space-x-2">
-                                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs overflow-hidden">
+                                                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold text-xs overflow-hidden">
                                                     {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-800">{emp.name}</p>
-                                                    <p className="text-[10px] text-amber-600 uppercase font-semibold">{emp.period}</p>
+                                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.name}</p>
+                                                    <p className="text-[10px] text-amber-600 dark:text-amber-500 uppercase font-semibold">{emp.period}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-xs font-bold text-amber-700">{emp.days} dias</span>
+                                                <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{emp.days} dias</span>
                                             </div>
                                         </div>
                                     </Link>

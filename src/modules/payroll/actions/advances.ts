@@ -46,7 +46,13 @@ export async function getAdvancesByPeriod(periodId: string) {
             ORDER BY e.name ASC
         `, periodId);
 
-        return { success: true, data: advances };
+        // Converter Decimal para Number para serialização entre Server/Client Components
+        const serialized = advances.map(adv => ({
+            ...adv,
+            amount: Number(adv.amount)
+        }));
+
+        return { success: true, data: serialized };
     } catch (error) {
         console.error('[Advance] Error fetching:', error);
         return { success: false, error: 'Falha ao buscar adiantamentos.' };

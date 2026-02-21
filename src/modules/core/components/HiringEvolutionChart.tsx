@@ -31,17 +31,17 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
     };
 
     return (
-        <Card className="border-slate-200 h-full">
+        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 h-full">
             <CardHeader className="pb-4">
-                <CardTitle className="text-lg text-slate-800">Evolução de Equipe</CardTitle>
-                <CardDescription>Contratações vs Desligamentos (6 meses)</CardDescription>
+                <CardTitle className="text-lg text-slate-800 dark:text-white">Evolução de Equipe</CardTitle>
+                <CardDescription className="dark:text-slate-400">Contratações vs Desligamentos (6 meses)</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="w-full overflow-x-auto">
                     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible font-sans text-xs">
                         {/* Grid Lines */}
-                        <line x1="0" y1={chartHeight} x2={width} y2={chartHeight} stroke="#e2e8f0" strokeWidth="1" />
-                        <line x1="0" y1={0} x2={width} y2={0} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1="0" y1={chartHeight} x2={width} y2={chartHeight} className="stroke-slate-200 dark:stroke-slate-700" strokeWidth="1" />
+                        <line x1="0" y1={0} x2={width} y2={0} className="stroke-slate-200 dark:stroke-slate-700" strokeWidth="1" strokeDasharray="4 4" />
 
                         {data.map((item, i) => {
                             const xGroup = i * (barWidth * 2 + gap + groupGap) + 20;
@@ -78,7 +78,7 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
                                         x={xGroup + barWidth}
                                         y={chartHeight + 20}
                                         textAnchor="middle"
-                                        fill="#64748b"
+                                        className="fill-slate-500 dark:fill-slate-400"
                                         fontSize="10"
                                         fontWeight="500"
                                     >
@@ -101,11 +101,11 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
                 <div className="flex justify-center gap-6 mt-4 text-xs font-medium">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                        <span className="text-slate-600">Contratações</span>
+                        <span className="text-slate-600 dark:text-slate-400">Contratações</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-red-500"></div>
-                        <span className="text-slate-600">Desligamentos</span>
+                        <span className="text-slate-600 dark:text-slate-400">Desligamentos</span>
                     </div>
                 </div>
             </CardContent>
