@@ -25,13 +25,16 @@ export class AFDSyncService {
         };
 
         try {
-            // 1. Get the highest NSR already in our DB
-            const lastRecord = await prisma.timeRecord.findFirst({
-                where: { nsr: { not: null } },
-                orderBy: { nsr: 'desc' },
+            // 1. Find which NSRs from the incoming payload already exist in the database
+            // This allows multiple terminals with different NSR sequences to sync safely without blocking each other.
+            const incomingNsrs = incomingPunches.map(p => String(p.nsr));
+
+            const existingRecords = await prisma.timeRecord.findMany({
+                where: { nsr: { in: incomingNsrs } },
                 select: { nsr: true }
             });
-            const lastNSR = lastRecord?.nsr ? parseInt(lastRecord.nsr) : 0;
+
+            const existingNsrSet = new Set(existingRecords.map(r => r.nsr));
 
             // 2. Load all employees into memory for fast matching
             const employees = await prisma.employee.findMany({
@@ -58,10 +61,10 @@ export class AFDSyncService {
 
             const recordsToCreate: any[] = [];
 
-            // 3. Filter only new punches
+            // 3. Filter only TRULY NEW punches by checking if their NSR exists in the Set
             const newPunches = incomingPunches.filter(p => {
-                const nsrVal = p.nsr ? parseInt(String(p.nsr)) : 0;
-                return nsrVal > lastNSR;
+                if (!p.nsr) return false;
+                return !existingNsrSet.has(String(p.nsr));
             });
 
             if (newPunches.length === 0) {
