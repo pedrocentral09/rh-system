@@ -17,7 +17,7 @@ interface LoanTabProps {
     isClosed: boolean;
 }
 
-export function LoanTab({ periodId, isClosed }: LoanTabProps) {
+export function ConsignedLoanTab({ periodId, isClosed }: LoanTabProps) {
     const [loading, setLoading] = useState(true);
     const [installments, setInstallments] = useState<any[]>([]);
     const [employees, setEmployees] = useState<any[]>([]);
@@ -38,7 +38,7 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
     async function loadData() {
         setLoading(true);
         const [instRes, empRes] = await Promise.all([
-            getLoanInstallmentsByPeriod(periodId),
+            getLoanInstallmentsByPeriod(periodId, 'CONSIGNED'),
             getEmployees({ status: 'ACTIVE' })
         ]);
 
@@ -62,10 +62,11 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
             installmentsCount: parseInt(installmentsCount),
             reason,
             startDate,
+            type: 'CONSIGNED'
         });
 
         if (res.success) {
-            toast.success('Adiantamento parcelado contratado e parcelas geradas!');
+            toast.success('Empréstimo consignado contratado e parcelas geradas!');
             setIsAdding(false);
             setSelectedEmployeeId('');
             setTotalAmount('');
@@ -74,15 +75,15 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
             setStartMonth('');
             loadData();
         } else {
-            toast.error(res.error || 'Erro ao processar adiantamento parcelado.');
+            toast.error(res.error || 'Erro ao processar empréstimo consignado.');
         }
     }
 
     async function handleDelete(loanId: string) {
-        if (!confirm('Deseja excluir este adiantamento e TODAS as suas parcelas?')) return;
+        if (!confirm('Deseja excluir este empréstimo e TODAS as suas parcelas?')) return;
         const res = await deleteLoan(loanId, periodId);
         if (res.success) {
-            toast.success('Adiantamento removido.');
+            toast.success('Empréstimo removido.');
             loadData();
         } else {
             toast.error('Erro ao excluir.');
@@ -97,7 +98,7 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
         return (
             <div className="flex flex-col items-center justify-center p-12 space-y-4">
                 <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-                <p className="text-slate-500 font-medium">Carregando adiantamentos...</p>
+                <p className="text-slate-500 font-medium">Carregando empréstimos consignados...</p>
             </div>
         );
     }
@@ -106,13 +107,13 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 italic">Adiantamento Parcelado</h2>
-                    <p className="text-sm text-slate-500">Gestão de adiantamentos com desconto automático em múltiplas parcelas.</p>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 italic">Empréstimos Consignados (FGTS)</h2>
+                    <p className="text-sm text-slate-500">Gestão de empréstimos concedidos via Caixa/bancos com recolhimento repassado através da guia de FGTS.</p>
                 </div>
                 {!isClosed && (
                     <Button onClick={() => setIsAdding(!isAdding)} className="bg-indigo-600 hover:bg-indigo-700">
                         <Plus className="mr-2 h-4 w-4" />
-                        Novo Adiantamento
+                        Novo Empréstimo
                     </Button>
                 )}
             </div>
@@ -205,7 +206,7 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
                             <th className="px-6 py-4 font-semibold text-slate-500">Colaborador</th>
                             <th className="px-6 py-4 font-semibold text-slate-500">Parcela Atual</th>
                             <th className="px-6 py-4 font-semibold text-slate-500">Valor Parcela</th>
-                            <th className="px-6 py-4 font-semibold text-slate-500">Motivo do Adiantamento</th>
+                            <th className="px-6 py-4 font-semibold text-slate-500">Motivo do Empréstimo</th>
                             <th className="px-6 py-4 font-semibold text-slate-500">Status</th>
                             <th className="px-6 py-4 font-semibold text-slate-500 text-right">Ações</th>
                         </tr>
@@ -264,8 +265,8 @@ export function LoanTab({ periodId, isClosed }: LoanTabProps) {
 
             <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30">
                 <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
-                    🔍 **Info**: As parcelas são descontadas automaticamente no holerite mensal através da rubrica **5005**.
-                    Ao excluir um adiantamento aqui, todas as parcelas futuras também serão removidas do sistema.
+                    🔍 **Info**: As parcelas são descontadas automaticamente no holerite mensal e os valores deverão ser recolhidos na guia do FGTS da empresa.
+                    Ao excluir um empréstimo aqui, todas as parcelas futuras também serão removidas do sistema.
                 </p>
             </div>
         </div>

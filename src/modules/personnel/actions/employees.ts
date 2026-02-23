@@ -49,3 +49,11 @@ export async function getEmployees(filters?: { status?: string }) {
 export async function getEmployee(id: string) {
     return await EmployeeService.getById(id);
 }
+
+export async function bulkImportEmployees(employeesList: any[]) {
+    const result = await EmployeeService.bulkImport(employeesList);
+    try {
+        revalidatePath('/dashboard/personnel');
+    } catch (e) { }
+    return result;
+}

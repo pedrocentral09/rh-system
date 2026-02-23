@@ -15,6 +15,7 @@ import { StoreCostBreakdown } from '@/modules/payroll/components/StoreCostBreakd
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { SalaryAdvanceTab } from '@/modules/payroll/components/SalaryAdvanceTab';
 import { LoanTab } from '@/modules/payroll/components/LoanTab';
+import { ConsignedLoanTab } from '@/modules/payroll/components/ConsignedLoanTab';
 import { ERPImportTab } from '@/modules/payroll/components/ERPImportTab';
 
 export default async function PayrollDetailPage(props: { params: Promise<{ id: string }> }) {
@@ -56,7 +57,8 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
                     <TabsTrigger value="summary">Resumo de Custos</TabsTrigger>
                     <TabsTrigger value="payslips">Holerites Mensais</TabsTrigger>
                     <TabsTrigger value="advances">Adiantamentos (Vale)</TabsTrigger>
-                    <TabsTrigger value="loans">Empréstimos</TabsTrigger>
+                    <TabsTrigger value="loans">Adiantamento Parcelado</TabsTrigger>
+                    <TabsTrigger value="consigned">Empréstimos Consignados</TabsTrigger>
                     <TabsTrigger value="erp-import">Importação ERP</TabsTrigger>
                 </TabsList>
 
@@ -97,6 +99,10 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
 
                 <TabsContent value="loans" className="animate-in fade-in transition-all">
                     <LoanTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
+                </TabsContent>
+
+                <TabsContent value="consigned" className="animate-in fade-in transition-all">
+                    <ConsignedLoanTab periodId={period.id} isClosed={period.status !== 'OPEN'} />
                 </TabsContent>
 
                 <TabsContent value="erp-import" className="animate-in fade-in transition-all">

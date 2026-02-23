@@ -13,17 +13,19 @@ export async function createLoan(data: {
     installmentsCount: number;
     reason?: string;
     startDate: Date; // A primeira parcela cai neste mês
+    type?: string;   // 'ADVANCE' or 'CONSIGNED'
 }) {
     try {
         const amountPerInstallment = Number((data.totalAmount / data.installmentsCount).toFixed(2));
         const start = new Date(data.startDate);
+        const loanType = data.type || 'ADVANCE';
 
         // 1. Criar o empréstimo
         const loanId = (await prisma.$queryRawUnsafe<{ id: string }[]>(`
-            INSERT INTO "payroll_loans" ("id", "employeeId", "totalAmount", "installmentsCount", "reason", "status", "startDate", "updatedAt")
-            VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVE', $5, now())
+            INSERT INTO "payroll_loans" ("id", "employeeId", "type", "totalAmount", "installmentsCount", "reason", "status", "startDate", "updatedAt")
+            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, 'ACTIVE', $6, now())
             RETURNING id
-        `, data.employeeId, data.totalAmount, data.installmentsCount, data.reason || '', start))[0].id;
+        `, data.employeeId, loanType, data.totalAmount, data.installmentsCount, data.reason || '', start))[0].id;
 
         // 2. Gerar Parcelas
         let currentMonth = start.getMonth() + 1; // getMonth() é 0-indexed
@@ -71,16 +73,16 @@ export async function createLoan(data: {
 /**
  * Busca todas as parcelas de um período
  */
-export async function getLoanInstallmentsByPeriod(periodId: string) {
+export async function getLoanInstallmentsByPeriod(periodId: string, type: string = 'ADVANCE') {
     try {
         const installments: any[] = await prisma.$queryRawUnsafe(`
-            SELECT i.*, e.name as "employeeName", l.reason, l."totalAmount", l."installmentsCount"
+            SELECT i.*, e.name as "employeeName", l.reason, l.type, l."totalAmount", l."installmentsCount"
             FROM "payroll_loan_installments" i
             INNER JOIN "payroll_loans" l ON i."loanId" = l.id
             INNER JOIN "personnel_employees" e ON l."employeeId" = e.id
-            WHERE i."periodId" = $1
+            WHERE i."periodId" = $1 AND l."type" = $2
             ORDER BY e.name ASC
-        `, periodId);
+        `, periodId, type);
 
         // Serialização (Decimal to Number)
         const serialized = installments.map(inst => ({

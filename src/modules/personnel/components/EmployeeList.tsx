@@ -41,6 +41,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     const [vacationEmployee, setVacationEmployee] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Filters
     const [filterStore, setFilterStore] = useState('');
@@ -109,7 +110,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch = (
             emp.name.toLowerCase().includes(searchLower) ||
-            emp.cpf.includes(searchTerm) ||
+            (emp.cpf || '').includes(searchTerm) ||
             (emp.contract?.sectorDef?.name || emp.department || "").toLowerCase().includes(searchLower) ||
             emp.jobTitle?.toLowerCase().includes(searchLower)
         );
@@ -127,6 +128,13 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
         const matchesStatus = activeTab === 'active' ? emp.status === 'ACTIVE' : emp.status !== 'ACTIVE';
 
         return matchesSearch && matchesStatus && matchesStore && matchesCompany && matchesSector;
+    });
+
+    // Sort by name
+    const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
 
     // Extract Unique Options for Dropdowns
@@ -300,7 +308,12 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                         <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
                             <thead className="bg-slate-50 dark:bg-slate-800">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[25%]">Nome</th>
+                                    <th
+                                        className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[25%] cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                    >
+                                        Nome {sortOrder === 'asc' ? '↑' : '↓'}
+                                    </th>
                                     <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Loja</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Setor</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Cargo</th>
@@ -310,8 +323,8 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
-                                {filteredEmployees.map((emp) => (
-                                    <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer" onClick={() => setSelectedEmployee(emp)}>
+                                {sortedEmployees.map((emp) => (
+                                    <tr key={emp.id} className={`transition-colors group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${emp.isIncomplete ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`} onClick={() => setSelectedEmployee(emp)}>
                                         <td className="px-4 py-2 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 {emp.photoUrl ? (
@@ -322,8 +335,15 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{emp.name}</div>
-                                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">CPF: {emp.cpf}</div>
+                                                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-2">
+                                                        {emp.name}
+                                                        {emp.isIncomplete && (
+                                                            <span className="bg-amber-100 text-amber-700 text-[9px] px-1.5 py-0.5 rounded border border-amber-200" title="Cadastro parcial importado de planilha.">
+                                                                Pendente
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">CPF: {emp.cpf || 'Não informado'}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -349,7 +369,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredEmployees.length === 0 && (
+                                {sortedEmployees.length === 0 && (
                                     <tr>
                                         <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500 flex flex-col items-center justify-center">
                                             <span className="text-4xl mb-2">🔍</span>

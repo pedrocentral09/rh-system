@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { EmployeeList } from '@/modules/personnel/components/EmployeeList';
 import { EmployeeCreateModal } from '@/modules/personnel/components/EmployeeCreateModal';
+import { EmployeeImportModal } from '@/modules/personnel/components/EmployeeImportModal';
 import { MinimumWageUpdateButton } from '@/modules/personnel/components/MinimumWageUpdateButton';
 import { Button } from '@/shared/components/ui/button';
 import { Tabs } from '@/shared/components/ui/tabs';
 
 export default function PersonnelPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
@@ -50,6 +52,15 @@ export default function PersonnelPage() {
                 onClose={() => setIsCreateModalOpen(false)}
                 onSuccess={() => {
                     setIsCreateModalOpen(false);
+                    handleRefresh();
+                }}
+            />
+
+            <EmployeeImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onSuccess={() => {
+                    setIsImportModalOpen(false);
                     handleRefresh();
                 }}
             />

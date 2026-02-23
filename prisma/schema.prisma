@@ -88,14 +88,15 @@ model UserStoreAccess {
 // }
 
 model Employee {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
-  email         String?  @unique
-  cpf           String   @unique
-  rg            String
-  dateOfBirth   DateTime
-  gender        String
-  maritalStatus String
+  email         String?   @unique
+  cpf           String?   @unique
+  rg            String?
+  dateOfBirth   DateTime?
+  gender        String?
+  maritalStatus String?
+  isIncomplete  Boolean   @default(false)
 
   // Documents (Additional)
   pis        String?
@@ -844,6 +845,8 @@ model Loan {
   id               String   @id @default(uuid())
   employeeId       String
   employee         Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type             String   @default("ADVANCE") // ADVANCE, CONSIGNED
 
   totalAmount      Decimal
   installmentsCount Int

@@ -189,6 +189,9 @@ export class EmployeeService extends BaseService {
 
             const data: any = {};
 
+            // Clear incomplete flag upon manual UI update
+            data.isIncomplete = false;
+
             // Map Root Fields
             if (rawData.name !== undefined) data.name = rawData.name;
             if (rawData.email !== undefined) data.email = rawData.email?.trim() || null;
@@ -650,6 +653,99 @@ export class EmployeeService extends BaseService {
         } catch (error) {
             console.error("Critical failure in upsertEmployeeUser:", error);
             throw error; // Re-throw to be handled by the service caller
+        }
+    }
+
+    static async bulkImport(employeesList: any[]): Promise<ServiceResult<any>> {
+        try {
+            const results = {
+                successCount: 0,
+                errorCount: 0,
+                errors: [] as string[]
+            };
+
+            for (const row of employeesList) {
+                try {
+                    const data: any = {
+                        name: row.name,
+                        email: row.email || null,
+                        cpf: row.cpf || null,
+                        rg: row.rg || null,
+                        dateOfBirth: row.dateOfBirth ? parseDate(row.dateOfBirth) : null,
+                        gender: row.gender || null,
+                        maritalStatus: row.maritalStatus || null,
+                        status: 'ACTIVE',
+                        isIncomplete: true, // Tag para funcionários importados
+
+                        phone: row.phone || null,
+                        jobTitle: row.jobTitle || null,
+                        department: row.department || null,
+                    };
+
+                    // Auto-create Sector if not exists
+                    if (row.department) {
+                        try {
+                            const sector = await prisma.sector.upsert({
+                                where: { name: row.department },
+                                update: {},
+                                create: { name: row.department }
+                            });
+
+                            // Initialize contract payload to attach sector
+                            data.contract = {
+                                create: {
+                                    sectorId: sector.id,
+                                    sector: sector.name, // legacy string
+                                    baseSalary: 0,
+                                    contractType: 'CLT',
+                                    admissionDate: data.createdAt || new Date(),
+                                }
+                            };
+                        } catch (e) {
+                            console.error("Failed to upsert sector:", e);
+                        }
+                    }
+
+                    // Auto-create JobRole if not exists
+                    if (row.jobTitle) {
+                        try {
+                            const jobRole = await prisma.jobRole.upsert({
+                                where: { name: row.jobTitle },
+                                update: {},
+                                create: { name: row.jobTitle }
+                            });
+
+                            data.jobRoleId = jobRole.id;
+
+                            if (data.contract?.create) {
+                                data.contract.create.jobRoleId = jobRole.id;
+                            } else {
+                                data.contract = {
+                                    create: {
+                                        jobRoleId: jobRole.id,
+                                        baseSalary: 0,
+                                        contractType: 'CLT',
+                                        admissionDate: data.createdAt || new Date(),
+                                    }
+                                };
+                            }
+                        } catch (e) {
+                            console.error("Failed to upsert jobRole:", e);
+                        }
+                    }
+
+                    await prisma.employee.create({ data });
+                    results.successCount++;
+                } catch (e: any) {
+                    console.error('Import Row Error:', e);
+                    results.errorCount++;
+                    results.errors.push(`Erro ao importar ${row.name || 'desconhecido'}: ${e.message}`);
+                }
+            }
+
+            return this.success(results);
+        } catch (error: any) {
+            return this.error(error, "Falha grave durante o processamento do lote.");
         }
     }
 
