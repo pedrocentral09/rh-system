@@ -197,7 +197,10 @@ export class EmployeeService extends BaseService {
             if (rawData.email !== undefined) data.email = rawData.email?.trim() || null;
             if (rawData.cpf !== undefined) data.cpf = rawData.cpf;
             if (rawData.rg !== undefined) data.rg = rawData.rg;
-            if (rawData.dateOfBirth !== undefined) data.dateOfBirth = new Date(rawData.dateOfBirth);
+            if (rawData.dateOfBirth !== undefined) {
+                const parsed = rawData.dateOfBirth ? new Date(rawData.dateOfBirth) : null;
+                data.dateOfBirth = (parsed && !isNaN(parsed.getTime())) ? parsed : null;
+            }
             if (rawData.gender !== undefined) data.gender = rawData.gender;
             if (rawData.maritalStatus !== undefined) data.maritalStatus = rawData.maritalStatus;
             if (rawData.photoUrl !== undefined) data.photoUrl = rawData.photoUrl;
