@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const CreateEmployeeSchema = z.object({
     name: z.string().min(2, "Nome é obrigatório"),
-    email: z.string().email("Email inválido"),
+    email: z.string().email("Email inválido").optional().or(z.literal('')),
     cpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
     rg: z.string().min(2, "RG é obrigatório"),
     dateOfBirth: z.string().refine((date) => !isNaN(Date.parse(date)), {

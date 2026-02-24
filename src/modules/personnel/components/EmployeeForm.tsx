@@ -334,7 +334,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         }
 
         const tabRequiredFields: Record<string, string[]> = {
-            personal: ['name', 'cpf', 'rg', 'dateOfBirth', 'gender', 'maritalStatus', 'email', 'phone', 'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelationship'],
+            personal: ['name', 'cpf', 'rg', 'dateOfBirth', 'gender', 'maritalStatus', 'phone'],
             address: ['zipCode', 'city', 'state', 'street', 'number', 'neighborhood'],
             contract: ['companyId', 'jobRoleId', 'sectorId', 'storeId', 'hireDate', 'baseSalary', 'workShiftId'],
             bank: ['bankName', 'accountType', 'agency', 'accountNumber', 'pixKey'],
@@ -597,7 +597,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700">E-mail *</label>
+                                <label className="text-sm font-medium text-slate-700">E-mail</label>
                                 <Input
                                     name="email"
                                     type="email"
@@ -638,15 +638,15 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Nome do Contato *</label>
+                                <label className="text-sm font-medium text-slate-700">Nome do Contato</label>
                                 <Input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} placeholder="Nome do familiar/amigo" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Telefone de Emergência *</label>
+                                <label className="text-sm font-medium text-slate-700">Telefone de Emergência</label>
                                 <Input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} placeholder="(00) 00000-0000" />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco *</label>
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco</label>
                                 <select
                                     name="emergencyContactRelationship"
                                     defaultValue={initialData?.emergencyContactRelationship || ""}
