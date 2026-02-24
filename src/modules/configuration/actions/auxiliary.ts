@@ -29,10 +29,16 @@ export async function createJobRole(data: { name: string; cbo?: string; descript
 
 export async function updateJobRole(id: string, data: { name: string; cbo?: string; description?: string }) {
     try {
-        await prisma.jobRole.update({ where: { id }, data });
+        const cleanData = {
+            name: data.name,
+            cbo: data.cbo || null,
+            description: data.description || null,
+        };
+        await prisma.jobRole.update({ where: { id }, data: cleanData });
         revalidatePath('/dashboard/configuration');
         return { success: true };
     } catch (error) {
+        console.error('Erro ao atualizar cargo:', error);
         return { success: false, error: 'Erro ao atualizar cargo' };
     }
 }
