@@ -1185,6 +1185,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 <option value="Admissional">Admissional</option>
                                 <option value="Periodico">Periódico</option>
                                 <option value="Retorno">Retorno ao Trabalho</option>
+                                <option value="MudancaFuncao">Mudança de Função</option>
                                 <option value="Demissional">Demissional</option>
                             </select>
                         </div>
