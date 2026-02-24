@@ -19,7 +19,7 @@ export function DisciplinaryPrintActions({ employeeName }: Props) {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             try {
-                const html2canvas = (await import('html2canvas')).default;
+                const html2canvas = (await import('html2canvas-pro')).default;
                 const { jsPDF } = await import('jspdf');
 
                 const element = document.getElementById('disciplinary-print-area');
