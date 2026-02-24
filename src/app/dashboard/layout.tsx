@@ -107,6 +107,18 @@ export default async function DashboardLayout({
                         <span className="text-xl group-hover:scale-110 transition-transform">💰</span>
                         <span className="font-medium text-sm">Folha de Pagamento</span>
                     </Link>
+
+                    <div className="pt-4 pb-2">
+                        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ferramentas</p>
+                    </div>
+
+                    <Link
+                        href="/dashboard/tools/admission-form"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">📋</span>
+                        <span className="font-medium text-sm">Ficha de Admissão</span>
+                    </Link>
                 </nav>
 
                 <div className="p-4 border-t border-blue-900/50 space-y-2">
