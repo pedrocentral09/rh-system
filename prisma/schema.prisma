@@ -352,8 +352,9 @@ model JobRole {
   description String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  contracts   Contract[]
-  employees   Employee[]
+  contracts     Contract[]
+  employees     Employee[]
+  careerLevels  CareerLevel[]
 
   @@map("config_job_roles")
 }
@@ -802,12 +803,13 @@ model OnboardingTask {
 }
 
 model CareerPath {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  levels      CareerLevel[]
 
   @@map("career_paths")
 }
@@ -822,17 +824,22 @@ model CareerLevel {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  path         CareerPath          @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  jobRole      JobRole             @relation(fields: [jobRoleId], references: [id])
+  requirements CareerRequirement[]
+
   @@unique([careerPathId, order])
   @@map("career_levels")
 }
 
 model CareerRequirement {
-  id            String   @id @default(uuid())
+  id            String      @id @default(uuid())
   careerLevelId String
   type          String
   description   String
   value         String?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime    @default(now())
+  level         CareerLevel @relation(fields: [careerLevelId], references: [id], onDelete: Cascade)
 
   @@map("career_requirements")
 }
