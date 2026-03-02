@@ -38,7 +38,7 @@ export async function getEmployeeCareerPath() {
         const currentLevel = await prisma.careerLevel.findFirst({
             where: { jobRoleId: currentJobRoleId },
             include: {
-                careerPath: {
+                path: {
                     include: {
                         levels: {
                             include: {
@@ -63,7 +63,7 @@ export async function getEmployeeCareerPath() {
             };
         }
 
-        const path = currentLevel.careerPath;
+        const path = currentLevel.path;
         const levels = path.levels;
 
         // Find next level

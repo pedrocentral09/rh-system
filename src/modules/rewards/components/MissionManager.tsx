@@ -11,7 +11,7 @@ interface Mission {
     title: string;
     description: string | null;
     rewardAmount: number;
-    isActive: boolean;
+    isActive: boolean | null;
     _count?: {
         completions: number;
     };
@@ -146,7 +146,7 @@ export function MissionManager({ initialMissions }: Props) {
 
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => handleToggle(mission.id, mission.isActive)}
+                                    onClick={() => handleToggle(mission.id, !!mission.isActive)}
                                     className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${mission.isActive ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
                                 >
                                     {mission.isActive ? 'Desativar' : 'Ativar'}

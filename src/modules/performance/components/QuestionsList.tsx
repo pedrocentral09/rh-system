@@ -10,8 +10,8 @@ interface Question {
     id: string;
     category: string;
     text: string;
-    weight: number;
-    isActive: boolean;
+    weight: number | null;
+    isActive: boolean | null;
 }
 
 const CATEGORIES = ['CULTURA', 'TECNICO', 'LIDERANCA', 'COMPORTAMENTAL'];
@@ -112,7 +112,7 @@ export function QuestionsList({ initialQuestions }: { initialQuestions: Question
                                         <p className="text-[10px] text-slate-500 mt-1 uppercase">Peso: {q.weight}</p>
                                     </div>
                                     <button
-                                        onClick={() => handleToggle(q.id, q.isActive)}
+                                        onClick={() => handleToggle(q.id, !!q.isActive)}
                                         className={`text-xs px-3 py-1 rounded font-semibold transition-colors ${q.isActive ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
                                     >
                                         {q.isActive ? 'Desativar' : 'Ativar'}

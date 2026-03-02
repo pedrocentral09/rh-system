@@ -13,8 +13,8 @@ interface Cycle {
     name: string;
     startDate: Date;
     endDate: Date;
-    isActive: boolean;
-    type: string;
+    isActive: boolean | null;
+    type: string | null;
     _count: { reviews: number };
 }
 
@@ -145,7 +145,7 @@ export function CyclesList({ initialCycles }: { initialCycles: Cycle[] }) {
                         </div>
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() => handleToggle(cycle.id, cycle.isActive)}
+                                onClick={() => handleToggle(cycle.id, !!cycle.isActive)}
                                 className={`text-xs px-3 py-1.5 rounded font-semibold transition-colors ${cycle.isActive ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
                             >
                                 {cycle.isActive ? 'Encerrar' : 'Reabrir'}
