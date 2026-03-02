@@ -108,6 +108,51 @@ export default async function DashboardLayout({
                         <span className="font-medium text-sm">Folha de Pagamento</span>
                     </Link>
 
+                    {/* 
+                    <Link
+                        href="/dashboard/career"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">🌳</span>
+                        <span className="font-medium text-sm">Plano de Carreira</span>
+                    </Link>
+
+                    <Link
+                        href="/dashboard/performance/cycles"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">📊</span>
+                        <span className="font-medium text-sm">Desempenho</span>
+                    </Link>
+
+                    <Link
+                        href="/dashboard/performance/1on1"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-[#FF7800] hover:text-white transition-all duration-200 group"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">☕</span>
+                        <span className="font-medium text-sm">1-on-1s</span>
+                    </Link>
+
+                    <Link
+                        href="/dashboard/rewards/catalog"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-amber-500 hover:bg-amber-500 hover:text-white transition-all duration-200 group"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">🪙</span>
+                        <span className="font-medium text-sm">Família Coins</span>
+                    </Link>
+
+                    <Link
+                        href="/dashboard/rewards/missions"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-amber-400 hover:bg-amber-500 hover:text-white transition-all duration-200 group ml-4"
+                    >
+                        <span className="text-xl group-hover:scale-110 transition-transform">🎯</span>
+                        <span className="font-medium text-sm">Missões (Coins)</span>
+                    </Link>
+                    */}
+
+
+
+
                     <div className="pt-4 pb-2">
                         <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ferramentas</p>
                     </div>

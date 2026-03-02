@@ -70,8 +70,8 @@ const Tabs = React.forwardRef<
     if (tabs && tabs.length > 0) {
         return (
             <TabsRoot ref={ref} className={className} defaultValue={tabs[0]?.id} {...props}>
-                <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
-                    <TabsList className="inline-flex h-auto w-auto justify-center p-1 bg-transparent">
+                <div className="flex justify-start sm:justify-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2 overflow-x-auto no-scrollbar scroll-smooth">
+                    <TabsList className="inline-flex h-auto w-auto justify-start sm:justify-center p-1 bg-transparent">
                         {tabs.map(tab => (
                             <TabsTrigger
                                 key={tab.id}
@@ -90,7 +90,7 @@ const Tabs = React.forwardRef<
                         forceMount
                         className="mt-4 focus-visible:ring-0 outline-none data-[state=inactive]:hidden"
                     >
-                        <div className={cn("mx-auto w-full", fullContent ? "max-w-none" : "max-w-3xl")}>
+                        <div className={cn("mx-auto w-full", fullContent ? "max-w-none" : "max-w-full sm:max-w-3xl")}>
                             {tab.content}
                         </div>
                     </TabsContent>

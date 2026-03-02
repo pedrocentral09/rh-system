@@ -414,7 +414,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     if (onSuccess) onSuccess();
                 }
             } else {
-                const msg = typeof result.error === 'string' ? result.error : (result.error?.message || 'Erro técnico ao salvar.');
+                // Prioritize result.message which contains the friendly message from the Service Layer
+                const msg = result.message || (typeof result.error === 'string' ? result.error : (result.error?.message || 'Erro técnico ao salvar.'));
                 setError(msg);
                 toast.error(msg);
             }
@@ -997,31 +998,31 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             </div>
 
                             {/* Insalubridade */}
-                            <div className="flex items-center p-3 border border-slate-800 rounded-md bg-slate-900/30 hover:border-slate-700 transition-colors">
+                            <div className="flex flex-col sm:flex-row sm:items-center p-3 border border-slate-800 rounded-md bg-slate-900/30 hover:border-slate-700 transition-colors gap-3">
                                 <div className="flex items-center flex-1">
                                     <input type="checkbox" name="hasInsalubrity" defaultChecked={initialData?.contract?.hasInsalubrity} className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 mr-3" />
                                     <label className="text-sm text-slate-300">Insalubridade</label>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <select className="h-8 rounded md:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
+                                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                                    <select className="h-8 rounded w-24 sm:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
                                         <option>% Por</option>
                                         <option>grau</option>
                                     </select>
-                                    <Input name="insalubrityBase" type="number" step="0.01" defaultValue={initialData?.contract?.insalubrityBase} placeholder="20" className="h-8 w-24" />
+                                    <Input name="insalubrityBase" type="number" step="0.01" defaultValue={initialData?.contract?.insalubrityBase} placeholder="20" className="h-8 flex-1 sm:w-24" />
                                 </div>
                             </div>
 
                             {/* Periculosidade */}
-                            <div className="flex items-center p-3 border border-slate-800 rounded-md bg-slate-900/30 hover:border-slate-700 transition-colors">
+                            <div className="flex flex-col sm:flex-row sm:items-center p-3 border border-slate-800 rounded-md bg-slate-900/30 hover:border-slate-700 transition-colors gap-3">
                                 <div className="flex items-center flex-1">
                                     <input type="checkbox" name="hasDangerousness" defaultChecked={initialData?.contract?.hasDangerousness} className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 mr-3" />
                                     <label className="text-sm text-slate-300">Periculosidade</label>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <select className="h-8 rounded md:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
+                                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                                    <select className="h-8 rounded w-24 sm:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
                                         <option>% Por</option>
                                     </select>
-                                    <Input name="dangerousnessBase" type="number" step="0.01" defaultValue={initialData?.contract?.dangerousnessBase} placeholder="30" className="h-8 w-24" />
+                                    <Input name="dangerousnessBase" type="number" step="0.01" defaultValue={initialData?.contract?.dangerousnessBase} placeholder="30" className="h-8 flex-1 sm:w-24" />
                                 </div>
                             </div>
 
@@ -1121,22 +1122,22 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             <input type="hidden" name="transportVoucherValue" value="0" />
                         </div>
 
-                        <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
                             <div className="flex items-center space-x-3">
                                 <span className="text-xl">🛒</span>
                                 <label className="text-sm text-slate-200">Vale Alimentação (VA)</label>
                             </div>
-                            <Input name="mealVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.mealVoucherValue} placeholder="Valor Mensal (R$)" className="w-40" />
+                            <Input name="mealVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.mealVoucherValue} placeholder="Valor Mensal (R$)" className="w-full sm:w-40" />
                         </div>
 
-                        <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
                             <div className="flex items-center space-x-3">
                                 <span className="text-xl">🍽️</span>
                                 <label className="text-sm text-slate-200">Vale Refeição (VR)</label>
                             </div>
-                            <Input name="foodVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.foodVoucherValue} placeholder="Valor Mensal (R$)" className="w-40" />
+                            <Input name="foodVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.foodVoucherValue} placeholder="Valor Mensal (R$)" className="w-full sm:w-40" />
                         </div>
-                        <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
                             <div className="flex items-center space-x-3">
                                 <div className="flex items-center">
                                     <input type="checkbox" name="hasFamilySalary" defaultChecked={initialData?.contract?.hasFamilySalary} id="familySalary" className="mr-3 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500" />
@@ -1144,9 +1145,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     <label htmlFor="familySalary" className="text-sm text-slate-200 cursor-pointer">Salário Família</label>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <span className="text-xs text-slate-400">Qtd. Dependentes:</span>
-                                <Input name="familySalaryDependents" type="number" defaultValue={initialData?.contract?.familySalaryDependents || 0} className="w-20" />
+                            <div className="flex items-center space-x-2 w-full sm:w-auto">
+                                <span className="text-xs text-slate-400 whitespace-nowrap">Qtd. Dependentes:</span>
+                                <Input name="familySalaryDependents" type="number" defaultValue={initialData?.contract?.familySalaryDependents || 0} className="flex-1 sm:w-20" />
                             </div>
                         </div>
                     </div>
@@ -1406,9 +1407,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     />
                 )}
 
-                <div className="mt-8 pt-6 flex justify-center items-center space-x-4 border-t border-slate-200 dark:border-slate-800">
+                <div className="mt-8 pt-6 flex flex-col-reverse sm:flex-row justify-center items-center gap-4 border-t border-slate-200 dark:border-slate-800">
                     {onCancel && (
-                        <Button type="button" variant="outline" onClick={onCancel} className="text-slate-500 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-8">
+                        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto text-slate-500 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-8">
                             Cancelar
                         </Button>
                     )}
@@ -1421,7 +1422,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 const idx = tabs.findIndex(t => t.id === activeTab);
                                 if (idx > 0) setActiveTab(tabs[idx - 1].id);
                             }}
-                            className="text-slate-500 hover:text-white"
+                            className="w-full sm:w-auto text-slate-500 hover:text-white"
                         >
                             ← Voltar
                         </Button>
@@ -1430,7 +1431,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         type="button"
                         disabled={loading}
                         onClick={handleSaveStep}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-10 shadow-lg shadow-indigo-500/20"
+                        className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-10 shadow-lg shadow-indigo-500/20"
                     >
                         {loading ? 'Salvando...' : (activeTab === tabs[tabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
                     </Button>

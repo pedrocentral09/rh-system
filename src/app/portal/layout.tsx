@@ -50,6 +50,14 @@ export default async function PortalLayout({
                         <span className="text-2xl">🏖️</span>
                         <span className="text-[10px] font-medium">Férias</span>
                     </Link>
+                    <Link href="/portal/career" className="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
+                        <span className="text-2xl">🌳</span>
+                        <span className="text-[10px] font-medium">Carreira</span>
+                    </Link>
+                    <Link href="/portal/rewards" className="flex flex-col items-center text-amber-500 hover:text-amber-600 transition-colors">
+                        <span className="text-2xl">🪙</span>
+                        <span className="text-[10px] font-medium">Coins</span>
+                    </Link>
                 </div>
             </nav>
 

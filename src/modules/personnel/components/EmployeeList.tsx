@@ -60,7 +60,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                 setEmployees(result.data || []);
             } else {
                 console.error(result.error);
-                setError(result.error?.message || 'Erro ao carregar colaboradores');
+                setError(result.message || 'Erro ao carregar colaboradores');
             }
         } catch (e: any) {
             console.error('Fetch error:', e);
@@ -284,8 +284,8 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                 )}
 
                 <CardContent className="p-0">
-                    {/* Mobile View (Cards) */}
-                    <div className="block sm:hidden p-4 bg-slate-50 dark:bg-slate-900 min-h-[300px]">
+                    {/* Mobile/Tablet View (Cards) - Now visible up to 1024px (lg) */}
+                    <div className="block lg:hidden p-4 bg-slate-50 dark:bg-slate-900 min-h-[300px]">
                         {filteredEmployees.map(emp => (
                             <MobileEmployeeCard
                                 key={emp.id}
@@ -303,23 +303,21 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                         )}
                     </div>
 
-                    {/* Desktop View (Table) */}
-                    <div className="hidden sm:block overflow-x-auto">
-                        <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
+                    {/* Desktop View (Table) - Visible only on Large screens (>=1024px) */}
+                    <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full border-collapse">
                             <thead className="bg-slate-50 dark:bg-slate-800">
                                 <tr>
                                     <th
-                                        className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[25%] cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
                                         onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
                                     >
                                         Nome {sortOrder === 'asc' ? '↑' : '↓'}
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Loja</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Setor</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[15%]">Cargo</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Admissão</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Status</th>
-                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-[10%]">Ações</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Loja / Setor</th>
+                                    <th className="hidden xl:table-cell px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Cargo / Admissão</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
@@ -347,11 +345,17 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.contract?.store?.name || '-'}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.contract?.sectorDef?.name || emp.department}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">{emp.jobTitle || emp.jobRole?.name || '-'}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-center text-xs text-slate-600 dark:text-slate-400">
-                                            {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '-'}
+                                        <td className="px-4 py-2 whitespace-nowrap">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{emp.contract?.store?.name || '-'}</span>
+                                                <span className="text-[10px] text-slate-400 dark:text-slate-500">{emp.contract?.sectorDef?.name || emp.department || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="hidden xl:table-cell px-4 py-2 whitespace-nowrap">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-slate-600 dark:text-slate-400">{emp.jobTitle || emp.jobRole?.name || '-'}</span>
+                                                <span className="text-[10px] text-slate-400 dark:text-slate-500">{emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '-'}</span>
+                                            </div>
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap text-center">
                                             <span className={`px-2 py-0.5 inline-flex text-[10px] font-bold uppercase rounded-full 

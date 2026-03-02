@@ -39,7 +39,12 @@ export default async function PrintDisciplinaryPage(props: Props) {
             <div className="max-w-[210mm] mx-auto print:max-w-none">
                 <div className="mb-4 print:hidden flex justify-between items-center no-print">
                     <h1 className="text-xl font-bold">Documento Disciplinar</h1>
-                    <DisciplinaryPrintActions employeeName={employeeName} />
+                    <DisciplinaryPrintActions
+                        employeeName={employeeName}
+                        employeeId={record.employeeId}
+                        recordType={record.type}
+                        recordDate={record.date instanceof Date ? record.date.toISOString().split('T')[0] : String(record.date).split('T')[0]}
+                    />
                 </div>
 
                 <div id="disciplinary-print-area">

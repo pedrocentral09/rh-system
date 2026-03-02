@@ -4,6 +4,7 @@ import { getEmployees, getEmployee } from '@/modules/personnel/actions/employees
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { PrintTrigger } from './PrintTrigger';
+import { TimesheetArchiveTrigger } from '@/modules/time-tracking/components/TimesheetArchiveTrigger';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -91,7 +92,7 @@ export default async function PrintTimeSheetPage(props: PrintPageProps) {
         const { days, totalBalance } = data;
 
         return (
-            <div key={employee.id} className={`max-w-[210mm] mx-auto p-[10mm] print:p-0 bg-white ${index < employeesToPrint.length - 1 ? 'break-after-page' : ''}`}>
+            <div key={employee.id} id={`timesheet-${employee.id}`} className={`max-w-[210mm] mx-auto p-[10mm] print:p-0 bg-white ${index < employeesToPrint.length - 1 ? 'break-after-page' : ''}`}>
                 {/* Header */}
                 <header className="border-b-2 border-black pb-4 mb-4 flex justify-between items-start">
                     <div>
@@ -245,15 +246,18 @@ export default async function PrintTimeSheetPage(props: PrintPageProps) {
                 <div className="text-sm">
                     <strong>Modo de Impressão</strong> &bull; {employeesToPrint.length} Folha(s) gerada(s).
                 </div>
-                <div className="hidden">
-                    {/* Print handled by PrintTrigger */}
-                </div>
+                <TimesheetArchiveTrigger
+                    employees={employeesToPrint.map((emp: any) => ({
+                        employeeId: emp.id,
+                        employeeName: emp.name,
+                        elementId: `timesheet-${emp.id}`,
+                    }))}
+                    periodRef={`${month.toString().padStart(2, '0')}-${year}`}
+                />
             </div>
 
             {/* Render all sheets */}
             {sheets}
-
-            <PrintTrigger />
         </div>
     );
 }
