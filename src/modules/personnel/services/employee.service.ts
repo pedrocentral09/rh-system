@@ -69,6 +69,8 @@ export class EmployeeService extends BaseService {
                     },
                     healthData: true,
                     legalGuardian: true,
+                    spouse: true,
+                    dependents: true,
                     documents: true
                 },
             });
@@ -189,9 +191,42 @@ export class EmployeeService extends BaseService {
                 };
             }
 
+            // Handle Spouse
+            if (rawData.spouseName) {
+                data.spouse = {
+                    create: {
+                        name: rawData.spouseName || '',
+                        cpf: rawData.spouseCpf || '',
+                        rg: rawData.spouseRg || '',
+                        phone: rawData.spousePhone || '',
+                        birthDate: parseDate(rawData.spouseBirthDate)
+                    }
+                };
+            }
+
+            // Handle Dependents
+            if (rawData.dependents) {
+                try {
+                    const deps = typeof rawData.dependents === 'string' ? JSON.parse(rawData.dependents) : rawData.dependents;
+                    if (Array.isArray(deps) && deps.length > 0) {
+                        data.dependents = {
+                            create: deps.map((d: any) => ({
+                                name: d.name || '',
+                                cpf: d.cpf || '',
+                                rg: d.rg || '',
+                                relationship: d.relationship || '',
+                                birthDate: parseDate(d.birthDate)
+                            }))
+                        };
+                    }
+                } catch (e) {
+                    console.error("Error parsing dependents JSON on create:", e);
+                }
+            }
+
             const employee = await prisma.employee.create({
                 data,
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true }
+                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true }
             });
 
             // Audit Log
@@ -438,6 +473,49 @@ export class EmployeeService extends BaseService {
                 };
             }
 
+            // Handle Spouse
+            if (rawData.spouseName !== undefined) {
+                data.spouse = {
+                    upsert: {
+                        create: {
+                            name: rawData.spouseName || '',
+                            cpf: rawData.spouseCpf || '',
+                            rg: rawData.spouseRg || '',
+                            phone: rawData.spousePhone || '',
+                            birthDate: parseDate(rawData.spouseBirthDate)
+                        },
+                        update: {
+                            name: rawData.spouseName,
+                            cpf: rawData.spouseCpf,
+                            rg: rawData.spouseRg,
+                            phone: rawData.spousePhone,
+                            birthDate: parseDate(rawData.spouseBirthDate)
+                        }
+                    }
+                };
+            }
+
+            // Handle Dependents
+            if (rawData.dependents !== undefined) {
+                try {
+                    const deps = typeof rawData.dependents === 'string' ? JSON.parse(rawData.dependents) : rawData.dependents;
+                    if (Array.isArray(deps)) {
+                        await prisma.dependent.deleteMany({ where: { employeeId: id } });
+                        data.dependents = {
+                            create: deps.map((d: any) => ({
+                                name: d.name || '',
+                                cpf: d.cpf || '',
+                                rg: d.rg || '',
+                                relationship: d.relationship || '',
+                                birthDate: parseDate(d.birthDate)
+                            }))
+                        };
+                    }
+                } catch (e) {
+                    console.error("Error parsing dependents JSON on update:", e);
+                }
+            }
+
             // Handle Documents
             if (rawData.documents) {
                 try {
@@ -467,7 +545,7 @@ export class EmployeeService extends BaseService {
             const employee = await prisma.employee.update({
                 where: { id },
                 data,
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, user: true }
+                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true, user: true }
             });
 
             // ... (Handle Access/User Creation logic)

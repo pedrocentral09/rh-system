@@ -97,6 +97,8 @@ model Employee {
   employmentHistory            EmploymentHistory[]
   healthData                   HealthData?
   legalGuardian                LegalGuardian?
+  spouse                       Spouse?
+  dependents                   Dependent[]
   medicalLeaves                MedicalLeave[]
   transferHistory              TransferHistory[]
   timeRecords                  TimeRecord[]
@@ -150,6 +152,32 @@ model LegalGuardian {
   employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("personnel_legal_guardians")
+}
+
+model Spouse {
+  id         String    @id @default(uuid())
+  employeeId String    @unique
+  name       String
+  cpf        String?
+  rg         String?
+  phone      String?
+  birthDate  DateTime?
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("personnel_spouses")
+}
+
+model Dependent {
+  id           String    @id @default(uuid())
+  employeeId   String
+  name         String
+  cpf          String?
+  rg           String?
+  birthDate    DateTime?
+  relationship String
+  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("personnel_dependents")
 }
 
 model HealthData {

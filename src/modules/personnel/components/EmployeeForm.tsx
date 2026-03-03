@@ -217,6 +217,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         }
     }, [initialDob]);
 
+    const [maritalStatus, setMaritalStatus] = useState(initialData?.maritalStatus || "");
+    const [hasDependents, setHasDependents] = useState(initialData?.dependents?.length > 0 || initialData?.contract?.familySalaryDependents > 0 || false);
+    const [dependents, setDependents] = useState<any[]>(initialData?.dependents || []);
+
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newDate = e.target.value;
         setBirthDate(newDate);
@@ -235,6 +239,39 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         } else {
             setIsMinor(false);
         }
+    };
+
+    const handleMaritalStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setMaritalStatus(value);
+        if (value === 'Casado') {
+            toast.info("Aba 'Dados do Cônjuge' habilitada.");
+        }
+    };
+
+    const handleHasDependentsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setHasDependents(checked);
+        if (checked) {
+            toast.info("Aba 'Dependentes' habilitada.");
+            if (dependents.length === 0) {
+                addDependent();
+            }
+        }
+    };
+
+    const addDependent = () => {
+        setDependents([...dependents, { name: '', cpf: '', rg: '', birthDate: '', relationship: '' }]);
+    };
+
+    const removeDependent = (index: number) => {
+        setDependents(dependents.filter((_, i) => i !== index));
+    };
+
+    const updateDependent = (index: number, field: string, value: string) => {
+        const newDeps = [...dependents];
+        newDeps[index] = { ...newDeps[index], [field]: value };
+        setDependents(newDeps);
     };
 
     // --- Contract Logic ---
@@ -340,7 +377,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             bank: ['bankName', 'accountType', 'agency', 'accountNumber', 'pixKey'],
             health: ['asoType', 'lastAsoDate'],
             access: ['accessEmail', 'accessPassword'],
-            legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianRg', 'guardianPhone', 'guardianRelationship'] : []
+            legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianRg', 'guardianPhone', 'guardianRelationship'] : [],
+            spouse: maritalStatus === 'Casado' ? ['spouseName'] : []
         };
 
         const missingFields = tabRequiredFields[activeTab]?.filter(field => !formData.get(field));
@@ -361,6 +399,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             // Sync emails if we are in access tab
             if (activeTab === 'access' && accessEmail) {
                 formData.set('email', accessEmail);
+            }
+
+            if (hasDependents && dependents.length > 0) {
+                formData.set('dependents', JSON.stringify(dependents));
             }
 
             // --- CRITICAL FIX: Only send data from the active tab (+ identity) to prevent FK violations ---
@@ -403,7 +445,6 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                 toast.success("Dados salvos com sucesso!");
 
-                const visibleTabs = tabs.filter(t => t.id !== 'legal_guardian' || isMinor);
                 const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
 
                 if (currentIndex !== -1 && currentIndex < visibleTabs.length - 1) {
@@ -552,20 +593,36 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 </select>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Estado Civil *</label>
-                                <select
-                                    name="maritalStatus"
-                                    defaultValue={initialData?.maritalStatus || ""}
-                                    className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                >
-                                    <option value="">Selecione...</option>
-                                    <option value="Solteiro">Solteiro(a)</option>
-                                    <option value="Casado">Casado(a)</option>
-                                    <option value="Divorciado">Divorciado(a)</option>
-                                    <option value="Viuvo">Viúvo(a)</option>
-                                    <option value="UniaoEstavel">União Estável</option>
-                                </select>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Estado Civil *</label>
+                                    <select
+                                        name="maritalStatus"
+                                        value={maritalStatus}
+                                        onChange={handleMaritalStatusChange}
+                                        className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    >
+                                        <option value="">Selecione...</option>
+                                        <option value="Solteiro">Solteiro(a)</option>
+                                        <option value="Casado">Casado(a)</option>
+                                        <option value="Divorciado">Divorciado(a)</option>
+                                        <option value="Viuvo">Viúvo(a)</option>
+                                        <option value="UniaoEstavel">União Estável</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="hasDependents"
+                                        checked={hasDependents}
+                                        onChange={handleHasDependentsChange}
+                                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor="hasDependents" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Possui Dependentes?
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -709,6 +766,113 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 <option value="Outro">Outro</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'spouse',
+            label: '💍 Cônjuge',
+            content: (
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">Nome do Cônjuge</label>
+                            <Input name="spouseName" defaultValue={initialData?.spouse?.name} placeholder="Nome completo" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">CPF do Cônjuge</label>
+                            <Input name="spouseCpf" defaultValue={initialData?.spouse?.cpf} placeholder="000.000.000-00" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">RG do Cônjuge</label>
+                            <Input name="spouseRg" defaultValue={initialData?.spouse?.rg} placeholder="RG" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">Data de Nascimento</label>
+                            <Input name="spouseBirthDate" type="date" defaultValue={safeDate(initialData?.spouse?.birthDate)} />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">Telefone</label>
+                            <Input name="spousePhone" defaultValue={initialData?.spouse?.phone} placeholder="(00) 00000-0000" />
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'dependents',
+            label: '👨‍👩‍👧‍👦 Dependentes',
+            content: (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-bold text-slate-800">Lista de Dependentes</h3>
+                        <Button type="button" size="sm" onClick={addDependent} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            + Adicionar Dependente
+                        </Button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {dependents.map((dep, index) => (
+                            <div key={index} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg relative bg-slate-50 dark:bg-slate-800/50">
+                                <button
+                                    type="button"
+                                    onClick={() => removeDependent(index)}
+                                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
+                                >
+                                    ✕
+                                </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Nome Completo</label>
+                                        <Input
+                                            value={dep.name}
+                                            onChange={(e) => updateDependent(index, 'name', e.target.value)}
+                                            placeholder="Nome do dependente"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Parentesco</label>
+                                        <select
+                                            value={dep.relationship}
+                                            onChange={(e) => updateDependent(index, 'relationship', e.target.value)}
+                                            className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                        >
+                                            <option value="">Selecione...</option>
+                                            <option value="Filho(a)">Filho(a)</option>
+                                            <option value="Enteado(a)">Enteado(a)</option>
+                                            <option value="Pai/Mãe">Pai/Mãe</option>
+                                            <option value="Outro">Outro</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Data de Nascimento</label>
+                                        <Input
+                                            type="date"
+                                            value={dep.birthDate ? safeDate(dep.birthDate) : ''}
+                                            onChange={(e) => updateDependent(index, 'birthDate', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">CPF (Se houver)</label>
+                                        <Input
+                                            value={dep.cpf}
+                                            onChange={(e) => updateDependent(index, 'cpf', e.target.value)}
+                                            placeholder="000.000.000-00"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {dependents.length === 0 && (
+                            <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+                                <p className="text-slate-500">Nenhum dependente adicionado.</p>
+                                <Button type="button" variant="ghost" onClick={addDependent} className="text-indigo-600">
+                                    Adicionar o primeiro
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )
@@ -1379,6 +1543,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         }
     ];
 
+    const visibleTabs = tabs.filter(t => {
+        if (t.id === 'legal_guardian') return isMinor;
+        if (t.id === 'spouse') return maritalStatus === 'Casado';
+        if (t.id === 'dependents') return hasDependents;
+        return true;
+    });
+
     return (
         <div className="w-full">
             {success && (
@@ -1401,7 +1572,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
                 ) : (
                     <Tabs
-                        tabs={tabs.filter(t => t.id !== 'legal_guardian' || isMinor)}
+                        tabs={visibleTabs}
                         value={activeTab}
                         onValueChange={setActiveTab}
                     />
@@ -1419,8 +1590,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             type="button"
                             variant="ghost"
                             onClick={() => {
-                                const idx = tabs.findIndex(t => t.id === activeTab);
-                                if (idx > 0) setActiveTab(tabs[idx - 1].id);
+                                const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
+                                if (currentIndex > 0) setActiveTab(visibleTabs[currentIndex - 1].id);
                             }}
                             className="w-full sm:w-auto text-slate-500 hover:text-white"
                         >
@@ -1433,7 +1604,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         onClick={handleSaveStep}
                         className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-10 shadow-lg shadow-indigo-500/20"
                     >
-                        {loading ? 'Salvando...' : (activeTab === tabs[tabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
+                        {loading ? 'Salvando...' : (activeTab === visibleTabs[visibleTabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
                     </Button>
                 </div>
             </form>
