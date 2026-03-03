@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/modules/core/actions/auth';
+import { checkAdminAccess } from '@/modules/core/utils/auth-helpers';
 
 export async function getManagerOneOnOnes() {
     try {
@@ -17,7 +18,7 @@ export async function getManagerOneOnOnes() {
         if (!employee) return { success: false, error: 'Perfil de colaborador não encontrado.' };
 
         // Check if user is an ADMIN, then they can see all. Otherwise, only theirs.
-        const isGlobalAdmin = user.role === 'ADMIN' || user.roleDef?.name === 'ADMIN';
+        const isGlobalAdmin = checkAdminAccess(user);
 
         const oneOnOnes = await prisma.oneOnOne.findMany({
             where: isGlobalAdmin ? {} : { managerId: employee.id },

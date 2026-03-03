@@ -5,6 +5,7 @@ import { adminAuth } from '@/lib/firebase/admin';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from './auth';
 import { logAction } from './audit';
+import { checkAdminAccess } from '@/modules/core/utils/auth-helpers';
 import { z } from 'zod';
 
 const CreateUserSchema = z.object({
@@ -18,7 +19,7 @@ const CreateUserSchema = z.object({
 export async function createSystemUser(data: z.infer<typeof CreateUserSchema>) {
     try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || !checkAdminAccess(currentUser)) {
             return { success: false, error: 'Acesso negado. Apenas administradores podem criar usuários.' };
         }
 

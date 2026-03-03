@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
+import { getCurrentUser } from './auth';
 
 export async function logAction(
     action: string,
@@ -14,6 +15,13 @@ export async function logAction(
         const headersList = await headers();
         const ip = headersList.get('x-forwarded-for') || 'unknown';
 
+        // If no userId is provided, try to get from session
+        let effectiveUserId = userId;
+        if (!effectiveUserId) {
+            const user = await getCurrentUser();
+            effectiveUserId = user?.id;
+        }
+
         await prisma.auditLog.create({
             data: {
                 action,
@@ -21,7 +29,7 @@ export async function logAction(
                 module: 'core', // Default module if not specified
                 newData: typeof details === 'string' ? details : JSON.stringify(details), // Map details to newData
                 ipAddress: ip,
-                userId: userId, // Allow null for system actions
+                userId: effectiveUserId, // Allow null for system actions
             }
         });
     } catch (error) {

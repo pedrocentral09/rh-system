@@ -84,7 +84,7 @@ export class EmployeeService extends BaseService {
         }
     }
 
-    static async create(rawData: any): Promise<ServiceResult<any>> {
+    static async create(rawData: any, performingUserId?: string): Promise<ServiceResult<any>> {
         try {
             // Basic Employee Data
             const data: any = {
@@ -231,6 +231,7 @@ export class EmployeeService extends BaseService {
 
             // Audit Log
             await AuditService.log({
+                userId: performingUserId,
                 action: 'CREATE',
                 module: 'PERSONNEL',
                 resource: 'Employee',
@@ -252,7 +253,7 @@ export class EmployeeService extends BaseService {
         }
     }
 
-    static async update(id: string, rawData: any): Promise<ServiceResult<any>> {
+    static async update(id: string, rawData: any, performingUserId?: string): Promise<ServiceResult<any>> {
         try {
             // Fetch old data for audit
             const oldEmployee = await prisma.employee.findUnique({
@@ -564,6 +565,7 @@ export class EmployeeService extends BaseService {
 
             // Audit Log
             await AuditService.log({
+                userId: performingUserId,
                 action: 'UPDATE',
                 module: 'PERSONNEL',
                 resource: 'Employee',
@@ -586,7 +588,7 @@ export class EmployeeService extends BaseService {
         }
     }
 
-    static async terminate(id: string, date: Date, reason: string, reasonId?: string): Promise<ServiceResult<void>> {
+    static async terminate(id: string, date: Date, reason: string, reasonId?: string, performingUserId?: string): Promise<ServiceResult<void>> {
         try {
             await prisma.$transaction([
                 prisma.employee.update({
@@ -629,7 +631,7 @@ export class EmployeeService extends BaseService {
         }
     }
 
-    static async rehire(id: string, rawData: any): Promise<ServiceResult<any>> {
+    static async rehire(id: string, rawData: any, performingUserId?: string): Promise<ServiceResult<any>> {
         try {
             const employee = await prisma.employee.findUnique({
                 where: { id },

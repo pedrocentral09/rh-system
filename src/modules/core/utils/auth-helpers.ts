@@ -1,6 +1,11 @@
 export function checkAdminAccess(user: any): boolean {
     if (!user) return false;
-    return user.role === 'ADMIN' || (!!user.roleDef && user.roleDef.name.toLowerCase() === 'administrador');
+    const isLegacyAdmin = user.role === 'ADMIN';
+    const isCustomAdmin = !!user.roleDef && (
+        user.roleDef.name.toLowerCase() === 'administrador' ||
+        user.roleDef.name.toUpperCase() === 'ADMIN'
+    );
+    return isLegacyAdmin || isCustomAdmin;
 }
 
 export function checkHRAccess(user: any): boolean {
@@ -13,7 +18,11 @@ export function checkHRAccess(user: any): boolean {
     // Check for custom permissions or role names that imply HR/Manager access
     if (user.roleDef) {
         const name = user.roleDef.name.toLowerCase();
-        return name.includes('gestor') || name.includes('rh') || name.includes('manager') || name.includes('recursos humanos');
+        return name.includes('gestor') ||
+            name.includes('rh') ||
+            name.includes('manager') ||
+            name.includes('recursos humanos') ||
+            name.includes('admin');
     }
 
     return false;

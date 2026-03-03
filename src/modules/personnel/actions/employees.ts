@@ -2,17 +2,20 @@
 
 import { revalidatePath } from 'next/cache';
 import { EmployeeService } from '../services/employee.service';
+import { getCurrentUser } from '@/modules/core/actions/auth';
 
 export async function createEmployee(formData: FormData) {
+    const user = await getCurrentUser();
     const rawData = Object.fromEntries(formData.entries());
-    const result = await EmployeeService.create(rawData);
+    const result = await EmployeeService.create(rawData, user?.id);
     if (result.success) revalidatePath('/dashboard/personnel');
     return result;
 }
 
 export async function updateEmployee(id: string, formData: FormData) {
+    const user = await getCurrentUser();
     const rawData = Object.fromEntries(formData.entries());
-    const result = await EmployeeService.update(id, rawData);
+    const result = await EmployeeService.update(id, rawData, user?.id);
     try {
         revalidatePath('/dashboard/personnel');
     } catch (e) {
@@ -22,7 +25,8 @@ export async function updateEmployee(id: string, formData: FormData) {
 }
 
 export async function terminateEmployee(id: string, date: Date, reason: string, reasonId?: string) {
-    const result = await EmployeeService.terminate(id, date, reason, reasonId);
+    const user = await getCurrentUser();
+    const result = await EmployeeService.terminate(id, date, reason, reasonId, user?.id);
     try {
         revalidatePath('/dashboard/personnel');
     } catch (e) {
@@ -32,8 +36,9 @@ export async function terminateEmployee(id: string, date: Date, reason: string, 
 }
 
 export async function rehireEmployee(id: string, formData: FormData) {
+    const user = await getCurrentUser();
     const rawData = Object.fromEntries(formData.entries());
-    const result = await EmployeeService.rehire(id, rawData);
+    const result = await EmployeeService.rehire(id, rawData, user?.id);
     try {
         revalidatePath('/dashboard/personnel');
     } catch (e) {
