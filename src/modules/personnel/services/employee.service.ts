@@ -151,9 +151,47 @@ export class EmployeeService extends BaseService {
                 };
             }
 
+            // Handle BankData
+            if (rawData.bankName || rawData.accountNumber) {
+                data.bankData = {
+                    create: {
+                        bankName: rawData.bankName || '',
+                        agency: rawData.agency || '',
+                        accountNumber: rawData.accountNumber || '',
+                        accountType: rawData.accountType || 'Corrente',
+                        pixKey: rawData.pixKey
+                    }
+                };
+            }
+
+            // Handle HealthData
+            if (rawData.lastAsoDate || rawData.asoType) {
+                data.healthData = {
+                    create: {
+                        asoType: rawData.asoType || 'Admissional',
+                        lastAsoDate: parseDate(rawData.lastAsoDate) || new Date(),
+                        periodicity: parseInt(rawData.asoPeriodicity || '12'),
+                        observations: rawData.asoObservations
+                    }
+                };
+            }
+
+            // Handle LegalGuardian
+            if (rawData.guardianName || rawData.guardianCpf) {
+                data.legalGuardian = {
+                    create: {
+                        name: rawData.guardianName || '',
+                        cpf: rawData.guardianCpf || '',
+                        rg: rawData.guardianRg || '',
+                        phone: rawData.guardianPhone || '',
+                        relationship: rawData.guardianRelationship || ''
+                    }
+                };
+            }
+
             const employee = await prisma.employee.create({
                 data,
-                include: { address: true, contract: true }
+                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true }
             });
 
             // Audit Log
@@ -198,8 +236,7 @@ export class EmployeeService extends BaseService {
             if (rawData.cpf !== undefined) data.cpf = rawData.cpf;
             if (rawData.rg !== undefined) data.rg = rawData.rg;
             if (rawData.dateOfBirth !== undefined) {
-                const parsed = rawData.dateOfBirth ? new Date(rawData.dateOfBirth) : null;
-                data.dateOfBirth = (parsed && !isNaN(parsed.getTime())) ? parsed : null;
+                data.dateOfBirth = parseDate(rawData.dateOfBirth);
             }
             if (rawData.gender !== undefined) data.gender = rawData.gender;
             if (rawData.maritalStatus !== undefined) data.maritalStatus = rawData.maritalStatus;
@@ -338,7 +375,7 @@ export class EmployeeService extends BaseService {
             }
 
             // Handle BankData
-            if (rawData.bankName || rawData.accountNumber) {
+            if (rawData.bankName !== undefined || rawData.accountNumber !== undefined) {
                 data.bankData = {
                     upsert: {
                         create: {
@@ -360,7 +397,7 @@ export class EmployeeService extends BaseService {
             }
 
             // Handle HealthData
-            if (rawData.lastAsoDate || rawData.asoType) {
+            if (rawData.lastAsoDate !== undefined || rawData.asoType !== undefined) {
                 data.healthData = {
                     upsert: {
                         create: {
@@ -380,7 +417,7 @@ export class EmployeeService extends BaseService {
             }
 
             // Handle LegalGuardian
-            if (rawData.guardianName || rawData.guardianCpf) {
+            if (rawData.guardianName !== undefined || rawData.guardianCpf !== undefined) {
                 data.legalGuardian = {
                     upsert: {
                         create: {

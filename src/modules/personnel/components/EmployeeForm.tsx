@@ -340,7 +340,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             bank: ['bankName', 'accountType', 'agency', 'accountNumber', 'pixKey'],
             health: ['asoType', 'lastAsoDate'],
             access: ['accessEmail', 'accessPassword'],
-            legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianPhone', 'guardianRelationship'] : []
+            legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianRg', 'guardianPhone', 'guardianRelationship'] : []
         };
 
         const missingFields = tabRequiredFields[activeTab]?.filter(field => !formData.get(field));
