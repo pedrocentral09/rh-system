@@ -82,40 +82,42 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_personal',
             label: '👤 Pessoal',
             content: (
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Dados Pessoais & Contato</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
-                        <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">CPF</p>
-                            <p className="text-sm font-medium">{displayEmployee.cpf}</p>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Dados Pessoais & Contato</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-slate-300">
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">CPF</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.cpf}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">RG</p>
-                            <p className="text-sm font-medium">{displayEmployee.rg || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">RG</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.rg || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Nascimento</p>
-                            <p className="text-sm font-medium">{formatDate(displayEmployee.dateOfBirth)}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Nascimento</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{formatDate(displayEmployee.dateOfBirth)}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Gênero</p>
-                            <p className="text-sm font-medium">{translateGender(displayEmployee.gender)}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Gênero</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{translateGender(displayEmployee.gender)}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Estado Civil</p>
-                            <p className="text-sm font-medium">{displayEmployee.maritalStatus || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Estado Civil</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.maritalStatus || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Email</p>
-                            <p className="text-sm font-medium">{displayEmployee.email}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Email</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1 truncate max-w-full">{displayEmployee.email}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Telefone</p>
-                            <p className="text-sm font-medium">{displayEmployee.phone || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Telefone</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.phone || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Fixo</p>
-                            <p className="text-sm font-medium">{displayEmployee.landline || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Fixo</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.landline || '-'}</p>
                         </div>
                     </div>
                 </div>
@@ -125,55 +127,59 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_family',
             label: '💍 Família',
             content: (
-                <div className="space-y-6">
+                <div className="space-y-8 py-4">
                     {displayEmployee.spouse && (
                         <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Dados do Cônjuge</h4>
-                            <div className="grid grid-cols-2 gap-4">
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 pb-2 mb-6">Dados do Cônjuge</h4>
+                            <div className="grid grid-cols-2 gap-8">
                                 <div>
-                                    <p className="text-xs text-slate-500">Nome</p>
-                                    <p className="text-sm font-medium">{displayEmployee.spouse.name}</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Nome</p>
+                                    <p className="text-sm font-bold text-white">{displayEmployee.spouse.name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">CPF</p>
-                                    <p className="text-sm font-medium">{displayEmployee.spouse.cpf || '-'}</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">CPF</p>
+                                    <p className="text-sm font-bold text-white">{displayEmployee.spouse.cpf || '-'}</p>
                                 </div>
                             </div>
                         </div>
                     )}
                     {displayEmployee.legalGuardian && (
                         <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Responsável Legal</h4>
-                            <div className="grid grid-cols-2 gap-4">
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 pb-2 mb-6">Responsável Legal</h4>
+                            <div className="grid grid-cols-2 gap-8">
                                 <div>
-                                    <p className="text-xs text-slate-500">Nome</p>
-                                    <p className="text-sm font-medium">{displayEmployee.legalGuardian.name}</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Nome</p>
+                                    <p className="text-sm font-bold text-white">{displayEmployee.legalGuardian.name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">Telefone / Relacionamento</p>
-                                    <p className="text-sm font-medium">{displayEmployee.legalGuardian.phone} / {displayEmployee.legalGuardian.relationship}</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Telefone / Relacionamento</p>
+                                    <p className="text-sm font-bold text-white">{displayEmployee.legalGuardian.phone} / {displayEmployee.legalGuardian.relationship}</p>
                                 </div>
                             </div>
                         </div>
                     )}
                     {displayEmployee.dependents && displayEmployee.dependents.length > 0 ? (
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Dependentes ({displayEmployee.dependents.length})</h4>
-                            <div className="space-y-3">
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 pb-2 mb-6 text-center">Dependentes ({displayEmployee.dependents.length})</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {displayEmployee.dependents.map((dep: any, idx: number) => (
-                                    <div key={idx} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-                                        <div className="grid grid-cols-2 gap-x-4">
-                                            <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{dep.name}</p>
-                                            <p className="text-xs text-slate-500 text-right">{dep.relationship || 'Dependente'}</p>
-                                            <p className="text-xs text-slate-500">{dep.cpf || '-'}</p>
-                                            <p className="text-xs text-slate-500 text-right">{formatDate(dep.birthDate)}</p>
+                                    <div key={idx} className="bg-white/5 border border-white/5 p-4 rounded-2xl group hover:border-brand-orange/20 transition-all">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="text-sm font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{dep.name}</p>
+                                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{dep.relationship || 'Dependente'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                                            <span>{dep.cpf || '-'}</span>
+                                            <span>{formatDate(dep.birthDate)}</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     ) : (!displayEmployee.spouse && !displayEmployee.legalGuardian) && (
-                        <p className="text-slate-500 italic text-center py-8">Nenhum dado familiar cadastrado.</p>
+                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhum dado familiar cadastrado</p>
+                        </div>
                     )}
                 </div>
             )
@@ -182,20 +188,22 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_emergency',
             label: '🚑 Emergência',
             content: (
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Contato de Emergência</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
-                        <div>
-                            <p className="text-xs text-slate-500">Nome</p>
-                            <p className="text-sm font-medium">{displayEmployee.emergencyContactName || '-'}</p>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Contato de Emergência</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-slate-300">
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Nome</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.emergencyContactName || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Telefone</p>
-                            <p className="text-sm font-medium">{displayEmployee.emergencyContactPhone || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Telefone</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.emergencyContactPhone || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Parentesco</p>
-                            <p className="text-sm font-medium">{displayEmployee.emergencyContactRelationship || '-'}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Parentesco</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.emergencyContactRelationship || '-'}</p>
                         </div>
                     </div>
                 </div>
@@ -205,30 +213,36 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_address',
             label: '📍 Endereço',
             content: (
-                <div className="space-y-4">
+                <div className="space-y-8 py-4">
                     {displayEmployee.address ? (
                         <>
-                            <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Endereço Residencial</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
-                                <div className="col-span-2">
-                                    <p className="text-xs text-slate-500">Logradouro</p>
-                                    <p className="text-sm font-medium">{displayEmployee.address.street}, {displayEmployee.address.number} {displayEmployee.address.complement && `- ${displayEmployee.address.complement}`}</p>
+                            <div className="text-center">
+                                <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Endereço Residencial</h4>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-slate-300">
+                                <div className="col-span-2 group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Logradouro</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.address.street}, {displayEmployee.address.number} {displayEmployee.address.complement && `- ${displayEmployee.address.complement}`}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">Bairro</p>
-                                    <p className="text-sm font-medium">{displayEmployee.address.neighborhood}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Bairro</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.address.neighborhood}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">Cidade/UF</p>
-                                    <p className="text-sm font-medium">{displayEmployee.address.city} - {displayEmployee.address.state}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Cidade/UF</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.address.city} - {displayEmployee.address.state}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">CEP</p>
-                                    <p className="text-sm font-medium">{displayEmployee.address.zipCode}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">CEP</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.address.zipCode}</p>
                                 </div>
                             </div>
                         </>
-                    ) : <p className="text-slate-500 italic">Endereço não cadastrado.</p>}
+                    ) : (
+                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Endereço não cadastrado</p>
+                        </div>
+                    )}
                 </div>
             )
         },
@@ -236,34 +250,40 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_bank',
             label: '💰 Bancário',
             content: (
-                <div className="space-y-4">
+                <div className="space-y-8 py-4">
                     {displayEmployee.bankData ? (
                         <>
-                            <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Dados Bancários</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
-                                <div>
-                                    <p className="text-xs text-slate-500">Banco</p>
-                                    <p className="text-sm font-medium">{displayEmployee.bankData.bankName}</p>
+                            <div className="text-center">
+                                <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Dados Bancários</h4>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-slate-300">
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Banco</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.bankData.bankName}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">Tipo de Conta</p>
-                                    <p className="text-sm font-medium">{displayEmployee.bankData.accountType}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Tipo de Conta</p>
+                                    <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.bankData.accountType}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">Agência</p>
-                                    <p className="text-sm font-medium">{displayEmployee.bankData.agency}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Agência</p>
+                                    <p className="text-sm font-bold text-white font-mono transition-all group-hover:translate-x-1">{displayEmployee.bankData.agency}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-slate-500">Conta</p>
-                                    <p className="text-sm font-medium">{displayEmployee.bankData.accountNumber}</p>
+                                <div className="group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Conta</p>
+                                    <p className="text-sm font-bold text-white font-mono transition-all group-hover:translate-x-1">{displayEmployee.bankData.accountNumber}</p>
                                 </div>
-                                <div className="col-span-2">
-                                    <p className="text-xs text-slate-500">Chave PIX</p>
-                                    <p className="text-sm font-medium">{displayEmployee.bankData.pixKey || '-'}</p>
+                                <div className="col-span-2 group">
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Chave PIX</p>
+                                    <p className="text-sm font-bold text-white font-mono transition-all group-hover:translate-x-1">{displayEmployee.bankData.pixKey || '-'}</p>
                                 </div>
                             </div>
                         </>
-                    ) : <p className="text-slate-500 italic">Dados bancários não cadastrados.</p>}
+                    ) : (
+                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Dados bancários não cadastrados</p>
+                        </div>
+                    )}
                 </div>
             )
         },
@@ -271,25 +291,27 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_job',
             label: '💼 Contratual',
             content: (
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Informações do Contrato</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-slate-300">
-                        <div>
-                            <p className="text-xs text-slate-500">Cargo</p>
-                            <p className="text-sm font-medium">{displayEmployee.jobRole?.name || displayEmployee.jobTitle || '-'}</p>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Informações do Contrato</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-slate-300">
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Cargo</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.jobRole?.name || displayEmployee.jobTitle || '-'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Setor</p>
-                            <p className="text-sm font-medium">{displayEmployee.contract?.sectorDef?.name || displayEmployee.department}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Setor</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{displayEmployee.contract?.sectorDef?.name || displayEmployee.department}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Admissão</p>
-                            <p className="text-sm font-medium">{formatDate(displayEmployee.hireDate)}</p>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-brand-orange/60 transition-colors">Admissão</p>
+                            <p className="text-sm font-bold text-white transition-all group-hover:translate-x-1">{formatDate(displayEmployee.hireDate)}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Status</p>
-                            <span className={`px-2 py-0.5 inline-flex text-xs font-semibold rounded-full 
-                              ${displayEmployee.status === 'ACTIVE' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600'}`}>
+                        <div className="group">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2 group-hover:text-brand-orange/60 transition-colors">Status</p>
+                            <span className={`px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full border transition-all group-hover:scale-105 
+                              ${displayEmployee.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-white/5 text-slate-500 border-white/10'}`}>
                                 {displayEmployee.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
                             </span>
                         </div>
@@ -301,33 +323,34 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_history',
             label: '🕒 Histórico',
             content: (
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Histórico de Transferências</h4>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Histórico de Transferências</h4>
+                    </div>
                     {history.length > 0 ? (
-                        <div className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-3 space-y-6 pb-2">
-                            {history.map((item, index) => (
-                                <div key={item.id} className="mb-8 ml-6">
-                                    <span className="absolute -left-[9px] mt-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 ring-4 ring-white">
-                                        <div className="h-2 w-2 rounded-full bg-indigo-600"></div>
-                                    </span>
-                                    <time className="mb-1 text-sm font-normal leading-none text-slate-400">
-                                        {formatDate(item.date)}
-                                    </time>
-                                    <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                                        Transferido para {item.newStore}
-                                    </h3>
-                                    <div className="mb-2 text-sm font-normal text-slate-500 dark:text-slate-400">
-                                        Anterior: <span className="font-medium text-slate-700 dark:text-slate-300">{item.previousStore}</span>
+                        <div className="relative border-l border-white/5 ml-4 flex flex-col gap-10">
+                            {history.map((item: any, index: number) => (
+                                <div key={item.id} className="relative pl-10 group">
+                                    <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-[#0A0F1C] border-2 border-brand-orange group-hover:scale-125 group-hover:shadow-[0_0_10px_rgba(255,102,0,0.5)] transition-all duration-300"></div>
+                                    <time className="text-[10px] font-black text-slate-600 uppercase tracking-widest block mb-2">{formatDate(item.date)}</time>
+                                    <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all shadow-xl">
+                                        <h3 className="text-sm font-black text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+                                            Transferido para <span className="text-brand-orange">{item.newStore}</span>
+                                        </h3>
+                                        <div className="text-xs font-bold text-slate-500 uppercase tracking-tight mb-4">
+                                            Anterior: <span className="text-slate-300">{item.previousStore}</span>
+                                        </div>
+                                        <div className="bg-[#0A0F1C]/40 border border-white/5 p-4 rounded-xl relative">
+                                            <span className="absolute -top-3 left-4 px-2 bg-[#0A0F1C] text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Motivo</span>
+                                            <p className="text-xs text-slate-400 italic font-medium leading-relaxed">"{item.reason}"</p>
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-2 rounded border border-slate-100 dark:border-slate-700 italic">
-                                        "{item.reason}"
-                                    </p>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-8 text-slate-500">
-                            <p>Nenhum registro de transferência encontrado.</p>
+                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhum registro encontrado</p>
                         </div>
                     )}
                 </div>
@@ -337,30 +360,35 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_documents',
             label: '📁 Documentos',
             content: (
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Documentos Digitalizados</h4>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Gestão de Documentos</h4>
+                    </div>
                     {displayEmployee.documents && displayEmployee.documents.length > 0 ? (
-                        <ul className="divide-y divide-slate-100 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {displayEmployee.documents.map((doc: any) => (
-                                <li key={doc.id} className="flex items-center justify-between p-3 hover:bg-slate-50">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="h-8 w-8 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded flex items-center justify-center">
+                                <div key={doc.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-brand-orange/20 transition-all group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 bg-[#0A0F1C] text-brand-orange rounded-xl flex items-center justify-center text-xl shadow-lg border border-white/5">
                                             📄
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{doc.fileName}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{doc.type}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-black text-white uppercase tracking-tight truncate max-w-[150px]">{doc.fileName}</p>
+                                            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{doc.type}</p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400" onClick={() => window.open(doc.fileUrl, '_blank')}>
-                                        ⬇️ Baixar
-                                    </Button>
-                                </li>
+                                    <button
+                                        onClick={() => window.open(doc.fileUrl, '_blank')}
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-md"
+                                    >
+                                        ⬇️
+                                    </button>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     ) : (
-                        <div className="text-center py-8 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded border border-dashed border-slate-300 dark:border-slate-700">
-                            <p>Nenhum documento anexado.</p>
+                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhum documento anexado</p>
                         </div>
                     )}
                 </div>
@@ -380,59 +408,63 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_access',
             label: '🔐 Acesso',
             content: (
-                <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Segurança & Acesso ao Portal</h4>
+                <div className="space-y-8 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Segurança & Acesso ao Portal</h4>
+                    </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-full">
-                                <KeyRound className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                    <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10 relative overflow-hidden group shadow-2xl">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none group-hover:bg-indigo-500/10 transition-colors duration-700" />
+
+                        <div className="flex flex-col items-center text-center space-y-6 relative">
+                            <div className="w-20 h-20 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                                <KeyRound className="h-10 w-10 text-indigo-400" />
                             </div>
                             <div>
-                                <h5 className="font-bold text-slate-800 dark:text-slate-200">Senha (PIN) do Colaborador</h5>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">
+                                <h5 className="text-lg font-black text-white uppercase tracking-tighter mb-2">PIN de Colaborador</h5>
+                                <p className="text-slate-400 font-medium text-sm leading-relaxed max-w-sm mx-auto">
                                     O colaborador acessa o portal usando o CPF e um PIN de 6 dígitos.
-                                    Se ele esqueceu o PIN ou a conta foi bloqueada, você pode resetar aqui.
+                                    Aqui você pode resetar o acesso em caso de perda ou bloqueio.
                                 </p>
                             </div>
 
-                            <div className="pt-4 w-full flex justify-center">
-                                <Button
-                                    variant="outline"
-                                    className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 flex items-center gap-2"
-                                    onClick={async () => {
-                                        if (confirm(`Deseja realmente resetar o PIN de ${displayEmployee.name}? O PIN atual deixará de funcionar imediatamente.`)) {
-                                            const res = await resetEmployeePinAction(displayEmployee.id);
-                                            if (res.success && res.plainPin) {
-                                                toast.success(`PIN resetado com sucesso!`, {
-                                                    description: `O NOVO PIN É: ${res.plainPin}`,
-                                                    duration: 0, // Stay open
-                                                    action: {
-                                                        label: "Copiar PIN",
-                                                        onClick: () => {
-                                                            navigator.clipboard.writeText(res.plainPin!);
-                                                            toast.success("PIN copiado!");
-                                                        }
+                            <button
+                                className="h-12 px-8 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-white transition-all shadow-xl flex items-center gap-2"
+                                onClick={async () => {
+                                    if (confirm(`Deseja realmente resetar o PIN de ${displayEmployee.name}? O PIN atual deixará de funcionar imediatamente.`)) {
+                                        const res = await resetEmployeePinAction(displayEmployee.id);
+                                        if (res.success && res.plainPin) {
+                                            toast.success(`PIN resetado com sucesso!`, {
+                                                description: `O NOVO PIN É: ${res.plainPin}`,
+                                                duration: 0,
+                                                action: {
+                                                    label: "Copiar PIN",
+                                                    onClick: () => {
+                                                        navigator.clipboard.writeText(res.plainPin!);
+                                                        toast.success("PIN copiado!");
                                                     }
-                                                });
-                                            } else {
-                                                toast.error(res.error || "Erro ao resetar o PIN.");
-                                            }
+                                                }
+                                            });
+                                        } else {
+                                            toast.error(res.error || "Erro ao resetar o PIN.");
                                         }
-                                    }}
-                                >
-                                    <ShieldAlert className="h-4 w-4" />
-                                    Resetar & Gerar Novo PIN
-                                </Button>
-                            </div>
+                                    }
+                                }}
+                            >
+                                <ShieldAlert className="h-4 w-4" />
+                                Resetar & Gerar Novo PIN
+                            </button>
                         </div>
                     </div>
 
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-md">
-                        <p className="text-blue-800 dark:text-blue-400 text-xs leading-relaxed">
-                            <strong>Nota:</strong> Após o reset, o colaborador será obrigado a trocar este PIN temporário no próximo login.
-                            Certifique-se de comunicar o novo número a ele de forma segura.
-                        </p>
+                    <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
+                        <div className="flex gap-4">
+                            <div className="h-6 w-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 text-xs">ℹ️</div>
+                            <p className="text-blue-400 text-[10px] font-bold uppercase tracking-wider leading-relaxed">
+                                Após o reset, o colaborador será obrigado a trocar este PIN temporário no próximo login.
+                                Comunique o novo número de forma segura e privada.
+                            </p>
+                        </div>
                     </div>
                 </div>
             )
@@ -465,72 +497,87 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                 </Button>
                             </div>
                         )}
-                        {/* Header Profile - Compact */}
-                        <div className="flex flex-col items-center justify-center space-y-3 pb-8 border-b border-slate-200 dark:border-slate-700 text-center">
-                            <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-3xl font-bold border-2 border-indigo-200 dark:border-indigo-700 shadow-sm overflow-hidden">
+                        {/* Header Profile - Premium */}
+                        <div className="flex flex-col md:flex-row items-center gap-8 pb-8 border-b border-white/5 relative">
+                            <div className="absolute -top-4 -left-4 w-24 h-24 bg-brand-orange/10 blur-[50px] rounded-full pointer-events-none" />
+                            <div className="w-24 h-24 bg-[#0A0F1C] rounded-[2rem] flex items-center justify-center text-brand-orange text-3xl font-black border border-white/10 shadow-2xl overflow-hidden flex-shrink-0 relative group">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 {displayEmployee.photoUrl ? (
-                                    <img src={displayEmployee.photoUrl} alt={displayEmployee.name} className="w-full h-full object-cover" />
+                                    <img src={displayEmployee.photoUrl} alt={displayEmployee.name} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
                                 ) : (
                                     <span>{displayEmployee.name.charAt(0)}</span>
                                 )}
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white uppercase tracking-tight">{displayEmployee.name}</h3>
-                                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-                                    {displayEmployee.jobRole?.name || displayEmployee.jobTitle || 'Sem cargo'}
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{displayEmployee.contract?.store?.name || '-'}</p>
+                            <div className="flex-1 text-center md:text-left">
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                                    <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.2em] bg-brand-orange/10 px-3 py-1 rounded-full border border-brand-orange/20">
+                                        {displayEmployee.jobRole?.name || displayEmployee.jobTitle || 'Sem cargo'}
+                                    </span>
+                                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${displayEmployee.status === 'ACTIVE'
+                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                        : 'bg-white/5 text-slate-500 border-white/10'
+                                        }`}>
+                                        {displayEmployee.status === 'ACTIVE' ? 'Status Ativo' : 'Status Inativo'}
+                                    </span>
+                                </div>
+                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none mb-2">{displayEmployee.name}</h3>
+                                <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                                    <span className="text-brand-orange/60">ID #{displayEmployee.id.slice(-6).toUpperCase()}</span>
+                                    <span className="w-1 h-1 rounded-full bg-slate-800" />
+                                    <span>{displayEmployee.contract?.store?.name || '-'}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="min-h-[300px]">
+                        <div className="py-2">
                             <Tabs tabs={tabs} defaultValue={defaultTab} />
                         </div>
                     </>
                 )}
 
-                <div className="pt-6 flex justify-center space-x-3 border-t border-slate-200 dark:border-slate-800">
-                    <Button
-                        variant="outline"
+                <div className="pt-8 flex flex-wrap justify-center gap-3 border-t border-white/5">
+                    <button
                         onClick={() => setIsTransferModalOpen(true)}
-                        className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                        className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                     >
                         🚚 Transferir
-                    </Button>
-                    <Button
-                        variant="outline"
+                    </button>
+                    <button
                         onClick={() => setIsEditModalOpen(true)}
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                     >
                         ✏️ Editar
-                    </Button>
+                    </button>
 
-                    {employee.status === 'ACTIVE' ? (
-                        <Button
-                            variant="outline"
+                    {displayEmployee.status === 'ACTIVE' ? (
+                        <button
                             onClick={() => setIsTerminationModalOpen(true)}
-                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                         >
                             🚫 Desligar
-                        </Button>
-                    ) : employee.status === 'PENDING_APPROVAL' ? (
-                        <Button
+                        </button>
+                    ) : displayEmployee.status === 'PENDING_APPROVAL' ? (
+                        <button
                             onClick={handleApprove}
-                            className="bg-green-600 hover:bg-green-700 text-white gap-2 font-bold"
+                            className="h-10 px-8 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center gap-2"
                         >
                             <CheckCircle className="h-4 w-4" />
                             Aprovar Cadastro
-                        </Button>
+                        </button>
                     ) : (
-                        <Button
-                            variant="outline"
+                        <button
                             onClick={() => setIsRehireModalOpen(true)}
-                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                            className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                         >
                             ♻️ Recontratar
-                        </Button>
+                        </button>
                     )}
-                    <Button variant="outline" onClick={onClose} className="text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800">Fechar</Button>
+                    <button
+                        onClick={onClose}
+                        className="h-10 px-8 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-white/10 transition-all shadow-lg"
+                    >
+                        Fechar
+                    </button>
                 </div>
             </div>
 

@@ -7,6 +7,8 @@ import { getRoles, deleteRole } from '@/modules/core/actions/roles';
 import { RoleModal } from './RoleModal';
 import { toast } from 'sonner';
 
+import { motion } from 'framer-motion';
+
 export function ProfileList() {
     const [roles, setRoles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,90 +39,111 @@ export function ProfileList() {
         }
     }
 
-    if (loading) return <div className="p-4 bg-slate-50 rounded h-24 animate-pulse"></div>;
+    if (loading) return (
+        <div className="space-y-6 mt-8">
+            <div className="h-16 bg-white/5 rounded-3xl animate-pulse" />
+            <div className="h-64 bg-white/5 rounded-3xl animate-pulse" />
+        </div>
+    );
 
     return (
-        <Card className="border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800 mt-8">
-            <CardHeader className="flex flex-row items-center justify-between">
+        <div className="space-y-8 animate-in fade-in duration-700 mt-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <CardTitle>Perfis de Acesso</CardTitle>
-                    <CardDescription>Defina grupos de permissões para os usuários.</CardDescription>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Perfis & <span className="text-brand-orange">Autoridade</span></h2>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Matriz de Permissões e Hierarquia Funcional</p>
                 </div>
-                <Button
+                <button
                     onClick={() => {
                         setSelectedRole(null);
                         setIsModalOpen(true);
                     }}
-                    className="bg-brand-blue hover:bg-blue-800 text-white font-bold"
+                    className="h-12 px-8 rounded-2xl bg-indigo-500 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] flex items-center justify-center gap-2 group"
                 >
-                    + Novo Perfil
-                </Button>
-            </CardHeader>
-            <CardContent className="p-0">
-                <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
-                    <thead className="bg-slate-100/80 dark:bg-slate-900 text-[11px] text-slate-700 dark:text-slate-300 uppercase border-b border-slate-200 dark:border-slate-700 font-bold tracking-wider">
-                        <tr>
-                            <th className="px-6 py-3">Nome do Perfil</th>
-                            <th className="px-6 py-3">Usuários</th>
-                            <th className="px-6 py-3">Tipo</th>
-                            <th className="px-6 py-3 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                        {roles.map((role) => (
-                            <tr key={role.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{role.name}</td>
-                                <td className="px-6 py-4">
-                                    <span className="bg-slate-200/50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded text-xs font-bold border border-slate-300 dark:border-slate-600">
-                                        {role._count?.users || 0} usuários
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    {role.isSystem ? (
-                                        <span className="text-amber-600 text-xs font-bold border border-amber-200 px-2 py-0.5 rounded bg-amber-50">SISTEMA</span>
-                                    ) : (
-                                        <span className="text-slate-500 text-xs">Personalizado</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-indigo-600 hover:text-indigo-800"
+                    <span className="text-lg group-hover:rotate-180 transition-transform duration-500">🛡️</span>
+                    Criar Novo Perfil
+                </button>
+            </div>
+
+            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+
+                <div className="space-y-4">
+                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                        <div className="col-span-12 md:col-span-6 text-left">Título do Perfil / Tipo</div>
+                        <div className="hidden md:block md:col-span-3 text-center">Abrangência</div>
+                        <div className="hidden md:block md:col-span-3 text-right">Configuração</div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {roles.map((role, i) => (
+                            <motion.div
+                                key={role.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.03 }}
+                                className="grid grid-cols-12 items-center px-8 py-6 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-indigo-500/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group relative overflow-hidden"
+                            >
+                                <div className="col-span-12 md:col-span-6 flex items-center gap-5">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-indigo-500/30 transition-colors">
+                                        🎭
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h4 className="text-[14px] font-black text-white uppercase tracking-tight group-hover:text-indigo-400 transition-colors truncate">{role.name}</h4>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            {role.isSystem ? (
+                                                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Definição do Sistema</span>
+                                            ) : (
+                                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded border border-white/5">Modelo Customizado</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="hidden md:block md:col-span-3 text-center">
+                                    <div className="inline-flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                                        <span className="text-sm font-black text-white">{role._count?.users || 0}</span>
+                                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Contas Ativas</span>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-12 md:col-span-3 flex justify-end gap-2 mt-4 md:mt-0">
+                                    <button
                                         onClick={() => {
                                             setSelectedRole(role);
                                             setIsModalOpen(true);
                                         }}
+                                        className="h-9 px-4 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                                     >
-                                        Editar
-                                    </Button>
+                                        ⚙️ Editar Regras
+                                    </button>
                                     {!role.isSystem && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-red-500 hover:text-red-700"
+                                        <button
                                             onClick={() => handleDelete(role.id, role.name)}
+                                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg text-red-500/50 hover:text-white"
                                         >
-                                            Excluir
-                                        </Button>
+                                            🗑️
+                                        </button>
                                     )}
-                                </td>
-                            </tr>
+                                </div>
+                            </motion.div>
                         ))}
+
                         {roles.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="p-6 text-center text-slate-400">Nenhum perfil encontrado.</td>
-                            </tr>
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-600 bg-white/5 rounded-[2rem] border border-white/5 border-dashed">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum perfil autoritativo</p>
+                            </div>
                         )}
-                    </tbody>
-                </table>
-            </CardContent>
+                    </div>
+                </div>
+            </div>
+
             <RoleModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 role={selectedRole}
                 onSuccess={loadRoles}
             />
-        </Card>
+        </div>
     );
 }

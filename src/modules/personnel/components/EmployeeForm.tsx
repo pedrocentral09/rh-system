@@ -8,10 +8,11 @@ import { getJobRoles, getSectors } from '../../configuration/actions/auxiliary';
 import { getShiftTypes } from '../../scales/actions';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Tabs } from '@/shared/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap, CheckCircle2, ArrowRightCircle, ChevronLeft, Calendar as CalendarIcon, User, Home, Building2, Banknote, ShieldPlus, FolderOpen, Key, Star, Plus, X } from 'lucide-react';
 import { uploadEmployeePhoto, uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
+import { formatSafeDate, parseSafeDate } from '@/shared/utils/date-utils';
 
 interface EmployeeFormProps {
     onSuccess?: () => void;
@@ -423,37 +424,37 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                 result = await createEmployee(formData);
             }
 
-                if (result.success) {
-                    if (!currentId && result.data?.id) {
-                        const newId = result.data.id;
-                        setCurrentId(newId);
+            if (result.success) {
+                if (!currentId && result.data?.id) {
+                    const newId = result.data.id;
+                    setCurrentId(newId);
 
-                        // Handle pending photo upload if this was a new creation
-                        if (pendingPhotoFile) {
-                            try {
-                                const url = await uploadEmployeePhoto(pendingPhotoFile, newId, employeeName);
-                                const photoFormData = new FormData();
-                                photoFormData.append('photoUrl', url);
-                                await updateEmployee(newId, photoFormData);
-                                setPhotoPreview(url);
-                                setPendingPhotoFile(null);
-                            } catch (err) {
-                                console.error("Failed to upload pending photo:", err);
-                            }
+                    // Handle pending photo upload if this was a new creation
+                    if (pendingPhotoFile) {
+                        try {
+                            const url = await uploadEmployeePhoto(pendingPhotoFile, newId, employeeName);
+                            const photoFormData = new FormData();
+                            photoFormData.append('photoUrl', url);
+                            await updateEmployee(newId, photoFormData);
+                            setPhotoPreview(url);
+                            setPendingPhotoFile(null);
+                        } catch (err) {
+                            console.error("Failed to upload pending photo:", err);
                         }
+                    }
 
-                        // NEW: If we have a generated PIN, show it to the admin
-                        if (result.data.generatedPin) {
-                            toast.success(`Colaborador cadastrado! PIN de acesso inicial: ${result.data.generatedPin}`, {
-                                duration: 10000,
-                                description: "IMPORTANTE: Anote este PIN e entregue ao colaborador. Ele será solicitado no primeiro acesso."
-                            });
-                        } else {
-                            toast.success("Dados salvos com sucesso!");
-                        }
+                    // NEW: If we have a generated PIN, show it to the admin
+                    if (result.data.generatedPin) {
+                        toast.success(`Colaborador cadastrado! PIN de acesso inicial: ${result.data.generatedPin}`, {
+                            duration: 10000,
+                            description: "IMPORTANTE: Anote este PIN e entregue ao colaborador. Ele será solicitado no primeiro acesso."
+                        });
                     } else {
                         toast.success("Dados salvos com sucesso!");
                     }
+                } else {
+                    toast.success("Dados salvos com sucesso!");
+                }
 
                 const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
 
@@ -488,79 +489,75 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'personal',
             label: '👤 Dados Pessoais',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-
+                <div className="space-y-12">
                     {/* Section 1: Basic Info */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Avatar Column */}
-                        <div className="md:col-span-3 flex flex-col items-center space-y-3">
-                            <div className="relative w-32 h-40 bg-slate-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden group cursor-pointer hover:border-indigo-500 transition-colors">
+                        <div className="md:col-span-3 flex flex-col items-center space-y-4">
+                            <div className="relative w-40 h-52 bg-white/5 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden group cursor-pointer hover:border-indigo-500/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
                                 {isUploading ? (
-                                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                                    <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
                                 ) : photoPreview ? (
-                                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
-                                    <div className="text-slate-400 text-center p-2">
-                                        <span className="text-2xl block mb-1">📷</span>
-                                        <span className="text-xs">Adicionar Foto</span>
+                                    <div className="text-slate-500 text-center p-4">
+                                        <span className="text-3xl block mb-2 opacity-50 group-hover:opacity-100 transition-opacity">📷</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">ADICIONAR<br />FOTOGRAFIA</span>
                                     </div>
                                 )}
                                 <input
                                     type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                     disabled={isUploading}
                                     onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
 
                                         if (currentId) {
-                                            // Existing employee: Upload immediately and sync with DB
                                             setIsUploading(true);
                                             try {
                                                 const url = await uploadEmployeePhoto(file, currentId, employeeName);
                                                 setPhotoPreview(url);
 
-                                                // Sync with DB immediately so user doesn't lose the photo if they don't click Save
                                                 const formData = new FormData();
                                                 formData.append('photoUrl', url);
                                                 await updateEmployee(currentId, formData);
 
-                                                toast.success("Foto atualizada e salva!");
+                                                toast.success("Fotografia atualizada com sucesso");
                                             } catch (error) {
-                                                toast.error("Erro ao subir foto");
+                                                toast.error("Falha no upload da imagem");
                                             } finally {
                                                 setIsUploading(false);
                                             }
                                         } else {
-                                            // New employee: Save for later and show local preview
                                             setPendingPhotoFile(file);
                                             const localUrl = URL.createObjectURL(file);
                                             setPhotoPreview(localUrl);
-                                            toast.info("Foto selecionada. Ela será salva ao finalizar o cadastro.");
+                                            toast.info("Imagem registrada. Confirmação pendente de salvamento.");
                                         }
                                     }}
                                 />
                             </div>
-                            {/* Hidden input to actually submit the URL string if we were doing it simply */}
                             <input type="hidden" name="photoUrl" value={photoPreview || ''} />
-                            <p className="text-xs text-slate-500 text-center">Formato 3x4</p>
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest text-center mt-2">Padrão 3x4 Recomendado</p>
                         </div>
 
                         {/* Fields Column */}
-                        <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nome Completo *</label>
+                        <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div className="space-y-2 md:col-span-2 lg:col-span-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nome Completo do Ativo *</label>
                                 <Input
                                     name="name"
                                     value={employeeName}
                                     onChange={(e) => setEmployeeName(e.target.value)}
-                                    placeholder="Ex: Pedro Henrique"
+                                    placeholder="NOME COMPLETO OFICIAL"
                                     required
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">CPF *</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo Fiscal (CPF) *</label>
                                 <Input
                                     name="cpf"
                                     value={cpf}
@@ -568,69 +565,76 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="000.000.000-00"
                                     maxLength={14}
                                     required
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">RG *</label>
-                                <Input name="rg" defaultValue={initialData?.rg} placeholder="00.000.000-0" required />
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade Civil (RG) *</label>
+                                <Input
+                                    name="rg"
+                                    defaultValue={initialData?.rg}
+                                    placeholder="00.000.000-0"
+                                    required
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
+                                />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Data de Nascimento *</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data de Nascimento *</label>
                                 <Input
                                     name="dateOfBirth"
                                     type="date"
                                     value={birthDate}
                                     onChange={handleDateChange}
                                     required
-                                    className="calendar-light"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50 text-white fill-white calendar-light"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Sexo *</label>
+                            <div className="space-y-2 lg:col-span-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Sexo Biológico *</label>
                                 <select
                                     name="gender"
                                     defaultValue={initialData?.gender || ""}
-                                    className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                     required
                                 >
-                                    <option value="">Selecione...</option>
-                                    <option value="MALE">Masculino</option>
-                                    <option value="FEMALE">Feminino</option>
-                                    <option value="OTHER">Outro</option>
+                                    <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
+                                    <option value="MALE" className="bg-[#0A0F1C]">Masculino</option>
+                                    <option value="FEMALE" className="bg-[#0A0F1C]">Feminino</option>
+                                    <option value="OTHER" className="bg-[#0A0F1C]">Outro</option>
                                 </select>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Estado Civil *</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Status Civil *</label>
                                     <select
                                         name="maritalStatus"
                                         value={maritalStatus}
                                         onChange={handleMaritalStatusChange}
-                                        className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                        className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                     >
-                                        <option value="">Selecione...</option>
-                                        <option value="Solteiro">Solteiro(a)</option>
-                                        <option value="Casado">Casado(a)</option>
-                                        <option value="Divorciado">Divorciado(a)</option>
-                                        <option value="Viuvo">Viúvo(a)</option>
-                                        <option value="UniaoEstavel">União Estável</option>
+                                        <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
+                                        <option value="Solteiro" className="bg-[#0A0F1C]">Solteiro(a)</option>
+                                        <option value="Casado" className="bg-[#0A0F1C]">Casado(a)</option>
+                                        <option value="Divorciado" className="bg-[#0A0F1C]">Divorciado(a)</option>
+                                        <option value="Viuvo" className="bg-[#0A0F1C]">Viúvo(a)</option>
+                                        <option value="UniaoEstavel" className="bg-[#0A0F1C]">União Estável</option>
                                     </select>
                                 </div>
 
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14">
                                     <input
                                         type="checkbox"
                                         id="hasDependents"
                                         checked={hasDependents}
                                         onChange={handleHasDependentsChange}
-                                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                        className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0"
                                     />
-                                    <label htmlFor="hasDependents" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                        Possui Dependentes?
+                                    <label htmlFor="hasDependents" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                        Declara Dependentes
                                     </label>
                                 </div>
                             </div>
@@ -638,23 +642,25 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Section 2: Contacts */}
-                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                        <h4 className="text-slate-800 dark:text-slate-200 font-bold mb-6 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">
-                            <span className="mr-2">📞</span> Contatos
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                        <h4 className="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <span className="w-8 h-px bg-sky-500/30" />
+                            Matriz de Comunicação
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Telefone Fixo</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Linha Fixa</label>
                                 <Input
                                     name="landline"
                                     value={landline}
                                     onChange={(e) => setLandline(maskLandline(e.target.value))}
                                     placeholder="(00) 0000-0000"
                                     maxLength={14}
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Celular *</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal Móvel *</label>
                                 <Input
                                     name="phone"
                                     value={phone}
@@ -662,10 +668,11 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="(00) 00000-0000"
                                     maxLength={15}
                                     required
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700">E-mail</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Endereço Eletrônico Primário</label>
                                 <Input
                                     name="email"
                                     type="email"
@@ -674,59 +681,71 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         setPersonalEmail(e.target.value);
                                         setAccessEmail(e.target.value);
                                     }}
-                                    placeholder="colaborador@email.com"
+                                    placeholder="NOME@DOMINIO.COM"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                                 />
                             </div>
                         </div>
 
                         {/* Banner Impulso */}
-                        <div className="mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 flex items-center justify-between shadow-lg">
-                            <div>
-                                <h5 className="text-white font-bold flex items-center">
-                                    <span className="bg-white text-indigo-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">🚀</span>
-                                    Plataforma Impulso
+                        <div className="mt-8 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] p-8 flex items-center justify-between shadow-xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
+                            <div className="relative z-10">
+                                <h5 className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                                    <span className="text-xl">🚀</span>
+                                    PLATAFORMA IMPULSO
                                 </h5>
-                                <p className="text-indigo-100 text-sm mt-1">Cadastre o colaborador na escola de supermercado.</p>
+                                <p className="text-indigo-200/60 text-[10px] font-medium tracking-widest mt-2 uppercase">Cadastre o colaborador na escola de supermercado.</p>
                             </div>
-                            <Button
-                                size="sm"
-                                variant="secondary"
-                                className="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold border-none"
+                            <button
+                                type="button"
+                                className="relative z-10 h-12 px-6 rounded-xl bg-indigo-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center gap-2"
                                 onClick={() => window.open('https://docs.google.com/spreadsheets/d/1qSD136wZnuJ8-ZHUb20UwYOxTBxJ5Nw0/edit?gid=1946873591#gid=1946873591', '_blank')}
                             >
-                                Acessar Impulso →
-                            </Button>
+                                ACESSAR PLATAFORMA
+                            </button>
                         </div>
                     </div>
 
                     {/* Section 3: Emergency Contact */}
-                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                        <h4 className="text-slate-800 dark:text-slate-200 font-bold mb-6 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">
-                            <span className="mr-2">🚑</span> Contato de Emergência
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                        <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <span className="w-8 h-px bg-rose-500/30" />
+                            Protocolo de Segurança Crítica (Emergência)
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Nome do Contato</label>
-                                <Input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} placeholder="Nome do familiar/amigo" />
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade do Guardião</label>
+                                <Input
+                                    name="emergencyContactName"
+                                    defaultValue={initialData?.emergencyContactName}
+                                    placeholder="NOME DO PORTA-VOZ DE EMERGÊNCIA"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Telefone de Emergência</label>
-                                <Input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} placeholder="(00) 00000-0000" />
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Urgência</label>
+                                <Input
+                                    name="emergencyContactPhone"
+                                    defaultValue={initialData?.emergencyContactPhone}
+                                    placeholder="(00) 00000-0000"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-rose-500/30"
+                                />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nível de Vínculo</label>
                                 <select
                                     name="emergencyContactRelationship"
                                     defaultValue={initialData?.emergencyContactRelationship || ""}
-                                    className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/30"
                                 >
-                                    <option value="">Selecione...</option>
-                                    <option value="Pai/Mãe">Pai/Mãe</option>
-                                    <option value="Cônjuge">Cônjuge</option>
-                                    <option value="Filho(a)">Filho(a)</option>
-                                    <option value="Irmão(a)">Irmão(a)</option>
-                                    <option value="Amigo(a)">Amigo(a)</option>
-                                    <option value="Outro">Outro</option>
+                                    <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
+                                    <option value="Pai/Mãe" className="bg-[#0A0F1C]">Ascendente (Pai/Mãe)</option>
+                                    <option value="Cônjuge" className="bg-[#0A0F1C]">Parceiro(a) Oficial</option>
+                                    <option value="Filho(a)" className="bg-[#0A0F1C]">Descendente (Filho/a)</option>
+                                    <option value="Irmão(a)" className="bg-[#0A0F1C]">Colateral (Irmão/a)</option>
+                                    <option value="Amigo(a)" className="bg-[#0A0F1C]">Terceiro de Confiança</option>
+                                    <option value="Outro" className="bg-[#0A0F1C]">Registro Diverso</option>
                                 </select>
                             </div>
                         </div>
@@ -736,44 +755,69 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         },
         {
             id: 'legal_guardian',
-            label: '⚠️ Responsável Legal',
+            label: '⚠️ Controle Tutelar',
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-md mb-4">
-                        <p className="text-amber-800 text-sm flex items-center">
-                            <span className="text-xl mr-2">⚠️</span>
-                            <span>Atenção: Preenchimento obrigatório para colaboradores menores de 18 anos.</span>
+                <div className="space-y-10">
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-amber-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 mb-4">
+                            <span className="text-xl">⚠️</span>
+                            CLÁUSULA DE MENORIDADE
+                        </h4>
+                        <p className="text-amber-200/60 text-xs font-medium leading-relaxed max-w-2xl uppercase tracking-tighter">
+                            Aviso Restrito: O preenchimento da hierarquia civil é compulsório para operacionais registrados sem maioridade plena (18 anos) no ato da admissão.
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Nome do Responsável</label>
-                            <Input name="guardianName" defaultValue={initialData?.legalGuardian?.name} placeholder="Nome completo do responsável" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Pessoa Física Tutelar</label>
+                            <Input
+                                name="guardianName"
+                                defaultValue={initialData?.legalGuardian?.name}
+                                placeholder="NOME DO RESPONSÁVEL"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">CPF do Responsável</label>
-                            <Input name="guardianCpf" defaultValue={initialData?.legalGuardian?.cpf} placeholder="000.000.000-00" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo Fiscal Tutelar (CPF)</label>
+                            <Input
+                                name="guardianCpf"
+                                defaultValue={initialData?.legalGuardian?.cpf}
+                                placeholder="000.000.000-00"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">RG do Responsável</label>
-                            <Input name="guardianRg" defaultValue={initialData?.legalGuardian?.rg} placeholder="RG" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Civil Tutelar (RG)</label>
+                            <Input
+                                name="guardianRg"
+                                defaultValue={initialData?.legalGuardian?.rg}
+                                placeholder="IDENTIDADE CIVIL"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Telefone do Responsável</label>
-                            <Input name="guardianPhone" defaultValue={initialData?.legalGuardian?.phone} placeholder="(00) 00000-0000" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Contato Tutelar</label>
+                            <Input
+                                name="guardianPhone"
+                                defaultValue={initialData?.legalGuardian?.phone}
+                                placeholder="(00) 00000-0000"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parentesco</label>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Natureza Legal do Vínculo</label>
                             <select
                                 name="guardianRelationship"
                                 defaultValue={initialData?.legalGuardian?.relationship || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-amber-500/30"
                             >
-                                <option value="">Selecione...</option>
-                                <option value="Mãe">Mãe</option>
-                                <option value="Pai">Pai</option>
-                                <option value="Tutor">Tutor</option>
-                                <option value="Outro">Outro</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
+                                <option value="Mãe" className="bg-[#0A0F1C]">Tutoria Materna</option>
+                                <option value="Pai" className="bg-[#0A0F1C]">Tutoria Paterna</option>
+                                <option value="Tutor" className="bg-[#0A0F1C]">Nomeação Judicial</option>
+                                <option value="Outro" className="bg-[#0A0F1C]">Estrutura Diversa</option>
                             </select>
                         </div>
                     </div>
@@ -782,29 +826,62 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         },
         {
             id: 'spouse',
-            label: '💍 Cônjuge',
+            label: '💍 Vínculo Matrimonial',
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-10">
+                    <div className="bg-indigo-500/10 border border-indigo-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">💍</span>
+                            DADOS CONJUGAIS
+                        </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Nome do Cônjuge</label>
-                            <Input name="spouseName" defaultValue={initialData?.spouse?.name} placeholder="Nome completo" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade do Cônjuge</label>
+                            <Input
+                                name="spouseName"
+                                defaultValue={initialData?.spouse?.name}
+                                placeholder="NOME DO PARCEIRO OFICIAL"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">CPF do Cônjuge</label>
-                            <Input name="spouseCpf" defaultValue={initialData?.spouse?.cpf} placeholder="000.000.000-00" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Fiscal (CPF)</label>
+                            <Input
+                                name="spouseCpf"
+                                defaultValue={initialData?.spouse?.cpf}
+                                placeholder="000.000.000-00"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">RG do Cônjuge</label>
-                            <Input name="spouseRg" defaultValue={initialData?.spouse?.rg} placeholder="RG" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Civil (RG)</label>
+                            <Input
+                                name="spouseRg"
+                                defaultValue={initialData?.spouse?.rg}
+                                placeholder="IDENTIDADE CIVIL"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Data de Nascimento</label>
-                            <Input name="spouseBirthDate" type="date" defaultValue={safeDate(initialData?.spouse?.birthDate)} />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data de Nascimento Originária</label>
+                            <Input
+                                name="spouseBirthDate"
+                                type="date"
+                                defaultValue={safeDate(initialData?.spouse?.birthDate)}
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/30 calendar-light"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Telefone</label>
-                            <Input name="spousePhone" defaultValue={initialData?.spouse?.phone} placeholder="(00) 00000-0000" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Comunicação</label>
+                            <Input
+                                name="spousePhone"
+                                defaultValue={initialData?.spouse?.phone}
+                                placeholder="(00) 00000-0000"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
+                            />
                         </div>
                     </div>
                 </div>
@@ -812,75 +889,96 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         },
         {
             id: 'dependents',
-            label: '👨‍👩‍👧‍👦 Dependentes',
+            label: '👨‍👩‍👧‍👦 Matriz de Dependentes',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-slate-800">Lista de Dependentes</h3>
-                        <Button type="button" size="sm" onClick={addDependent} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                            + Adicionar Dependente
-                        </Button>
+                <div className="space-y-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.02] p-8 rounded-[2rem] border border-white/5">
+                        <div>
+                            <h3 className="text-sm font-black text-white uppercase tracking-widest">Controle de Beneficiários</h3>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Acrescente instâncias dependentes habilitadas</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={addDependent}
+                            className="h-14 px-8 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(99,102,241,0.2)] shrink-0 group"
+                        >
+                            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                            AUTORIZAR INSERÇÃO
+                        </button>
                     </div>
 
                     <div className="space-y-6">
-                        {dependents.map((dep, index) => (
-                            <div key={index} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg relative bg-slate-50 dark:bg-slate-800/50">
-                                <button
-                                    type="button"
-                                    onClick={() => removeDependent(index)}
-                                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
+                        <AnimatePresence>
+                            {dependents.map((dep, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="p-8 border border-white/5 rounded-[2rem] bg-white/[0.02] relative group hover:border-indigo-500/30 transition-all shadow-xl"
                                 >
-                                    ✕
-                                </button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Nome Completo</label>
-                                        <Input
-                                            value={dep.name}
-                                            onChange={(e) => updateDependent(index, 'name', e.target.value)}
-                                            placeholder="Nome do dependente"
-                                        />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeDependent(index)}
+                                        className="absolute top-8 right-8 w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all transform hover:rotate-90 z-10"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative mt-4 md:mt-0">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Plena</label>
+                                            <Input
+                                                value={dep.name}
+                                                onChange={(e) => updateDependent(index, 'name', e.target.value)}
+                                                placeholder="NOME DO DEPENDENTE"
+                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Elo Familiar</label>
+                                            <select
+                                                value={dep.relationship}
+                                                onChange={(e) => updateDependent(index, 'relationship', e.target.value)}
+                                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                            >
+                                                <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
+                                                <option value="Filho(a)" className="bg-[#0A0F1C]">Criança/Adolescente (Filho)</option>
+                                                <option value="Enteado(a)" className="bg-[#0A0F1C]">Criança/Adolescente (Enteado)</option>
+                                                <option value="Pai/Mãe" className="bg-[#0A0F1C]">Progenitor(a)</option>
+                                                <option value="Outro" className="bg-[#0A0F1C]">Relação Excepcional</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Vitalício (Nascimento)</label>
+                                            <Input
+                                                type="date"
+                                                value={dep.birthDate ? safeDate(dep.birthDate) : ''}
+                                                onChange={(e) => updateDependent(index, 'birthDate', e.target.value)}
+                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/50 calendar-light"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo ID (Situação Legal)</label>
+                                            <Input
+                                                value={dep.cpf}
+                                                onChange={(e) => updateDependent(index, 'cpf', e.target.value)}
+                                                placeholder="000.000.000-00 (OPCIONAL INFRA 12 ANOS)"
+                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Parentesco</label>
-                                        <select
-                                            value={dep.relationship}
-                                            onChange={(e) => updateDependent(index, 'relationship', e.target.value)}
-                                            className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="Filho(a)">Filho(a)</option>
-                                            <option value="Enteado(a)">Enteado(a)</option>
-                                            <option value="Pai/Mãe">Pai/Mãe</option>
-                                            <option value="Outro">Outro</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Data de Nascimento</label>
-                                        <Input
-                                            type="date"
-                                            value={dep.birthDate ? safeDate(dep.birthDate) : ''}
-                                            onChange={(e) => updateDependent(index, 'birthDate', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">CPF (Se houver)</label>
-                                        <Input
-                                            value={dep.cpf}
-                                            onChange={(e) => updateDependent(index, 'cpf', e.target.value)}
-                                            placeholder="000.000.000-00"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
 
                         {dependents.length === 0 && (
-                            <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
-                                <p className="text-slate-500">Nenhum dependente adicionado.</p>
-                                <Button type="button" variant="ghost" onClick={addDependent} className="text-indigo-600">
-                                    Adicionar o primeiro
-                                </Button>
+                            <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/[0.01]">
+                                <Users className="w-16 h-16 text-slate-800 mx-auto mb-6 opacity-30" />
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Nenhuma entidade vinculada registrada</p>
+                                <button type="button" onClick={addDependent} className="mt-8 text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:text-indigo-300 transition-colors bg-indigo-500/10 px-6 py-3 rounded-xl border border-indigo-500/20 hover:bg-indigo-500/20 shadow-xl">
+                                    Iniciar Novo Vínculo Diferenciado →
+                                </button>
                             </div>
                         )}
                     </div>
@@ -889,35 +987,50 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         },
         {
             id: 'address',
-            label: '📍 Endereço',
+            label: '📍 Localização Residencial',
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-10">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">📍</span>
+                            DADOS DOMICILIARES
+                        </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">CEP * (Busca Automática)</label>
-                            <Input
-                                name="zipCode"
-                                value={zipCode}
-                                onChange={(e) => setZipCode(maskCep(e.target.value))}
-                                onBlur={handleZipCodeBlur}
-                                placeholder="00000-000"
-                                maxLength={9}
-                                required
-                            />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Código Postal (CEP) *</label>
+                            <div className="relative">
+                                <Input
+                                    name="zipCode"
+                                    value={zipCode}
+                                    onChange={(e) => setZipCode(maskCep(e.target.value))}
+                                    onBlur={handleZipCodeBlur}
+                                    placeholder="00000-000"
+                                    maxLength={9}
+                                    required
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-emerald-500/30"
+                                />
+                                {isCepLoading && (
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                                Cidade - UF *
-                                {isCepLoading && <Loader2 className="h-3 w-3 animate-spin text-indigo-500" />}
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 flex items-center gap-2">
+                                Município e Estado *
                             </label>
-                            <div className="grid grid-cols-12 gap-2">
+                            <div className="grid grid-cols-12 gap-4">
                                 <Input
                                     name="city"
                                     value={addressFields.city}
                                     onChange={(e) => setAddressFields({ ...addressFields, city: e.target.value })}
-                                    placeholder="Cidade"
+                                    placeholder="CIDADE"
                                     required
-                                    className="col-span-10"
+                                    className="col-span-9 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                                 <Input
                                     name="state"
@@ -926,20 +1039,20 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="UF"
                                     maxLength={2}
                                     required
-                                    className="col-span-2 text-center"
+                                    className="col-span-3 h-14 bg-white/5 border-white/5 rounded-2xl px-0 text-center text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-medium text-slate-700">Logradouro e Número *</label>
-                            <div className="grid grid-cols-12 gap-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Endereço Principal e Numeração *</label>
+                            <div className="grid grid-cols-12 gap-4">
                                 <Input
                                     name="street"
                                     value={addressFields.street}
                                     onChange={(e) => setAddressFields({ ...addressFields, street: e.target.value })}
-                                    placeholder="Rua..."
+                                    placeholder="NOME DO LOGRADOURO..."
                                     required
-                                    className="col-span-9"
+                                    className="col-span-9 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                                 <Input
                                     name="number"
@@ -947,26 +1060,29 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     onChange={(e) => setAddressFields({ ...addressFields, number: e.target.value })}
                                     placeholder="Nº"
                                     required
-                                    className="col-span-3"
+                                    className="col-span-3 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Complemento</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Informação Adicional (Complemento)</label>
                             <Input
                                 name="complement"
                                 value={addressFields.complement}
                                 onChange={(e) => setAddressFields({ ...addressFields, complement: e.target.value })}
-                                placeholder="Apto 101"
+                                placeholder="BLOCO, APTO, QUADRA..."
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Bairro *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Setor/Bairro *</label>
                             <Input
                                 name="neighborhood"
                                 value={addressFields.neighborhood}
                                 onChange={(e) => setAddressFields({ ...addressFields, neighborhood: e.target.value })}
+                                placeholder="NOME DO BAIRRO"
                                 required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                             />
                         </div>
                     </div>
@@ -975,106 +1091,126 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
         },
         {
             id: 'contract',
-            label: '💼 Profissional',
+            label: '💼 Vínculo Empregatício',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-10">
+                    <div className="bg-indigo-500/10 border border-indigo-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">🏢</span>
+                            DADOS CONTRATUAIS
+                        </h4>
+                    </div>
 
                     {/* Professional Header Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Empresa de Registro *</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2 md:col-span-2 lg:col-span-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade Contratante *</label>
                             <select
                                 name="companyId"
                                 defaultValue={initialData?.contract?.companyId || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="">Selecione a empresa</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE A EMPRESA...</option>
                                 {companiesList.map(c => (
-                                    <option key={c.id} value={c.id}>
+                                    <option key={c.id} value={c.id} className="bg-[#0A0F1C]">
                                         {c.tradingName || c.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Matrícula</label>
-                            <Input name="registrationNumber" disabled placeholder="Gerado automaticamente" className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Interna (Matrícula)</label>
+                            <Input
+                                name="registrationNumber"
+                                disabled
+                                placeholder="GERAÇÃO AUTOMÁTICA VIA SISTEMA"
+                                className="h-14 bg-white/[0.02] border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase cursor-not-allowed opacity-50"
+                            />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cargo *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Posição Hierárquica (Cargo) *</label>
                             <select
                                 name="jobRoleId"
                                 defaultValue={initialData?.jobRoleId || initialData?.contract?.jobRoleId || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="">Selecione o cargo</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE O CARGO...</option>
                                 {jobRolesList.map(r => (
-                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                    <option key={r.id} value={r.id} className="bg-[#0A0F1C]">{r.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Setor *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Departamento Alocado *</label>
                             <select
                                 name="sectorId"
                                 defaultValue={initialData?.contract?.sectorId || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="">Selecione o setor</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE O SETOR...</option>
                                 {sectorsList.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">{s.name}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Loja *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade de Lotação (Loja) *</label>
                             <select
                                 name="storeId"
                                 defaultValue={initialData?.contract?.storeId || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="">Selecione</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE A UNIDADE...</option>
                                 {storesList.map(s => (
-                                    <option key={s.id} value={s.id}>
+                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">
                                         {s.tradingName || s.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Data de Admissão *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data Oficial de Admissão *</label>
                             <Input
                                 name="hireDate"
                                 type="date"
                                 value={hireDate}
                                 onChange={(e) => setHireDate(e.target.value)}
                                 required
-                                className="calendar-dark"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/50 calendar-light"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Salário Base (R$) *</label>
-                            <Input name="baseSalary" type="number" step="0.01" defaultValue={initialData?.contract?.baseSalary} placeholder="1621.00" required />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Remuneração Base (R$) *</label>
+                            <Input
+                                name="baseSalary"
+                                type="number"
+                                step="0.01"
+                                defaultValue={initialData?.contract?.baseSalary}
+                                placeholder="1621.00"
+                                required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Turno *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Escala de Trabalho *</label>
                             <select
                                 name="workShiftId"
                                 defaultValue={initialData?.contract?.workShiftId || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="">Selecione o turno</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE O TURNO...</option>
                                 {shiftsList.map((s: any) => (
-                                    <option key={s.id} value={s.id}>
-                                        {s.name} ({s.startTime} - {s.endTime})
+                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">
+                                        {s.name} ({s.startTime} AS {s.endTime})
                                     </option>
                                 ))}
                             </select>
@@ -1082,72 +1218,93 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Experience Contract Section */}
-                    <div className="border-t border-slate-800 pt-6 mt-6">
-                        <h4 className="text-white font-bold mb-6 flex items-center justify-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">
-                            <span className="mr-2">📋</span> Contrato de Experiência
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                        <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <span className="w-8 h-px bg-amber-500/30" />
+                            Regime de Experiência Probatória
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-                            <div className="flex items-center space-x-2 pt-3">
-                                <input type="checkbox" name="isExperienceContract" defaultChecked={initialData?.contract?.isExperienceContract} id="expContract" className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
-                                <label htmlFor="expContract" className="text-sm text-slate-300">Funcionário em contrato de experiência</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                            <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14 col-span-1 md:col-span-2 lg:col-span-1">
+                                <input
+                                    type="checkbox"
+                                    name="isExperienceContract"
+                                    defaultChecked={initialData?.contract?.isExperienceContract}
+                                    id="expContract"
+                                    className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0 cursor-pointer"
+                                />
+                                <label htmlFor="expContract" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                    Ativar Regime de Experiência
+                                </label>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Duração Inicial (dias)</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Ciclo Primário (Dias)</label>
                                 <select
                                     name="experienceDays"
                                     value={expDays}
                                     onChange={(e) => setExpDays(parseInt(e.target.value))}
-                                    className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 >
-                                    <option value={30}>30 dias</option>
-                                    <option value={45}>45 dias</option>
-                                    <option value={90}>90 dias</option>
+                                    <option value={30} className="bg-[#0A0F1C]">30 DIAS CORRIDOS</option>
+                                    <option value={45} className="bg-[#0A0F1C]">45 DIAS CORRIDOS</option>
+                                    <option value={90} className="bg-[#0A0F1C]">90 DIAS CORRIDOS</option>
                                 </select>
                             </div>
 
-                            <div className="flex items-center space-x-2 pt-3">
+                            <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14 col-span-1 md:col-span-2 lg:col-span-1">
                                 <input
                                     type="checkbox"
                                     name="isExperienceExtended"
                                     checked={isExtended}
                                     onChange={(e) => setIsExtended(e.target.checked)}
                                     id="expExtended"
-                                    className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                                    className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0 cursor-pointer"
                                 />
-                                <label htmlFor="expExtended" className="text-sm text-slate-300">Contrato foi prorrogado</label>
+                                <label htmlFor="expExtended" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                    Prorrogar Vínculo (Extensão)
+                                </label>
                             </div>
 
                             {isExtended && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                    <label className="text-sm font-medium text-slate-300">Prorrogação (dias)</label>
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="space-y-2 overflow-hidden"
+                                >
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Prorrogação (Dias)</label>
                                     <select
                                         name="experienceExtensionDays"
                                         value={extDays}
                                         onChange={(e) => setExtDays(parseInt(e.target.value))}
-                                        className={`flex h-10 w-full rounded-md border bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${contractEndData?.error ? 'border-red-500 focus:ring-red-500' : 'border-slate-700'}`}
+                                        className={`w-full h-14 bg-white/5 border rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none ${contractEndData?.error ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-indigo-500/50'}`}
                                     >
-                                        <option value={30}>+ 30 dias</option>
-                                        <option value={45}>+ 45 dias</option>
-                                        <option value={60}>+ 60 dias</option>
+                                        <option value={30} className="bg-[#0A0F1C]">+ 30 DIAS CORRIDOS</option>
+                                        <option value={45} className="bg-[#0A0F1C]">+ 45 DIAS CORRIDOS</option>
+                                        <option value={60} className="bg-[#0A0F1C]">+ 60 DIAS CORRIDOS</option>
                                     </select>
                                     {contractEndData?.error && (
-                                        <p className="text-xs text-red-400 font-medium">⚠️ Total não pode exceder 90 dias!</p>
+                                        <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mt-2 ml-4 flex items-center gap-2">
+                                            <X className="w-3 h-3" /> VIOLAÇÃO: MÁXIMO DE 90 DIAS EXCEDIDO
+                                        </p>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                         </div>
 
                         {/* Info Banner for Contract End */}
-                        <div className={`mt-6 border-l-4 p-3 rounded-r flex items-center text-sm transition-colors ${contractEndData?.error ? 'bg-red-900/20 border-red-500 text-red-200' : 'bg-blue-900/20 border-blue-500 text-blue-200'}`}>
-                            <span className="mr-2">📅</span>
-                            <strong>Término do Contrato:</strong>
-                            <span className="ml-2">
-                                {contractEndData?.error
-                                    ? "Inválido (Excede 90 dias)"
-                                    : (contractEndData?.date || "Defina a data de admissão")}
-                            </span>
+                        <div className={`mt-8 border backdrop-blur-md p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 ${contractEndData?.error ? 'bg-rose-500/10 border-rose-500/30 text-rose-200' : 'bg-blue-500/10 border-blue-500/20 text-blue-200'}`}>
+                            <span className="text-2xl">{contractEndData?.error ? '🛑' : '⏳'}</span>
+                            <div>
+                                <h5 className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">
+                                    DATA LIMITE DO CONTRATO
+                                </h5>
+                                <p className="text-lg font-bold tracking-tight">
+                                    {contractEndData?.error
+                                        ? "CONFLITO TEMPORAL DETECTADO"
+                                        : (contractEndData?.date || "PENDENTE DE DATA INICIAL")}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -1223,38 +1380,69 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'bank',
             label: '💰 Dados Bancários',
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-sm text-slate-400 mb-6 text-center italic">Informe os dados para pagamento de salário.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-10">
+                    <div className="bg-rose-500/10 border border-rose-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-rose-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">💰</span>
+                            INFORMAÇÕES FINANCEIRAS
+                        </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Banco *</label>
-                            <Input name="bankName" defaultValue={initialData?.bankData?.bankName} placeholder="Ex: Nubank, Itaú..." required />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Instituição Financeira *</label>
+                            <Input
+                                name="bankName"
+                                defaultValue={initialData?.bankData?.bankName}
+                                placeholder="EX: NUBANK, ITAÚ..."
+                                required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Tipo de Conta *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nomenclatura da Conta *</label>
                             <select
                                 name="accountType"
                                 defaultValue={initialData?.bankData?.accountType || ""}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/50"
                                 required
                             >
-                                <option value="">Selecione...</option>
-                                <option value="Corrente">Conta Corrente</option>
-                                <option value="Poupanca">Conta Poupança</option>
-                                <option value="Salario">Conta Salário</option>
+                                <option value="" className="bg-[#0A0F1C]">SELECIONE A MODALIDADE...</option>
+                                <option value="Corrente" className="bg-[#0A0F1C]">CONTA CORRENTE</option>
+                                <option value="Poupanca" className="bg-[#0A0F1C]">CONTA POUPANÇA</option>
+                                <option value="Salario" className="bg-[#0A0F1C]">CONTA SALÁRIO</option>
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Agência *</label>
-                            <Input name="agency" defaultValue={initialData?.bankData?.agency} placeholder="0000" required />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Código da Agência *</label>
+                            <Input
+                                name="agency"
+                                defaultValue={initialData?.bankData?.agency}
+                                placeholder="0000"
+                                required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                            />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Número da Conta *</label>
-                            <Input name="accountNumber" defaultValue={initialData?.bankData?.accountNumber} placeholder="00000-0" required />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação da Conta *</label>
+                            <Input
+                                name="accountNumber"
+                                defaultValue={initialData?.bankData?.accountNumber}
+                                placeholder="00000-0"
+                                required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                            />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-medium text-slate-300">Chave PIX *</label>
-                            <Input name="pixKey" defaultValue={initialData?.bankData?.pixKey} placeholder="CPF, Email ou Aleatória" required />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Credencial Transacional (Chave PIX) *</label>
+                            <Input
+                                name="pixKey"
+                                defaultValue={initialData?.bankData?.pixKey}
+                                placeholder="CPF, EMAIL OU CHAVE ALEATÓRIA"
+                                required
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                            />
                         </div>
                     </div>
                 </div>
@@ -1264,78 +1452,132 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'benefits',
             label: '🎁 Benefícios',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Benefícios do Colaborador</h3>
+                <div className="space-y-10">
+                    <div className="bg-fuchsia-500/10 border border-fuchsia-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-fuchsia-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">🎁</span>
+                            PACOTE DE INCENTIVOS
+                        </h4>
+                    </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                        <div className="flex items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-xl">🚌</span>
-                                <div className="flex flex-col">
-                                    <div className="flex items-center">
+                    <div className="grid grid-cols-1 gap-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-white/5 p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🚌</div>
+                                <div>
+                                    <div className="flex items-center gap-3">
                                         <input
                                             type="checkbox"
                                             name="hasTransportVoucher"
                                             defaultChecked={initialData?.contract?.hasTransportVoucher}
                                             id="vt-toggle"
-                                            className="mr-2 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                                            className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
                                         />
-                                        <label htmlFor="vt-toggle" className="text-sm font-medium text-slate-200 cursor-pointer">
-                                            Ativar Vale Transporte (6%)
+                                        <label htmlFor="vt-toggle" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                            Vale Transporte (Retenção 6%)
                                         </label>
                                     </div>
-                                    <span className="text-xs text-slate-500 ml-6">
-                                        O desconto de 6% será aplicado automaticamente.
-                                        <a href="/portal/benefits/transport" target="_blank" className="text-indigo-400 hover:text-indigo-300 ml-1 hover:underline">
-                                            Configurar rotas →
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">
+                                        <a href="/portal/benefits/transport" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors ml-1">
+                                            ATRIBUIÇÃO DE ROTA →
                                         </a>
-                                    </span>
+                                    </p>
                                 </div>
                             </div>
-                            {/* Hidden input to keep compatibility if backend expects a value, though now we use boolean */}
                             <input type="hidden" name="transportVoucherValue" value="0" />
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-xl">🛒</span>
-                                <label className="text-sm text-slate-200">Vale Alimentação (VA)</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
+                                <div className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🛒</div>
+                                    <label className="text-[11px] font-black text-white uppercase tracking-widest">Vale Alimentação (VA)</label>
+                                </div>
+                                <Input
+                                    name="mealVoucherValue"
+                                    type="number"
+                                    step="0.01"
+                                    defaultValue={initialData?.contract?.mealVoucherValue}
+                                    placeholder="COTA MENSAL (R$)"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
+                                />
                             </div>
-                            <Input name="mealVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.mealVoucherValue} placeholder="Valor Mensal (R$)" className="w-full sm:w-40" />
+
+                            <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
+                                <div className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🍽️</div>
+                                    <label className="text-[11px] font-black text-white uppercase tracking-widest">Vale Refeição (VR)</label>
+                                </div>
+                                <Input
+                                    name="foodVoucherValue"
+                                    type="number"
+                                    step="0.01"
+                                    defaultValue={initialData?.contract?.foodVoucherValue}
+                                    placeholder="COTA MENSAL (R$)"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
+                                />
+                            </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-xl">🍽️</span>
-                                <label className="text-sm text-slate-200">Vale Refeição (VR)</label>
-                            </div>
-                            <Input name="foodVoucherValue" type="number" step="0.01" defaultValue={initialData?.contract?.foodVoucherValue} placeholder="Valor Mensal (R$)" className="w-full sm:w-40" />
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-800 p-3 rounded-md bg-slate-900/50 gap-3">
-                            <div className="flex items-center space-x-3">
-                                <div className="flex items-center">
-                                    <input type="checkbox" name="hasFamilySalary" defaultChecked={initialData?.contract?.hasFamilySalary} id="familySalary" className="mr-3 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500" />
-                                    <span className="text-xl mr-2">👨‍👩‍👧</span>
-                                    <label htmlFor="familySalary" className="text-sm text-slate-200 cursor-pointer">Salário Família</label>
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-white/5 p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">👨‍👩‍👧</div>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        name="hasFamilySalary"
+                                        defaultChecked={initialData?.contract?.hasFamilySalary}
+                                        id="familySalary"
+                                        className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
+                                    />
+                                    <label htmlFor="familySalary" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer">Abono Familiar</label>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2 w-full sm:w-auto">
-                                <span className="text-xs text-slate-400 whitespace-nowrap">Qtd. Dependentes:</span>
-                                <Input name="familySalaryDependents" type="number" defaultValue={initialData?.contract?.familySalaryDependents || 0} className="flex-1 sm:w-20" />
+                            <div className="flex items-center space-x-4 w-full lg:w-auto bg-white/5 p-2 rounded-2xl">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">Nº BENEFICIÁRIOS:</span>
+                                <Input
+                                    name="familySalaryDependents"
+                                    type="number"
+                                    defaultValue={initialData?.contract?.familySalaryDependents || 0}
+                                    className="h-10 w-20 bg-white/10 border-transparent rounded-xl text-center text-[12px] font-black"
+                                />
                             </div>
                         </div>
                     </div>
 
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Outros Benefícios</label>
-                            <textarea name="otherBenefits" defaultValue={initialData?.contract?.otherBenefits} className="flex min-h-[80px] w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" placeholder="Plano de saúde, seguro de vida, etc."></textarea>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">💰 Bônus Mensal (R$)</label>
-                            <Input name="monthlyBonus" type="number" step="0.01" defaultValue={initialData?.contract?.monthlyBonus} placeholder="Valor adicional ao salário" />
-                            <p className="text-xs text-slate-500">Este valor será somado ao salário base.</p>
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                        <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <span className="w-8 h-px bg-amber-500/30" />
+                            Adicionais Remuneratórios
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Atributos Extraordinários</label>
+                                <textarea
+                                    name="otherBenefits"
+                                    defaultValue={initialData?.contract?.otherBenefits}
+                                    className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-amber-500/50 min-h-[140px] resize-none"
+                                    placeholder="ESPECIFICAR PLANOS DE SAÚDE, SEGUROS OU SUBSÍDIOS ADICIONAIS..."></textarea>
+                            </div>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Gratificação Recorrente (R$)</label>
+                                <Input
+                                    name="monthlyBonus"
+                                    type="number"
+                                    step="0.01"
+                                    defaultValue={initialData?.contract?.monthlyBonus}
+                                    placeholder="VALOR FIXO ADICIONAL"
+                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                                />
+                                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                    <p className="text-[10px] font-black text-amber-400/80 uppercase tracking-widest leading-relaxed">
+                                        ESTE MONTANTE SERÁ INTEGRADO DIRETAMENTE AO SALÁRIO BASE DURANTE O CÁLCULO MENSAL DA FOLHA.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1345,62 +1587,78 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'health',
             label: '🩺 Saúde (ASO)',
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-bold mb-6 flex items-center justify-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">
-                        🩺 Atestado de Saúde Ocupacional (ASO)
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-10">
+                    <div className="bg-teal-500/10 border border-teal-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-teal-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">🩺</span>
+                            DIRETRIZES DE SAÚDE OCUPACIONAL (ASO)
+                        </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Tipo do ASO</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Classificação do Exame</label>
                             <select
                                 name="asoType"
                                 defaultValue={initialData?.healthData?.asoType || "Admissional"}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
                             >
-                                <option value="Admissional">Admissional</option>
-                                <option value="Periodico">Periódico</option>
-                                <option value="Retorno">Retorno ao Trabalho</option>
-                                <option value="MudancaFuncao">Mudança de Função</option>
-                                <option value="Demissional">Demissional</option>
+                                <option value="Admissional" className="bg-[#0A0F1C]">ADMISSIONAL</option>
+                                <option value="Periodico" className="bg-[#0A0F1C]">PERIÓDICO</option>
+                                <option value="Retorno" className="bg-[#0A0F1C]">RETORNO AO TRABALHO</option>
+                                <option value="MudancaFuncao" className="bg-[#0A0F1C]">MUDANÇA DE ATRIBUIÇÃO</option>
+                                <option value="Demissional" className="bg-[#0A0F1C]">DEMISSIONAL</option>
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Data do Último ASO *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro do Último Exame *</label>
                             <Input
                                 name="lastAsoDate"
                                 type="date"
                                 value={lastAso}
                                 onChange={(e) => setLastAso(e.target.value)}
-                                className="calendar-dark"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-teal-500/50 calendar-light"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Periodicidade (meses)</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Intervalo Preconizado (Meses)</label>
                             <select
                                 name="asoPeriodicity"
                                 value={asoPeriodicity}
                                 onChange={(e) => setAsoPeriodicity(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
                             >
-                                <option value="6">6 meses</option>
-                                <option value="12">12 meses (1 ano)</option>
-                                <option value="24">24 meses (2 anos)</option>
+                                <option value="6" className="bg-[#0A0F1C]">SEMESTRAL (06 MESES)</option>
+                                <option value="12" className="bg-[#0A0F1C]">ANUAL (12 MESES)</option>
+                                <option value="24" className="bg-[#0A0F1C]">BIENAL (24 MESES)</option>
                             </select>
                         </div>
 
                         {/* Next Exam Prediction Display */}
-                        <div className="md:col-span-2 bg-indigo-900/20 border border-indigo-500/30 p-3 rounded flex items-center justify-between">
-                            <div className="flex items-center text-indigo-200 text-sm">
-                                <span className="mr-2 text-lg">📅</span>
-                                <span><strong>Próximo Exame Previsto:</strong></span>
+                        <div className="md:col-span-2 bg-gradient-to-r from-teal-500/10 to-transparent border border-teal-500/20 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400">
+                                    <CalendarIcon className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h5 className="text-[10px] font-black text-teal-500 uppercase tracking-widest">
+                                        PROJEÇÃO DO PRÓXIMO EXAME
+                                    </h5>
+                                    <p className="text-sm font-bold text-white mt-1">
+                                        {nextAsoDate || "AGUARDANDO DEFINIÇÃO DE DATA BASE"}
+                                    </p>
+                                </div>
                             </div>
-                            <span className="text-white font-bold bg-indigo-600/50 px-3 py-1 rounded">
-                                {nextAsoDate || "Defina a data do último exame"}
-                            </span>
                         </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-medium text-slate-300">Observações Médicas</label>
-                            <textarea name="asoObservations" defaultValue={initialData?.healthData?.observations} className="flex min-h-[80px] w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" placeholder="Restrições, aptidões especiais..."></textarea>
+
+                        <div className="space-y-4 md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Parecer e Restrições Clínicas</label>
+                            <textarea
+                                name="asoObservations"
+                                defaultValue={initialData?.healthData?.observations}
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-teal-500/50 min-h-[140px] resize-none"
+                                placeholder="DESCREVER AVALIAÇÃO DE APTIDÃO E POTENCIAIS LIMITAÇÕES FÍSICAS..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -1410,119 +1668,150 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'documents',
             label: '📂 Documentos',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Documentação Complementar</h3>
+                <div className="space-y-10">
+                    <div className="bg-sky-500/10 border border-sky-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-sky-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">📂</span>
+                            ARQUIVOS COMPLEMENTARES
+                        </h4>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">PIS/PASEP</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Inscrição Social (PIS/PASEP)</label>
                             <Input
                                 name="pis"
                                 value={pis}
                                 onChange={(e) => setPis(maskPIS(e.target.value))}
                                 placeholder="000.00000.00-0"
                                 maxLength={14}
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">CTPS (Número/Série)</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Trabalhista (CTPS)</label>
                             <Input
                                 name="ctps"
                                 value={ctps}
                                 onChange={(e) => setCtps(maskCTPS(e.target.value))}
                                 placeholder="1234567 000-0"
                                 maxLength={12}
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Título de Eleitor</label>
-                            <Input name="voterTitle" defaultValue={initialData?.voterTitle} placeholder="0000 0000 0000" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Eleitoral</label>
+                            <Input
+                                name="voterTitle"
+                                defaultValue={initialData?.voterTitle}
+                                placeholder="0000 0000 0000"
+                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
+                            />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {docCategories.map(cat => (
-                            <div key={cat.id} className="p-4 border border-slate-800 rounded-lg bg-slate-900/50 hover:border-indigo-500/50 transition-colors">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h5 className="text-white font-medium flex items-center">
-                                        <span className="mr-2">{cat.icon}</span> {cat.label}
-                                    </h5>
-                                    <span className="text-xs text-slate-500">{uploadedFiles.filter(f => f.type === cat.label).length} arquivos</span>
-                                </div>
-                                <div className="space-y-2 mb-3">
-                                    {uploadedFiles.filter(f => f.type === cat.label).map((file, idx) => (
-                                        <div key={idx} className="flex items-center justify-between text-xs bg-slate-800 p-2 rounded">
-                                            <span className="text-slate-300 truncate max-w-[150px]">{file.fileName}</span>
-                                            <div className="flex space-x-2">
-                                                <a href={file.fileUrl} target="_blank" className="text-indigo-400 hover:underline">Ver</a>
-                                                <button type="button" onClick={() => removeFile(uploadedFiles.indexOf(file))} className="text-red-400">Excluir</button>
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                        <h4 className="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <span className="w-8 h-px bg-sky-500/30" />
+                            Anexos Digitais
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {docCategories.map(cat => (
+                                <div key={cat.id} className="p-6 border border-white/5 rounded-[2rem] bg-white/[0.02] hover:border-sky-500/30 transition-all group">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h5 className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-3">
+                                            <span className="text-xl opacity-80">{cat.icon}</span> {cat.label}
+                                        </h5>
+                                        <span className="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-[9px] font-black">
+                                            {uploadedFiles.filter(f => f.type === cat.label).length} ITEM(S)
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-3 mb-6">
+                                        {uploadedFiles.filter(f => f.type === cat.label).map((file, idx) => (
+                                            <div key={idx} className="flex items-center justify-between text-xs bg-white/5 border border-white/10 p-3 rounded-xl hover:border-sky-500/50 transition-colors">
+                                                <span className="text-[10px] font-bold text-slate-300 truncate max-w-[150px] uppercase">{file.fileName}</span>
+                                                <div className="flex space-x-3">
+                                                    <a href={file.fileUrl} target="_blank" className="text-sky-400 hover:text-sky-300 font-bold uppercase text-[9px] tracking-widest">VISUALIZAR</a>
+                                                    <button type="button" onClick={() => removeFile(uploadedFiles.indexOf(file))} className="text-rose-400 hover:text-rose-300 font-bold uppercase text-[9px] tracking-widest">REVOGAR</button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+
+                                    <label className={`relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors block ${isUploading ? 'border-sky-500/30 bg-sky-500/5' : 'border-white/10 hover:border-white/30 hover:bg-white/5'}`}>
+                                        <input
+                                            type="file"
+                                            multiple
+                                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                            onChange={(e) => handleFileSelect(e, cat.label)}
+                                            disabled={isUploading}
+                                        />
+                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center justify-center gap-2 group-hover:text-slate-300 transition-colors">
+                                            <CloudUpload className="w-4 h-4" />
+                                            {isUploading ? 'PROCESSANDO...' : 'INSERIR DOCUMENTO'}
+                                        </p>
+                                    </label>
                                 </div>
-                                <div className="relative border border-dashed border-slate-700 rounded p-2 text-center hover:bg-slate-800 cursor-pointer">
-                                    <input
-                                        type="file"
-                                        multiple
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                        onChange={(e) => handleFileSelect(e, cat.label)}
-                                        disabled={isUploading}
-                                    />
-                                    <p className="text-[10px] text-slate-500 flex items-center justify-center">
-                                        <CloudUpload className="w-3 h-3 mr-1" /> Carregar {cat.label}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             )
         },
         {
             id: 'access',
-            label: '🔐 Acesso',
+            label: '🔐 Portal do Colaborador',
             content: (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-slate-800 dark:text-white font-bold mb-6 text-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">Controle de Acesso ao Portal</h3>
+                <div className="space-y-10">
+                    <div className="bg-orange-500/10 border border-orange-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <h4 className="text-orange-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">🔐</span>
+                            CREDENCIAIS DE SISTEMA
+                        </h4>
+                    </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
-                        <div className="flex items-center space-x-4 mb-6">
-                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-full">
-                                <Lock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                    <div className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-10">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 pb-8 border-b border-white/5">
+                            <div className="bg-orange-500/20 border border-orange-500/30 p-4 rounded-2xl shrink-0">
+                                <Lock className="h-8 w-8 text-orange-400" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-800 dark:text-slate-200">Autenticação por CPF + PIN</h4>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    O acesso ao Portal do Colaborador agora é baseado no CPF e um PIN de 6 dígitos.
+                                <h4 className="text-sm font-black text-white uppercase tracking-widest">Protocolo Autenticação (CPF + PIN)</h4>
+                                <p className="text-[11px] font-bold text-slate-500 uppercase mt-2 leading-relaxed max-w-2xl">
+                                    O ACESSO AO PORTAL É RESTRITO E MONITORADO. UTILIZA-SE CRUZAMENTO DE DADOS ENTRE CPF OFICIAL E UMA CHAVE NUMÉRICA PESSOAL INTRANSFERÍVEL.
                                 </p>
                             </div>
                         </div>
 
                         {!currentId ? (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-                                    <p className="text-amber-800 dark:text-amber-400 text-sm flex items-start">
-                                        <span className="mr-2 text-lg">💡</span>
-                                        <span>
-                                            Ao finalizar o cadastro, o sistema irá <strong>gerar um PIN automático de 6 dígitos</strong>.
-                                            Este PIN será exibido para você apenas uma vez na tela de confirmação.
-                                        </span>
+                            <div className="space-y-6">
+                                <div className="p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-start gap-4">
+                                    <span className="text-2xl">💡</span>
+                                    <p className="text-[11px] font-black text-orange-200/80 uppercase tracking-widest leading-loose">
+                                        AO CONCLUIR O REGISTRO DESTE COLABORADOR, A PLATAFORMA SINTETIZARÁ UMA CHAVE PIN DE 6 DÍGITOS.
+                                        ESTA CREDENCIAL SERÁ EXIBIDA UNICAMENTE NA TELA DE CONFIRMAÇÃO PARA REPASSE AO USUÁRIO FINAL.
                                     </p>
                                 </div>
-                                <p className="text-sm text-slate-600 dark:text-slate-400 italic text-center">
-                                    O colaborador será obrigado a trocar este PIN no seu primeiro login.
+                                <p className="text-[10px] text-center font-black text-slate-600 uppercase tracking-[0.3em]">
+                                    EXIGÊNCIA DE RENOVAÇÃO DA CHAVE APÓS O PRIMEIRO LOGIN ESTABELECIDA.
                                 </p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                <p className="text-sm text-slate-600 dark:text-slate-400">
-                                    O colaborador já possui acesso configurado. Em caso de perda do PIN ou bloqueio por tentativas incorretas, utilize a opção de <strong>Resetar PIN</strong> nos detalhes do colaborador.
+                            <div className="space-y-8 flex flex-col items-center justify-center py-6">
+                                <p className="text-[11px] text-center font-black text-slate-400 uppercase tracking-widest max-w-xl leading-loose">
+                                    VÍNCULO ATIVO. CASO HAJA COMPROMETIMENTO DA CREDENCIAL OU BLOQUEIO POR FALHAS SUCESSIVAS, ACESSE O PAINEL DE CONTROLE SECUNDÁRIO PARA RESET.
                                 </p>
 
-                                <div className="pt-4 flex justify-center">
-                                    <div className="text-center px-6 py-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                        <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Status do Acesso</p>
-                                        <p className="text-sm font-bold text-indigo-600 select-none">ATIVO VIA CPF + PIN</p>
+                                <div className="inline-flex flex-col items-center p-8 bg-black/40 border border-orange-500/40 rounded-[2rem] shadow-[0_0_40px_rgba(249,115,22,0.1)]">
+                                    <ShieldPlus className="w-12 h-12 text-orange-500 mb-4 opacity-80" />
+                                    <p className="text-[9px] text-orange-500/70 uppercase font-black tracking-[0.4em] mb-2">STATUS DA CREDENCIAL</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                                        <p className="text-sm font-black text-white tracking-widest">SISTEMA AUTORIZADO</p>
                                     </div>
                                 </div>
                             </div>
@@ -1541,63 +1830,211 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     });
 
     return (
-        <div className="w-full">
-            {success && (
-                <div className="bg-green-900/30 border border-green-800 text-green-400 p-4 rounded-md mb-6 flex items-center">
-                    <span className="mr-2">✅</span> {employeeId ? 'Funcionário atualizado!' : 'Funcionário cadastrado!'}
-                </div>
-            )}
-            {error && (
-                <div className="bg-red-900/30 border border-red-800 text-red-400 p-4 rounded-md mb-6">
-                    ⚠️ {error}
-                </div>
-            )}
+        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 overflow-hidden relative shadow-2xl">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
 
-            <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full">
+            <div className="relative z-10 flex flex-col min-h-[700px]">
 
-                {refsLoading ? (
-                    <div className="flex flex-col items-center justify-center h-64">
-                        <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
-                        <p className="text-slate-500 font-medium">Carregando formulário...</p>
+                {/* Premium Navigation Header */}
+                <div className="border-b border-white/5 bg-white/[0.02] px-8 pt-8">
+                    <div className="flex items-center justify-between mb-8 px-4">
+                        <div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                                {currentId ? 'Modificar Perfil' : 'Novo Recrutamento'}
+                                <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full tracking-[0.2em] ml-2 border border-indigo-500/20">
+                                    HUMAN CAPITAL • 2026
+                                </span>
+                            </h2>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2 ml-1">Terminal de Controle de Ativos e Talentos</p>
+                        </div>
+                        {currentId && (
+                            <div className="hidden md:flex items-center gap-4 bg-white/5 border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-xl">
+                                <User className="w-5 h-5 text-indigo-400" />
+                                <div>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Matriz de Dados</p>
+                                    <p className="text-[11px] font-black text-white uppercase mt-1 truncate max-w-[200px]">{employeeName || 'CONFIGURANDO...'}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                ) : (
-                    <Tabs
-                        tabs={visibleTabs}
-                        value={activeTab}
-                        onValueChange={setActiveTab}
-                    />
-                )}
 
-                <div className="mt-8 pt-6 flex flex-col-reverse sm:flex-row justify-center items-center gap-4 border-t border-slate-200 dark:border-slate-800">
-                    {onCancel && (
-                        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto text-slate-500 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-8">
-                            Cancelar
-                        </Button>
-                    )}
-
-                    {activeTab !== 'personal' && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => {
-                                const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
-                                if (currentIndex > 0) setActiveTab(visibleTabs[currentIndex - 1].id);
-                            }}
-                            className="w-full sm:w-auto text-slate-500 hover:text-white"
-                        >
-                            ← Voltar
-                        </Button>
-                    )}
-                    <Button
-                        type="button"
-                        disabled={loading}
-                        onClick={handleSaveStep}
-                        className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-10 shadow-lg shadow-indigo-500/20"
-                    >
-                        {loading ? 'Salvando...' : (activeTab === visibleTabs[visibleTabs.length - 1].id ? 'Finalizar Cadastro' : 'Salvar e Próxima Aba →')}
-                    </Button>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-6 custom-scrollbar-horizontal no-scrollbar px-4">
+                        {visibleTabs.map((tab) => {
+                            const isTabActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap group ${isTabActive
+                                        ? 'text-black'
+                                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className={`transition-transform duration-500 group-hover:scale-110 ${isTabActive ? 'scale-110 z-10' : 'opacity-50'}`}>
+                                        {tab.id === 'personal' && <User className="w-4 h-4" />}
+                                        {tab.id === 'legal_guardian' && <ShieldPlus className="w-4 h-4" />}
+                                        {tab.id === 'spouse' && <HeartPulse className="w-4 h-4" />}
+                                        {tab.id === 'dependents' && <Users className="w-4 h-4" />}
+                                        {tab.id === 'address' && <Home className="w-4 h-4" />}
+                                        {tab.id === 'contract' && <Building2 className="w-4 h-4" />}
+                                        {tab.id === 'bank' && <Banknote className="w-4 h-4" />}
+                                        {tab.id === 'benefits' && <Star className="w-4 h-4" />}
+                                        {tab.id === 'health' && <Activity className="w-4 h-4" />}
+                                        {tab.id === 'documents' && <FolderOpen className="w-4 h-4" />}
+                                        {tab.id === 'access' && <Key className="w-4 h-4" />}
+                                    </span>
+                                    <span className={isTabActive ? 'z-10' : ''}>{tab.label.split(' ').slice(1).join(' ')}</span>
+                                    {isTabActive && (
+                                        <motion.div
+                                            layoutId="activeTabBadge"
+                                            className="absolute inset-0 bg-white rounded-2xl"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
-            </form>
+
+                <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 overflow-y-auto px-12 py-10 custom-scrollbar-vertical no-scrollbar scroll-smooth">
+                        <AnimatePresence mode="wait">
+                            {refsLoading ? (
+                                <motion.div
+                                    key="loader"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="h-[400px] flex flex-col items-center justify-center space-y-8"
+                                >
+                                    <div className="relative">
+                                        <div className="w-24 h-24 rounded-full border-4 border-white/5 border-t-indigo-500 animate-spin" />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Loader2 className="w-8 h-8 text-indigo-400 animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <h3 className="text-lg font-black text-white uppercase tracking-[0.3em]">Criptografando Túnel</h3>
+                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-2">Sincronizando registros da rede corporativa...</p>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                                    className="min-h-0"
+                                >
+                                    {visibleTabs.find(t => t.id === activeTab)?.content}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Premium Footer Actions */}
+                    <div className="border-t border-white/5 bg-white/[0.01] p-10 backdrop-blur-3xl">
+                        <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-6 max-w-4xl mx-auto">
+                            {onCancel && (
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="w-full sm:w-auto h-16 px-10 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-white hover:bg-white/5 transition-all"
+                                >
+                                    Cancelar Operação
+                                </button>
+                            )}
+
+                            {activeTab !== 'personal' && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
+                                        if (currentIndex > 0) setActiveTab(visibleTabs[currentIndex - 1].id);
+                                    }}
+                                    className="w-full sm:w-auto h-16 px-10 rounded-2xl border border-white/10 text-[10px] font-black text-white uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center justify-center gap-3"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    VOLTAR
+                                </button>
+                            )}
+
+                            <button
+                                type="button"
+                                disabled={loading}
+                                onClick={handleSaveStep}
+                                className="w-full sm:w-auto min-w-[320px] h-16 px-12 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] hover:bg-indigo-500 hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        SINCRONIZANDO...
+                                    </>
+                                ) : (
+                                    <>
+                                        {activeTab === visibleTabs[visibleTabs.length - 1].id ? 'FINALIZAR PROTOCOLO ADMISSIONAL' : 'AVANÇAR PARA PRÓXIMA ETAPA'}
+                                        <ArrowRightCircle className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-500" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="mt-8 flex justify-center">
+                            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em]">Segurança nível militar • RH SYNC 2.0</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {/* Float Notifications */}
+            <AnimatePresence>
+                {success && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(16,185,129,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
+                    >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Ação Executada com Sucesso
+                    </motion.div>
+                )}
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-rose-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(244,63,94,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
+                    >
+                        <span className="text-lg">⚠️</span>
+                        Falha no Protocolo: {error}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
+}
+
+function Activity(props: any) {
+    return (
+        <svg
+            {...props}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+    )
 }

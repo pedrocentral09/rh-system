@@ -28,7 +28,7 @@ export function ChatInterface({ ticket, initialMessages }: { ticket: any, initia
     useEffect(() => {
         const interval = setInterval(async () => {
             const res = await getTicketMessages(ticket.id);
-            if (res.success) setMessages(res.data);
+            if (res.success) setMessages(res.data || []);
         }, 5000);
         return () => clearInterval(interval);
     }, [ticket.id]);
@@ -43,7 +43,7 @@ export function ChatInterface({ ticket, initialMessages }: { ticket: any, initia
         const res = await sendSupportMessage(ticket.id, content);
         if (res.success) {
             const megRes = await getTicketMessages(ticket.id);
-            if (megRes.success) setMessages(megRes.data);
+            if (megRes.success) setMessages(megRes.data || []);
         } else {
             toast.error('Erro ao enviar mensagem');
         }

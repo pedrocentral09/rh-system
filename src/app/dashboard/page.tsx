@@ -11,6 +11,8 @@ import { QuickAccessGrid } from '@/modules/core/components/QuickAccessGrid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import Link from 'next/link';
 import { EventMural } from '@/modules/core/components/EventMural';
+import { SectorDistribution } from '@/modules/core/components/SectorDistribution';
+import { BirthdayMural } from '@/modules/core/components/BirthdayMural';
 
 export default async function DashboardPage({ searchParams }: { searchParams: { companyId?: string, storeId?: string } }) {
     const filters = await searchParams; // Next.js 15+ searchParams are async
@@ -43,158 +45,138 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-10">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-white/5">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter uppercase">RH <span className="text-orange-500">EXCEPCIONAL</span></h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Painel de Controle Executivo & Análise</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="h-0.5 w-8 bg-brand-orange" />
+                        <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.3em]">Ambiente de Gestão</span>
+                    </div>
+                    <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">
+                        Performance <span className="text-brand-orange">Corporativa</span>
+                    </h1>
+                    <p className="text-slate-500 font-bold tracking-tight text-sm mt-2 font-mono">
+                        [ SYSTEM_VERSION: 1.2.0-PREMIUM ] — ANALYTICS & OPS
+                    </p>
                 </div>
-                <DashboardFilters companies={companies} stores={stores} />
+                <div className="bg-white/5 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
+                    <DashboardFilters companies={companies} stores={stores} />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Attendance Widget - Takes 2 cols */}
                 <div className="lg:col-span-2">
-                    <AttendanceWidget overview={dailyOverview} />
+                    <div className="bg-[#0A0F1C] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl p-1">
+                        <AttendanceWidget overview={dailyOverview} />
+                    </div>
                 </div>
 
-                <Card className="bg-white dark:bg-slate-900 border-none shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] rounded-none hover:translate-x-1 hover:-translate-y-1 transition-transform duration-300">
-                    <CardHeader>
-                        <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">👋 Olá, Gestor!</CardTitle>
-                            <div className="w-8 h-8 rounded-none bg-orange-500 flex items-center justify-center animate-pulse">
-                                <span className="text-slate-950 text-xs font-black">!</span>
+                <div className="relative group lg:col-span-1">
+                    <div className="absolute inset-0 bg-brand-orange/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <div className="relative h-full bg-gradient-to-br from-brand-orange to-orange-600 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden flex flex-col justify-between border border-white/10">
+                        {/* Abstract Shape */}
+                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl transition-transform duration-700 group-hover:scale-150" />
+
+                        <div>
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">Painel de <br />Controle</h3>
+                                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+                                    <span className="text-white text-xl font-black">!</span>
+                                </div>
                             </div>
+
+                            <p className="text-white/80 font-bold text-sm leading-relaxed mb-8">
+                                Atualmente existem <span className="text-white underline decoration-white/30 underline-offset-4">{stats.probationAlerts?.length || 0}</span> contratos em período crítico de experiência. Recomenda-se revisão imediata.
+                            </p>
                         </div>
-                        <CardDescription className="text-slate-500 dark:text-slate-400 font-medium">
-                            Você tem <span className="text-orange-500 font-bold">{stats.probationAlerts?.length || 0}</span> contratos vencendo em breve e <span className="text-emerald-400 font-bold">{stats.activeEmployees}</span> colaboradores ativos.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Link href="/dashboard/personnel">
-                            <span className="inline-flex items-center justify-center px-6 py-3 bg-orange-500 text-slate-950 text-xs font-black uppercase tracking-widest hover:bg-white hover:text-slate-950 transition-all cursor-pointer shadow-lg active:scale-95">
-                                GERENCIAR EQUIPE →
+
+                        <Link href="/dashboard/personnel" className="w-full">
+                            <span className="flex items-center justify-center w-full py-5 bg-white text-brand-orange text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-950 hover:text-white transition-all duration-300 shadow-xl shadow-black/20 group/btn">
+                                Gerenciar Capital Humano
+                                <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
                             </span>
                         </Link>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
 
-            {/* Stats Grid - Moved to Client Component to fix Framer Motion Error */}
+            {/* Stats Grid */}
             <DashboardStatsGrid stats={stats} />
 
             {/* Charts & Lists Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* Department Distribution */}
-                <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50">
-                    <CardHeader>
-                        <CardTitle className="dark:text-white">Setores</CardTitle>
-                        <CardDescription className="dark:text-slate-400">Distribuição da equipe.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {(stats.sectorStats || []).slice(0, 5).map((dept: any) => (
-                            <div key={dept.name} className="space-y-1">
-                                <div className="flex justify-between text-sm">
-                                    <span className="font-medium text-slate-700 dark:text-slate-300">{dept.name}</span>
-                                    <span className="text-slate-500 dark:text-slate-400">{dept.percentage}%</span>
-                                </div>
-                                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-none overflow-hidden">
-                                    <div
-                                        className="h-full bg-orange-500"
-                                        style={{ width: `${dept.percentage}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
+                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 relative overflow-hidden group">
+                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
+                        Distribuição por Setor
+                    </h4>
+
+                    <SectorDistribution stats={stats.sectorStats || []} />
+                </div>
 
                 {/* Probation Alerts */}
-                <Card className="border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
-                            <span>⚠️</span> Fim de Experiência
-                        </CardTitle>
-                        <CardDescription className="text-amber-600/80 dark:text-amber-500/60">Contratos vencendo em breve.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {(stats.probationAlerts || []).length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.probationAlerts.map((emp: any) => (
-                                    <Link key={emp.id} href={`/dashboard/personnel?id=${emp.id}&tab=contract&mode=edit`} className="block group">
-                                        <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 rounded border border-amber-100 dark:border-amber-900/30 shadow-sm group-hover:border-amber-400 group-hover:translate-x-1 transition-all">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold text-xs overflow-hidden">
-                                                    {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.name}</p>
-                                                    <p className="text-[10px] text-amber-600 dark:text-amber-500 uppercase font-semibold">{emp.period}</p>
-                                                </div>
+                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8">
+                    <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                        Alertas de Experiência
+                    </h4>
+
+                    {(stats.probationAlerts || []).length > 0 ? (
+                        <div className="space-y-3">
+                            {stats.probationAlerts.map((emp: any) => (
+                                <Link key={emp.id} href={`/dashboard/personnel?id=${emp.id}&tab=contract&mode=edit`} className="block group">
+                                    <div className="flex justify-between items-center bg-white/5 hover:bg-white/10 p-3 rounded-2xl border border-white/5 transition-all duration-300">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-brand-orange/20 flex items-center justify-center text-brand-orange font-black text-xs overflow-hidden">
+                                                {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
                                             </div>
-                                            <div className="text-right">
-                                                <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{emp.days} dias</span>
+                                            <div>
+                                                <p className="text-xs font-black text-white uppercase tracking-tighter">{emp.name}</p>
+                                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{emp.period}</p>
                                             </div>
                                         </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-6 text-slate-400">
-                                <p className="text-sm">Nenhum contrato em alerta.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-black text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded uppercase">{emp.days}d</span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-40 flex flex-col items-center justify-center text-slate-600">
+                            <span className="text-3xl mb-2">🛡️</span>
+                            <p className="text-xs font-black uppercase tracking-widest">Tudo regularizado</p>
+                        </div>
+                    )}
+                </div>
+
                 {/* Event Mural */}
-                <div className="lg:col-span-1">
+                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-1 overflow-hidden">
                     <EventMural events={stats.eventMural || []} />
                 </div>
             </div>
 
-            {/* New Section for Evolution Chart */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <HiringEvolutionChart data={hiringData} />
+                    <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 shadow-2xl h-full">
+                        <HiringEvolutionChart data={hiringData} />
+                    </div>
                 </div>
-                {/* Birthdays Widget */}
-                <div className="lg:col-span-1">
-                    <Card className="border-slate-200 bg-gradient-to-b from-white to-pink-50/30 dark:from-slate-800 dark:to-slate-800/50 dark:border-slate-700 h-full">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                                <span>🎂</span> Aniversariantes
-                            </CardTitle>
-                            <CardDescription className="text-slate-600 dark:text-slate-400">Celebrações deste mês.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {(stats.upcomingBirthdays || []).length > 0 ? (
-                                <div className="space-y-4">
-                                    {stats.upcomingBirthdays.map((emp: any) => (
-                                        <div key={emp.id} className="flex items-center space-x-3 pb-3 border-b border-pink-100 dark:border-slate-700 last:border-0 last:pb-0">
-                                            <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/20 border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold overflow-hidden">
-                                                {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{emp.name}</p>
-                                                <p className="text-xs text-pink-600 dark:text-pink-400 font-medium">Dia {emp.day}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-6 text-slate-500">
-                                    <p>Nenhum aniversariante em breve.</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+
+                <BirthdayMural birthdays={stats.upcomingBirthdays || []} />
             </div>
 
-            <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mt-12 mb-4">Acesso Rápido</h2>
-            {/* Quick Access Grid - Moved to Client Component to fix Framer Motion Error */}
-            <QuickAccessGrid />
+            <div className="pt-10">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="h-px flex-1 bg-white/5" />
+                    <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Atalhos Estratégicos</h2>
+                    <div className="h-px flex-1 bg-white/5" />
+                </div>
+                <QuickAccessGrid />
+            </div>
         </div>
     );
 }

@@ -17,6 +17,8 @@ interface MedicalLeaveTabProps {
     employeeId: string;
 }
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 export function MedicalLeaveTab({ employeeId }: MedicalLeaveTabProps) {
     const [leaves, setLeaves] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -96,14 +98,13 @@ export function MedicalLeaveTab({ employeeId }: MedicalLeaveTabProps) {
                 documentUrl: downloadUrl,
                 status: 'APPROVED', // HR submitted is auto-approved
                 submittedByType: 'HR',
-                submittedById: 'system' // Should be current user ID in production
+                daysCount: Number(formData.daysCount)
             };
 
             const res = await createMedicalLeave(data);
             if (res.success) {
-                toast.success('Atestado registrado com sucesso.');
+                toast.success('Registro médico incluído com sucesso!');
                 setShowForm(false);
-                setFile(null);
                 setFormData({
                     type: 'ATESTADO',
                     startDate: '',
@@ -114,192 +115,264 @@ export function MedicalLeaveTab({ employeeId }: MedicalLeaveTabProps) {
                     cid: '',
                     notes: ''
                 });
+                setFile(null);
                 loadLeaves();
             } else {
                 toast.error(res.error);
             }
         } catch (error) {
-            console.error('Upload error:', error);
-            toast.error('Erro ao processar o arquivo.');
-        } finally {
-            setSubmitting(false);
+            console.error(error);
+            toast.error('Erro ao processar arquivo');
         }
+        setSubmitting(false);
     }
 
     async function handleDelete(id: string) {
-        if (!confirm('Deseja realmente excluir este registro?')) return;
+        if (!confirm('Excluir este registro médico permanentemente?')) return;
         const res = await deleteMedicalLeave(id);
         if (res.success) {
-            toast.success('Registro excluído.');
+            toast.success('Removido com sucesso');
             loadLeaves();
         } else {
             toast.error(res.error);
         }
     }
 
-    if (loading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-indigo-600" /></div>;
+    const totalDays = leaves.reduce((sum, l) => sum + (Number(l.daysCount) || 0), 0);
+
+    if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-brand-orange" /></div>;
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Gestão de Atestados e Licenças</h4>
-                    <p className="text-xs text-slate-500">Registre e controle afastamentos médicos.</p>
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Premium Stat Summary */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="bg-red-500/10 border border-red-500/20 px-6 py-4 rounded-[2rem] backdrop-blur-xl group">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1 block">Dias Acumulados</span>
+                        <div className="text-3xl font-black text-red-400 tracking-tighter group-hover:scale-110 transition-transform">
+                            {totalDays} <span className="text-xs uppercase text-slate-600">dias</span>
+                        </div>
+                    </div>
+                    <div className="bg-white/5 border border-white/5 px-6 py-4 rounded-[2rem] backdrop-blur-xl">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1 block">Ocorrências</span>
+                        <div className="text-3xl font-black text-white tracking-tighter">
+                            {leaves.length} <span className="text-xs uppercase text-slate-600">registros</span>
+                        </div>
+                    </div>
                 </div>
+
                 {!showForm && (
-                    <Button onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
-                        <Plus className="h-4 w-4 mr-2" /> Novo Atestado
-                    </Button>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="h-14 px-8 rounded-2xl bg-red-500 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all shadow-[0_0_30px_rgba(239,68,68,0.2)] flex items-center justify-center gap-3 group"
+                    >
+                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                        Novo Registro
+                    </button>
                 )}
             </div>
 
-            {showForm && (
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border-2 border-indigo-100 dark:border-indigo-900/30 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label>Tipo de Licença</Label>
-                                <select
-                                    name="type"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    required
-                                    value={formData.type}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                                >
-                                    <option value="ATESTADO">Atestado Médico</option>
-                                    <option value="LICENCA_MATERNIDADE">Licença Maternidade</option>
-                                    <option value="LICENCA_PATERNIDADE">Licença Paternidade</option>
-                                    <option value="ACIDENTE_TRABALHO">Acidente de Trabalho</option>
-                                    <option value="OUTROS">Outros Afastamentos</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Início</Label>
-                                <Input
-                                    type="date"
-                                    name="startDate"
-                                    required
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Término</Label>
-                                <Input
-                                    type="date"
-                                    name="endDate"
-                                    required
-                                    value={formData.endDate}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                                />
-                            </div>
-                        </div>
+            <AnimatePresence>
+                {showForm && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label>Dias de Afastamento</Label>
-                                <Input
-                                    type="number"
-                                    name="daysCount"
-                                    placeholder="Ex: 5"
-                                    required
-                                    value={formData.daysCount}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, daysCount: e.target.value }))}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>CRM do Médico</Label>
-                                <Input
-                                    name="crm"
-                                    placeholder="Opcional"
-                                    value={formData.crm}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, crm: e.target.value }))}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Código CID</Label>
-                                <Input
-                                    name="cid"
-                                    placeholder="Opcional"
-                                    value={formData.cid}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, cid: e.target.value }))}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Documento (PDF ou Imagem)</Label>
-                            <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} accept="image/*,application/pdf" required />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Observações</Label>
-                            <Input
-                                name="notes"
-                                placeholder="Detalhes adicionais..."
-                                value={formData.notes}
-                                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
-                            <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700">
-                                {submitting ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                                Salvar Registro
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            <div className="space-y-3">
-                {leaves.length === 0 ? (
-                    <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                        <FileText className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                        <p className="text-sm text-slate-500">Nenhum atestado registrado para este colaborador.</p>
-                    </div>
-                ) : (
-                    leaves.map((leave) => (
-                        <div key={leave.id} className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-all group">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-2 rounded-lg ${leave.type === 'ATESTADO' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                                    <Activity className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h5 className="text-sm font-bold text-slate-900 dark:text-white uppercase">{leave.type.replace('_', ' ')}</h5>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${leave.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                                            leave.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
-                                            }`}>
-                                            {leave.status === 'APPROVED' ? 'Aprovado' : leave.status === 'PENDING' ? 'Pendente' : 'Recusado'}
-                                        </span>
+                            <form onSubmit={handleSubmit} className="space-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                    <div className="md:col-span-4 space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Modalidade de Registro</Label>
+                                        <select
+                                            className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
+                                            value={formData.type}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                        >
+                                            <option value="ATESTADO" className="bg-[#0A0F1C]">Atestado Médico Médio</option>
+                                            <option value="LICENCA_MATERNIDADE" className="bg-[#0A0F1C]">Licença Maternidade</option>
+                                            <option value="LICENCA_PATERNIDADE" className="bg-[#0A0F1C]">Licença Paternidade</option>
+                                            <option value="ACIDENTE_TRABALHO" className="bg-[#0A0F1C]">Acidente de Trabalho</option>
+                                            <option value="OUTROS" className="bg-[#0A0F1C]">Outras Ausências</option>
+                                        </select>
                                     </div>
-                                    <div className="flex items-center gap-4 mt-1">
-                                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                                            <CalendarIcon className="h-3 w-3" />
-                                            {formatSafeDate(leave.startDate, 'dd/MM/yyyy')} - {formatSafeDate(leave.endDate, 'dd/MM/yyyy')}
-                                        </span>
-                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 rounded">
-                                            {leave.daysCount} dias
-                                        </span>
-                                        {leave.cid && (
-                                            <span className="text-xs text-slate-400">CID: {leave.cid}</span>
-                                        )}
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Início</Label>
+                                        <Input
+                                            type="date"
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white focus:border-brand-orange/30 transition-all font-black uppercase tracking-widest"
+                                            value={formData.startDate}
+                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Prazo (Dias)</Label>
+                                        <Input
+                                            type="number"
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white focus:border-brand-orange/30 transition-all font-black placeholder:text-slate-700"
+                                            placeholder="Ex: 5"
+                                            value={formData.daysCount}
+                                            onChange={(e) => setFormData({ ...formData, daysCount: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Final Previsto</Label>
+                                        <Input
+                                            type="date"
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white/50 bg-white/2 transition-all font-black uppercase tracking-widest"
+                                            value={formData.endDate}
+                                            readOnly
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">CID</Label>
+                                        <Input
+                                            className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white focus:border-brand-orange/30 transition-all font-black placeholder:text-slate-700 uppercase"
+                                            placeholder="EX: Z00"
+                                            value={formData.cid}
+                                            onChange={(e) => setFormData({ ...formData, cid: e.target.value.toUpperCase() })}
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="sm" variant="outline" onClick={() => window.open(leave.documentUrl, '_blank')} className="h-8 w-8 p-0">
-                                    <Download className="h-4 w-4 text-emerald-600" />
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => handleDelete(leave.id)} className="h-8 w-8 p-0">
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                            </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Profissional / CRM</Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <Input
+                                                className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white focus:border-brand-orange/30"
+                                                placeholder="CRM"
+                                                value={formData.crm}
+                                                onChange={(e) => setFormData({ ...formData, crm: e.target.value })}
+                                            />
+                                            <Input
+                                                className="h-14 bg-white/5 border-white/10 rounded-2xl px-6 text-[11px] text-white focus:border-brand-orange/30"
+                                                placeholder="Nome do Médico"
+                                                value={formData.doctorName}
+                                                onChange={(e) => setFormData({ ...formData, doctorName: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Arquivo de Evidência (.PDF, .JPG)</Label>
+                                        <div className="relative group">
+                                            <input
+                                                type="file"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                            />
+                                            <div className="h-14 bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-[10px] font-black text-slate-500 uppercase tracking-widest transition-all group-hover:border-red-500/30 group-hover:bg-white/[0.02]">
+                                                {file ? <span className="text-emerald-400 italic flex items-center gap-2">✅ {file.name}</span> : 'Clique para anexar documento'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end items-center gap-6 pt-6 border-t border-white/5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                                    >
+                                        Descartar
+                                    </button>
+                                    <button
+                                        disabled={submitting}
+                                        className="h-14 px-12 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 transition-all flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500"
+                                    >
+                                        {submitting ? <Loader2 className="animate-spin h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                                        Finalizar Registro
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    ))
+                    </motion.div>
                 )}
+            </AnimatePresence>
+
+            {/* Premium Activity Feed */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-3 px-4">
+                    <div className="h-px flex-1 bg-white/5" />
+                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Histórico de Saúde Operacional</span>
+                    <div className="h-px flex-1 bg-white/5" />
+                </div>
+
+                <div className="space-y-4">
+                    {leaves.map((leave, i) => (
+                        <motion.div
+                            key={leave.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            className="bg-[#0A0F1C]/40 border border-white/5 rounded-[2rem] p-8 hover:bg-white/[0.02] transition-all group relative overflow-hidden"
+                        >
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="flex items-start gap-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-2xl shadow-inner group-hover:border-red-500/30 transition-colors">
+                                        🩺
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <h4 className="text-sm font-black text-white uppercase tracking-tight">{leave.type.replace('_', ' ')}</h4>
+                                            {leave.cid && <span className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[8px] font-black">CID {leave.cid}</span>}
+                                        </div>
+                                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">
+                                            <span className="flex items-center gap-2">
+                                                <CalendarIcon className="h-3 w-3 text-slate-600" />
+                                                {formatSafeDate(leave.startDate, 'dd.MM')} - {formatSafeDate(leave.endDate, 'dd.MM.yy')}
+                                            </span>
+                                            <span className="flex items-center gap-2">
+                                                <Clock className="h-3 w-3 text-slate-600" />
+                                                {leave.daysCount} Dias de Ausência
+                                            </span>
+                                            {leave.crm && <span className="text-slate-600">Médico: {leave.doctorName || 'N/A'} (CRM {leave.crm})</span>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => window.open(leave.documentUrl, '_blank')}
+                                        className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+                                    >
+                                        <Download className="h-3.5 w-3.5" />
+                                        Laudo Médico
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(leave.id)}
+                                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-700 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {leave.notes && (
+                                <div className="mt-6 pt-6 border-t border-white/5 italic text-[11px] text-slate-600 font-medium">
+                                    " {leave.notes} "
+                                </div>
+                            )}
+                        </motion.div>
+                    ))}
+
+                    {leaves.length === 0 && (
+                        <div className="py-24 text-center bg-white/2 rounded-[2.5rem] border border-white/5 border-dashed">
+                            <FileText className="h-12 w-12 text-slate-800 mx-auto mb-4 opacity-20" />
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Prontuário Digital Vazio</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

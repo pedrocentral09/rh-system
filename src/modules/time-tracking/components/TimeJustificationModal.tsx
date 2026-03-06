@@ -13,6 +13,8 @@ interface TimeJustificationModalProps {
     onSuccess: () => void;
 }
 
+import { motion } from 'framer-motion';
+
 export function TimeJustificationModal({
     isOpen,
     onClose,
@@ -59,32 +61,45 @@ export function TimeJustificationModal({
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title={`Justificativa - ${new Date(date).toLocaleDateString('pt-BR')}`}
+            title=""
             width="md"
         >
-            <div className="space-y-6">
-                <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl flex gap-3 text-orange-700">
+            <div className="bg-[#0A0F1C] p-8 space-y-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-brand-orange/5 blur-[80px] rounded-full -mr-24 -mt-24 pointer-events-none" />
+
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
+                            <Camera className="h-5 w-5 text-brand-orange" />
+                        </div>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight">Justificativa de Jornada</h2>
+                    </div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-14">Referência: {new Date(date).toLocaleDateString('pt-BR')}</p>
+                </div>
+
+                <div className="bg-brand-orange/5 border border-brand-orange/10 p-5 rounded-2xl flex gap-4 text-brand-orange relative group overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-brand-orange/20" />
                     <AlertCircle className="h-5 w-5 shrink-0" />
-                    <p className="text-xs leading-relaxed">
-                        Sua justificativa será analisada pelo RH. Se houver atestado médico, certifique-se de que a foto está legível.
+                    <p className="text-[10px] font-bold leading-relaxed uppercase tracking-widest">
+                        Protocolo de análise ativa pelo RH Central. Se houver atestado, anexe evidência fotográfica em alta resolução.
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Motivo da Justificativa</label>
+                <div className="space-y-3 group">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Manifestação do Colaborador</label>
                     <textarea
-                        className="w-full border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-sm focus:ring-4 ring-brand-blue/5 focus:border-brand-blue/20 outline-none transition-all min-h-[120px]"
-                        placeholder="Ex: Esquecimento de batida, consulta médica, problema no terminal..."
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[12px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all min-h-[140px] shadow-inner placeholder:text-slate-800 outline-none block"
+                        placeholder="DESCREVA O MOTIVO (EX: ESQUECIMENTO, CONSULTA, FALHA TÉCNICA)..."
                         value={justification}
                         onChange={(e) => setJustification(e.target.value)}
                     />
                 </div>
 
-                <div className="space-y-3">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Anexo (Opcional)</label>
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4">Evidência Digital (Opcional)</label>
 
                     {!previewUrl ? (
-                        <div className="relative group">
+                        <div className="relative group/upload h-32">
                             <input
                                 type="file"
                                 accept="image/*"
@@ -92,45 +107,46 @@ export function TimeJustificationModal({
                                 className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                 onChange={handlePhotoChange}
                             />
-                            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:bg-slate-50 transition-colors">
-                                <div className="h-12 w-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Camera className="h-6 w-6" />
+                            <div className="h-full border-2 border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover/upload:bg-white/[0.03] group-hover/upload:border-brand-orange/20 transition-all">
+                                <div className="h-10 w-10 bg-white/5 text-slate-500 rounded-xl flex items-center justify-center group-hover/upload:scale-110 group-hover/upload:text-brand-orange transition-all">
+                                    <Camera className="h-5 w-5" />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-bold text-slate-600">Tirar foto ou Upload</p>
-                                    <p className="text-[10px] text-slate-400 uppercase font-medium">PNG, JPG até 5MB</p>
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Disparar Câmera ou Selecionar</p>
+                                    <p className="text-[8px] text-slate-700 uppercase font-black tracking-tighter">IMAGENS ATÉ 5MB</p>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="relative rounded-2xl overflow-hidden border-2 border-slate-100 group">
-                            <img src={previewUrl} alt="Preview" className="w-full aspect-video object-cover" />
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="rounded-full"
+                        <div className="relative rounded-2xl overflow-hidden border border-white/10 group/preview shadow-2xl">
+                            <img src={previewUrl} alt="Preview" className="w-full aspect-video object-cover brightness-75 group-hover/preview:brightness-100 transition-all" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity">
+                                <button
+                                    className="px-6 h-10 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
                                     onClick={() => { setPhoto(null); setPreviewUrl(null); }}
                                 >
-                                    Remover Foto
-                                </Button>
+                                    DESCARTAR CAPTURA
+                                </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="pt-2 flex gap-3">
-                    <Button variant="ghost" onClick={handleClose} className="flex-1 rounded-2xl h-12 font-bold text-slate-500">
-                        Cancelar
-                    </Button>
-                    <Button
+                <div className="pt-4 flex gap-4">
+                    <button
+                        onClick={handleClose}
+                        className="flex-1 h-14 rounded-2xl bg-white/5 border border-white/5 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                    >
+                        ABORTAR
+                    </button>
+                    <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="flex-[2] bg-brand-blue hover:bg-blue-900 text-white rounded-2xl h-12 font-black shadow-lg shadow-blue-900/20"
+                        className="flex-[2] h-14 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                     >
-                        {loading ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <CheckCircle2 className="h-5 w-5 mr-2" />}
-                        ENVIAR PARA O RH
-                    </Button>
+                        {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                        TRANSMITIR PARA O RH
+                    </button>
                 </div>
             </div>
         </Modal>

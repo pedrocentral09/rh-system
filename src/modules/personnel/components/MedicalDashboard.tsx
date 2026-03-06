@@ -13,6 +13,8 @@ import { formatSafeDate } from '@/shared/utils/date-utils';
 
 import { MedicalLeaveCreateModal } from './MedicalLeaveCreateModal';
 
+import { motion } from 'framer-motion';
+
 export function MedicalDashboard() {
     const [leaves, setLeaves] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,73 +65,64 @@ export function MedicalDashboard() {
 
     const totalDays = leaves.reduce((sum, curr) => sum + (Number(curr.daysCount) || 0), 0);
 
-    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin h-10 w-10 text-indigo-600" /></div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+            <Loader2 className="animate-spin h-10 w-10 text-brand-orange" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sincronizando Registros Médicos...</span>
+        </div>
+    );
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-slate-500 tracking-widest">Total de Registros</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-black text-slate-900 dark:text-white">{leaves.length}</div>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase">Atestados e Licenças</p>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-red-500 tracking-widest">Dias de Afastamento</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-black text-red-600 dark:text-red-400">{totalDays}</div>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase">Total acumulado</p>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-amber-500 tracking-widest">CID mais frequente</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
-                            {sortedCids[0] ? String(sortedCids[0][0]) : 'N/A'}
+        <div className="space-y-12 animate-in fade-in duration-700">
+            {/* Health Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {[
+                    { label: 'Ocorrências Totais', value: leaves.length, sub: 'Atestados & Licenças', color: 'text-white', bg: 'bg-white/5', icon: '📋' },
+                    { label: 'Dias de Ausência', value: totalDays, sub: 'Acumulado Geral', color: 'text-red-400', bg: 'bg-red-500/5', icon: '⏳' },
+                    { label: 'CID Predominante', value: sortedCids[0] ? String(sortedCids[0][0]) : 'N/A', sub: `${sortedCids[0] ? String(sortedCids[0][1]) : '0'} incidências`, color: 'text-amber-400', bg: 'bg-amber-500/5', icon: '🧠' },
+                    { label: 'Frequência Máxima', value: sortedEmployees[0] ? String(sortedEmployees[0][0]) : 'N/A', sub: `${sortedEmployees[0] ? String(sortedEmployees[0][1]) : '0'} registros`, color: 'text-indigo-400', bg: 'bg-indigo-500/5', icon: '👤' }
+                ].map((stat, i) => (
+                    <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`${stat.bg} backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group`}
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="text-xl">{stat.icon}</span>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase">
-                            {sortedCids[0] ? String(sortedCids[0][1]) : '0'} ocorrências
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-indigo-500 tracking-widest">Colaborador + Registros</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 truncate">
-                            {sortedEmployees[0] ? String(sortedEmployees[0][0]) : 'N/A'}
+                        <div className={`text-2xl font-black tracking-tighter truncate ${stat.color}`}>
+                            {stat.value}
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase">
-                            {sortedEmployees[0] ? String(sortedEmployees[0][1]) : '0'} atestados
-                        </p>
-                    </CardContent>
-                </Card>
+                        <p className="text-[8px] font-black uppercase text-slate-600 mt-2 tracking-widest">{stat.sub}</p>
+                    </motion.div>
+                ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input
-                                placeholder="Buscar por colaborador, CID ou tipo..."
-                                className="pl-10 bg-slate-50 dark:bg-slate-800 border-none"
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Main Content Area */}
+                <div className="lg:col-span-8 space-y-8">
+                    {/* Premium Control Bar */}
+                    <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-6 shadow-2xl flex flex-col md:flex-row items-center gap-6">
+                        <div className="relative flex-1 group w-full">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-brand-orange transition-colors" />
+                            <input
+                                placeholder="PESQUISAR POR COLABORADOR OU CID..."
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-brand-orange/30 transition-all shadow-inner"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
-                        <Button onClick={() => setIsCreateModalOpen(true)} className="bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-tighter px-6">
-                            <Plus className="h-4 w-4 mr-2" /> Incluir Afastamento
-                        </Button>
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="w-full md:w-auto h-14 px-8 rounded-2xl bg-red-500 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all shadow-[0_0_30px_rgba(239,68,68,0.2)] flex items-center justify-center gap-3 group"
+                        >
+                            <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                            Incluir Afastamento
+                        </button>
                     </div>
 
                     <MedicalLeaveCreateModal
@@ -138,103 +131,133 @@ export function MedicalDashboard() {
                         onSuccess={loadData}
                     />
 
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                        <th className="p-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Colaborador</th>
-                                        <th className="p-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Tipo / CID</th>
-                                        <th className="p-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Período</th>
-                                        <th className="p-4 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Dias</th>
-                                        <th className="p-4 text-[10px] font-black uppercase text-slate-500 tracking-widest text-right">Ação</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {filteredLeaves.map((leave) => (
-                                        <tr key={leave.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-white dark:border-slate-700 shadow-sm">
-                                                        {leave.employee.photoUrl ? (
-                                                            <img src={leave.employee.photoUrl} alt="" className="h-full w-full object-cover" />
-                                                        ) : (
-                                                            <span className="flex items-center justify-center h-full w-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase">
-                                                                {leave.employee.name.charAt(0)}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{leave.employee.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase">{leave.type.replace('_', ' ')}</span>
-                                                    {leave.cid && <span className="text-xs font-black text-red-500 tracking-tighter">CID: {leave.cid}</span>}
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center gap-1 w-fit">
-                                                    <Calendar className="h-3 w-3" />
-                                                    {formatSafeDate(leave.startDate, 'dd/MM/yy')} → {formatSafeDate(leave.endDate, 'dd/MM/yy')}
+                    {/* Premium List Table */}
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                            <div className="col-span-5 text-left text-brand-orange/60">Colaborador / Identidade</div>
+                            <div className="col-span-3 text-center">Referência / CID</div>
+                            <div className="col-span-2 text-center">Dias</div>
+                            <div className="col-span-2 text-right">Controle</div>
+                        </div>
+
+                        <div className="space-y-3">
+                            {filteredLeaves.map((leave, i) => (
+                                <motion.div
+                                    key={leave.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.02 }}
+                                    className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-red-500/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                                >
+                                    <div className="col-span-5 flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-red-500/30 transition-colors overflow-hidden">
+                                            {leave.employee.photoUrl ? (
+                                                <img src={leave.employee.photoUrl} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-slate-500 font-black">{leave.employee.name.charAt(0)}</span>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-red-400 transition-colors truncate">{leave.employee.name}</h4>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <Calendar className="h-3 w-3 text-slate-600" />
+                                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
+                                                    {formatSafeDate(leave.startDate, 'dd.MM')} → {formatSafeDate(leave.endDate, 'dd.MM.yy')}
                                                 </span>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <span className="text-xs font-black text-slate-900 dark:text-white">{leave.daysCount}</span>
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 p-0"
-                                                    onClick={() => window.open(leave.documentUrl, '_blank')}
-                                                >
-                                                    <Download className="h-4 w-4 text-emerald-600" />
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-3 text-center">
+                                        <div className="flex flex-col gap-1 items-center">
+                                            <span className="bg-white/5 text-slate-500 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter border border-white/5">{leave.type.replace('_', ' ')}</span>
+                                            {leave.cid && <span className="text-xs font-black text-red-500/80 tracking-tighter">CID {leave.cid}</span>}
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-2 text-center">
+                                        <div className="bg-red-500/5 px-4 py-1.5 rounded-xl border border-red-500/10 inline-block">
+                                            <span className="text-sm font-black text-red-400">{leave.daysCount}d</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-2 flex justify-end gap-2">
+                                        <button
+                                            onClick={() => window.open(leave.documentUrl, '_blank')}
+                                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
+                                            title="Baixar Comprovante"
+                                        >
+                                            <Download className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {filteredLeaves.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-24 text-slate-700 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
+                                    <Activity className="h-12 w-12 mb-6 opacity-10" />
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] italic">Nenhum evento médico localizado</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-red-500" /> Top CIDs (Afastamentos)
-                            </CardTitle>
-                            <CardDescription className="text-xs">CIDs com maior incidência no período.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {sortedCids.map(([cid, count]) => (
-                                <div key={String(cid)} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">CID: {String(cid)}</span>
-                                    <span className="text-xs font-black bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full">{String(count)} casos</span>
-                                </div>
-                            ))}
-                            {sortedCids.length === 0 && <p className="text-xs text-slate-500 text-center py-4">Nenhum dado de CID disponível.</p>}
-                        </CardContent>
-                    </Card>
+                {/* Lateral Analytics */}
+                <div className="lg:col-span-4 space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl space-y-8"
+                    >
+                        <div className="space-y-1">
+                            <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-red-500" />
+                                Top CIDs / Impacto
+                            </h3>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase">Maiores incidências clínicas</p>
+                        </div>
 
-                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
-                                <Users className="h-4 w-4 text-indigo-500" /> Recorrência por Colaborador
-                            </CardTitle>
-                            <CardDescription className="text-xs">Colaboradores com mais registros.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {sortedEmployees.map(([name, count]) => (
-                                <div key={String(name)} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[150px]">{String(name)}</span>
-                                    <span className="text-xs font-black bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">{String(count)} registros</span>
+                        <div className="space-y-4">
+                            {sortedCids.map(([cid, count], i) => (
+                                <div key={String(cid)} className="group relative">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">CID: {String(cid)}</span>
+                                        <span className="text-[10px] font-black text-red-400 uppercase tracking-tighter">{String(count)} ocorrências</span>
+                                    </div>
+                                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(Number(count) / (leaves.length || 1)) * 100}%` }}
+                                            transition={{ duration: 1 + i * 0.2 }}
+                                            className="h-full bg-red-500/40 rounded-full"
+                                        />
+                                    </div>
                                 </div>
                             ))}
-                        </CardContent>
-                    </Card>
+                            {sortedCids.length === 0 && <div className="text-center py-8 text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] italic">Nenhum dado disponível</div>}
+                        </div>
+
+                        <div className="pt-8 border-t border-white/5 space-y-6">
+                            <div className="space-y-1">
+                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-indigo-500" />
+                                    Recorrência Colaborador
+                                </h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                {sortedEmployees.map(([name, count]) => (
+                                    <div key={String(name)} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors cursor-default">
+                                        <span className="text-[11px] font-black text-slate-300 uppercase tracking-tight truncate max-w-[180px]">{String(name)}</span>
+                                        <div className="bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 text-[9px] font-black text-indigo-400">
+                                            {String(count)} atestados
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

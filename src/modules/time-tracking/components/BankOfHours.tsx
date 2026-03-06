@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { getBankOverview } from '../actions/timesheet'; // Ensure path is correct in file
 import { Loader2 } from 'lucide-react';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 export function BankOfHours() {
     const today = new Date();
     const [month, setMonth] = useState(today.getMonth());
@@ -37,46 +39,81 @@ export function BankOfHours() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex gap-4 items-center bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                <select
-                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded px-3 py-2"
-                    value={month}
-                    onChange={(e) => setMonth(parseInt(e.target.value))}
-                >
-                    {months.map((m, i) => (
-                        <option key={i} value={i}>{m}</option>
-                    ))}
-                </select>
-                <select
-                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded px-3 py-2"
-                    value={year}
-                    onChange={(e) => setYear(parseInt(e.target.value))}
-                >
-                    <option value={2024}>2024</option>
-                    <option value={2025}>2025</option>
-                    <option value={2026}>2026</option>
-                </select>
-                {loading && <Loader2 className="animate-spin text-slate-400" />}
-            </div>
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Premium Header/Control */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#0A0F1C]/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data.map((item: any) => (
-                    <div key={item.employee.id} className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center group hover:border-indigo-100 dark:hover:border-indigo-800 transition-all">
-                        <div>
-                            <p className="font-semibold text-slate-800 dark:text-slate-200">{item.employee.name}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{item.employee.department}</p>
-                        </div>
-                        <div className={`text-lg font-mono font-bold ${item.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
-                            {formatMinutes(item.balance)}
-                        </div>
+                <div className="flex flex-col gap-2 z-10">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight">Custódia de Horas (Banco)</h2>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Visão Consolidada de Ativos e Passivos Temporais</p>
+                </div>
+
+                <div className="flex items-center gap-4 z-10">
+                    <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Competência</label>
+                        <select
+                            className="h-12 bg-white/5 border border-white/5 rounded-xl px-4 text-[10px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
+                            value={month}
+                            onChange={(e) => setMonth(parseInt(e.target.value))}
+                        >
+                            {months.map((m, i) => (
+                                <option key={i} value={i} className="bg-[#0A0F1C]">{m}</option>
+                            ))}
+                        </select>
                     </div>
-                ))}
+
+                    <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Ano</label>
+                        <select
+                            className="h-12 bg-white/5 border border-white/5 rounded-xl px-4 text-[10px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
+                            value={year}
+                            onChange={(e) => setYear(parseInt(e.target.value))}
+                        >
+                            <option value={2024} className="bg-[#0A0F1C]">2024</option>
+                            <option value={2025} className="bg-[#0A0F1C]">2025</option>
+                            <option value={2026} className="bg-[#0A0F1C]">2026</option>
+                        </select>
+                    </div>
+                    {loading && <Loader2 className="animate-spin text-brand-orange h-5 w-5 mt-4" />}
+                </div>
             </div>
 
-            {data.length === 0 && !loading && (
-                <div className="text-center py-10 text-slate-400">Nenhum dado calculado para este período.</div>
-            )}
+            {/* Premium Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout">
+                    {data.map((item: any, i: number) => (
+                        <motion.div
+                            key={item.employee.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="bg-[#0A0F1C]/80 border border-white/5 rounded-[2rem] p-8 flex justify-between items-center group hover:border-brand-orange/30 hover:bg-white/[0.02] transition-all duration-500 shadow-xl relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-brand-orange/5 transition-colors" />
+
+                            <div className="relative z-10 flex flex-col gap-1">
+                                <h4 className="text-[14px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{item.employee.name}</h4>
+                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{item.employee.department}</span>
+                            </div>
+
+                            <div className="relative z-10 text-right">
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] block mb-1">Saldo Atual</span>
+                                <div className={`text-xl font-mono font-black tracking-tighter ${item.balance >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+                                    {formatMinutes(item.balance)}
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+
+                {data.length === 0 && !loading && (
+                    <div className="col-span-full py-32 text-center bg-white/2 rounded-[2.5rem] border border-white/5 border-dashed">
+                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] italic mb-2">Ausência de Registros</p>
+                        <span className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Nenhum dado consolidado no vácuo de {months[month]}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

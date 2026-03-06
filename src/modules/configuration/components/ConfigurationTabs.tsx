@@ -15,67 +15,45 @@ export function ConfigurationTabs() {
     const [activeTab, setActiveTab] = useState<'company' | 'users' | 'tables' | 'audit' | 'holidays'>('company');
 
     return (
-        <div className="space-y-6">
-            {/* Tabs Navigation */}
-            <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit">
-                <button
-                    onClick={() => setActiveTab('company')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'company'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                >
-                    🏢 Empresa
-                </button>
-                <button
-                    onClick={() => setActiveTab('users')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'users'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                >
-                    👥 Usuários
-                </button>
-                <button
-                    onClick={() => setActiveTab('tables')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'tables'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                >
-                    📚 Tabelas Auxiliares
-                </button>
-                <button
-                    onClick={() => setActiveTab('audit')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'audit'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                >
-                    🛡️ Auditoria
-                </button>
-                <button
-                    onClick={() => setActiveTab('holidays')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'holidays'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                >
-                    📅 Feriados
-                </button>
+        <div className="space-y-12 animate-in fade-in duration-700">
+            {/* Premium Tabs Navigation */}
+            <div className="flex flex-wrap gap-2 p-1.5 bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[1.5rem] w-fit">
+                {[
+                    { id: 'company', label: 'Empresa & Unidades', icon: '🏢' },
+                    { id: 'users', label: 'Contas & Segurança', icon: '👥' },
+                    { id: 'tables', label: 'Cargos & Setores', icon: '📚' },
+                    { id: 'audit', label: 'Rastro Digital', icon: '🛡️' },
+                    { id: 'holidays', label: 'Calendário Oficial', icon: '📅' }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 flex items-center gap-2 group ${activeTab === tab.id
+                            ? 'bg-brand-orange text-white shadow-[0_0_25px_rgba(255,102,0,0.3)]'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]'
+                            }`}
+                    >
+                        <span className="text-sm scale-110 group-hover:scale-125 transition-transform">{tab.icon}</span>
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* Content Area */}
-            <div className="animate-in fade-in duration-300">
+            <div className="relative min-h-[400px]">
                 {activeTab === 'company' && (
-                    <div className="space-y-4">
-                        <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 text-sm p-4 rounded-md border border-blue-100 dark:border-blue-900">
-                            ℹ️ Estes dados serão utilizados em cabeçalhos de relatórios e documentos oficiais.
+                    <div className="space-y-10">
+                        <div className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-widest p-4 rounded-2xl flex items-center gap-3">
+                            <span className="text-lg">ℹ️</span>
+                            Parametrização global: Estes dados regem a emissão de contratos e documentos legais do sistema.
                         </div>
                         <CompanyProfileForm />
-                        <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
-                            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Estrutura Organizacional (Multi-Empresa)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="pt-12 border-t border-white/5">
+                            <div className="mb-8">
+                                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Matriz <span className="text-brand-orange">Organizacional</span></h3>
+                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Gestão Multinível de Sociedades e Unidades de Negócio</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <CompanyList />
                                 <StoreList />
                             </div>
@@ -84,9 +62,9 @@ export function ConfigurationTabs() {
                 )}
 
                 {activeTab === 'users' && (
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         <UserList />
-                        <div className="border-t border-slate-200 pt-8">
+                        <div className="border-t border-white/5 pt-12">
                             <ProfileList />
                         </div>
                     </div>

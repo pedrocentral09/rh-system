@@ -23,6 +23,9 @@ interface EmployeeTransferModalProps {
     onSuccess: () => void;
 }
 
+import { motion, AnimatePresence } from 'framer-motion';
+import { Truck, Store, Calendar, FileText, ChevronRight, Loader2 } from 'lucide-react';
+
 export default function EmployeeTransferModal({ isOpen, onClose, employee, onSuccess }: EmployeeTransferModalProps) {
     if (!employee) return null;
 
@@ -80,88 +83,133 @@ export default function EmployeeTransferModal({ isOpen, onClose, employee, onSuc
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Transferência" width="5xl">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="bg-slate-50 p-3 rounded-md border border-slate-200 mb-4">
-                    <p className="text-sm text-slate-500">Colaborador</p>
-                    <p className="font-medium text-slate-900">{employee.name}</p>
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} title="Logística de Capital Humano" width="4xl">
+            <div className="bg-[#0A0F1C]/95 backdrop-blur-2xl rounded-[2.5rem] p-0 overflow-hidden relative border border-white/5">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -ml-32 -mt-32 pointer-events-none" />
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Data da Transferência *</label>
-                    <Input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        required
-                        className="calendar-light"
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-10 p-10 relative z-10">
+                    {/* Header Context */}
+                    <div className="flex items-center gap-6 pb-8 border-b border-white/5">
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-2xl">
+                            <Truck className="h-8 w-8 text-indigo-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-white uppercase tracking-tight">Registro de Movimentação</h3>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Alteração de Lotação e Unidade Operacional</p>
+                        </div>
+                    </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Loja Atual</label>
-                    <Input
-                        value={
-                            typeof employee.contract?.store === 'object'
-                                ? employee.contract?.store?.name
-                                : (employee.contract?.store || 'N/A')
-                        }
-                        disabled
-                        className="bg-slate-100 text-slate-500"
-                    />
-                </div>
+                    {/* Employee Card Info */}
+                    <div className="bg-white/5 border border-white/5 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 group hover:border-indigo-500/30 transition-all duration-500">
+                        <div className="flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-[#0A0F1C] border border-white/10 flex items-center justify-center font-black text-white uppercase">
+                                {employee.name.charAt(0)}
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Colaborador em Trânsito</span>
+                                <p className="text-lg font-black text-white uppercase tracking-tighter">{employee.name}</p>
+                            </div>
+                        </div>
+                        <div className="hidden md:flex items-center gap-4 text-slate-600">
+                            <div className="text-right">
+                                <span className="text-[8px] font-black uppercase tracking-widest block opacity-50">Lotação Atual</span>
+                                <p className="text-[10px] font-black text-white uppercase tracking-tight">
+                                    {typeof employee.contract?.store === 'object' ? employee.contract?.store?.name : (employee.contract?.store || 'NÃO DEFINIDA')}
+                                </p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-indigo-500" />
+                            <div className="text-left">
+                                <span className="text-[8px] font-black uppercase tracking-widest block opacity-50">Destino</span>
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-tight">
+                                    {stores.find(s => s.id === newStoreId)?.name || 'AGUARDANDO...'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nova Loja *</label>
-                    <select
-                        value={newStoreId}
-                        onChange={(e) => setNewStoreId(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                        required
-                    >
-                        <option value="">Selecione</option>
-                        {stores.map(store => {
-                            const currentStoreId = typeof employee.contract?.store === 'object'
-                                ? (employee.contract?.store as any)?.id
-                                : null;
+                    {/* Form Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Efetivação do Movimento</label>
+                            <div className="relative group">
+                                <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 pointer-events-none group-focus-within:text-white transition-colors" />
+                                <input
+                                    type="date"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    required
+                                    className="w-full h-16 bg-white/5 border border-white/5 rounded-2xl pl-14 pr-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
 
-                            return (
-                                <option key={store.id} value={store.id} disabled={store.id === currentStoreId}>
-                                    {store.name}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </div>
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade de Destino</label>
+                            <div className="relative group">
+                                <Store className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 pointer-events-none group-focus-within:text-white transition-colors" />
+                                <select
+                                    value={newStoreId}
+                                    onChange={(e) => setNewStoreId(e.target.value)}
+                                    className="w-full h-16 bg-white/5 border border-white/5 rounded-2xl pl-14 pr-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all shadow-inner appearance-none cursor-pointer"
+                                    required
+                                >
+                                    <option value="" className="bg-[#0A0F1C]">SELECIONE A UNIDADE</option>
+                                    {stores.map(store => {
+                                        const currentStoreId = typeof employee.contract?.store === 'object' ? (employee.contract?.store as any)?.id : null;
+                                        return (
+                                            <option key={store.id} value={store.id} disabled={store.id === currentStoreId} className="bg-[#0A0F1C]">
+                                                {store.name}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Motivo</label>
-                    <Input
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder="Ex: Promoção, Necessidade da Loja..."
-                    />
-                </div>
+                        <div className="md:col-span-2 space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Fundamentação Estratégica / Motivo</label>
+                            <div className="relative group">
+                                <FileText className="absolute left-6 top-6 w-4 h-4 text-indigo-400 pointer-events-none group-focus-within:text-white transition-colors" />
+                                <input
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    placeholder="EX: EXPANSÃO DE UNIDADE, PROMOÇÃO..."
+                                    className="w-full h-16 bg-white/5 border border-white/5 rounded-2xl pl-14 pr-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Observações</label>
-                    <textarea
-                        className="flex w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 min-h-[80px]"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Detalhes adicionais..."
-                    />
-                </div>
+                        <div className="md:col-span-2 space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Observações Protocolares</label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="DETALHES ADICIONAIS SOBRE A MOVIMENTAÇÃO..."
+                                className="w-full h-32 bg-white/5 border border-white/5 rounded-[2rem] p-8 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all shadow-inner resize-none placeholder:text-slate-700"
+                            />
+                        </div>
+                    </div>
 
-                <div className="flex justify-end pt-4 space-x-2 border-t border-slate-200 mt-6">
-                    <Button type="button" variant="ghost" onClick={onClose} className="text-slate-600 hover:bg-slate-100 hover:text-slate-900">
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                        {loading ? 'Salvando...' : 'Salvar Alterações'}
-                    </Button>
-                </div>
-            </form>
+                    {/* Actions */}
+                    <div className="flex justify-end items-center gap-6 pt-10 border-t border-white/5">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                        >
+                            Abortar Operação
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading || !newStoreId}
+                            className="h-16 px-12 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-2xl flex items-center justify-center gap-3 disabled:bg-slate-800 disabled:text-slate-600 active:scale-95"
+                        >
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />}
+                            CONFIRMAR TRÂNSITO
+                        </button>
+                    </div>
+                </form>
+            </div>
         </Modal>
     );
 }

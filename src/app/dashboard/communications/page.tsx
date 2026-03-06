@@ -19,12 +19,12 @@ export default async function CommunicationsPage({ searchParams }: { searchParam
     const { success, data: tickets = [] } = await getSupportTickets();
 
     let activeTicket = null;
-    let messages = [];
+    let messages: any[] = [];
 
     if (ticketId) {
         activeTicket = tickets.find((t: any) => t.id === ticketId);
         const megRes = await getTicketMessages(ticketId);
-        if (megRes.success) messages = megRes.data;
+        if (megRes.success) messages = megRes.data || [];
     }
 
     return (

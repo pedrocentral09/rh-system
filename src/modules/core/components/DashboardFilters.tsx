@@ -23,35 +23,53 @@ export function DashboardFilters({ companies, stores }: FiltersProps) {
     };
 
     return (
-        <div className="flex flex-wrap gap-4 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-            <div className="flex flex-col gap-1">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Empresa</Label>
-                <select
-                    className="bg-transparent text-sm font-bold text-slate-900 dark:text-white outline-none cursor-pointer pr-4"
-                    onChange={(e) => handleFilterChange('companyId', e.target.value)}
-                    value={searchParams.get('companyId') || 'all'}
-                >
-                    <option value="all">TODAS EMPRESAS</option>
-                    {companies.map(c => (
-                        <option key={c.id} value={c.id}>{c.name.toUpperCase()}</option>
-                    ))}
-                </select>
+        <div className="flex flex-wrap items-center gap-6 px-6 py-2 bg-transparent">
+            {/* Business Unit Selector */}
+            <div className="flex flex-col gap-1.5 transition-all duration-300 group">
+                <Label className="text-[9px] font-black uppercase text-slate-500 tracking-[0.2em] flex items-center gap-1.5">
+                    <div className="w-1 h-1 rounded-full bg-brand-orange" />
+                    Organização
+                </Label>
+                <div className="relative">
+                    <select
+                        className="appearance-none bg-transparent text-xs font-black text-white uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
+                        onChange={(e) => handleFilterChange('companyId', e.target.value)}
+                        value={searchParams.get('companyId') || 'all'}
+                    >
+                        <option value="all" className="bg-[#0A0F1C] text-white">Todas as Unidades</option>
+                        {companies.map(c => (
+                            <option key={c.id} value={c.id} className="bg-[#0A0F1C] text-white">{c.name}</option>
+                        ))}
+                    </select>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </div>
+                </div>
             </div>
 
-            <div className="w-[1px] bg-slate-200 dark:bg-slate-800" />
+            <div className="w-[1px] h-8 bg-white/5 self-center" />
 
-            <div className="flex flex-col gap-1">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Loja / Unidade</Label>
-                <select
-                    className="bg-transparent text-sm font-bold text-slate-900 dark:text-white outline-none cursor-pointer pr-4"
-                    onChange={(e) => handleFilterChange('storeId', e.target.value)}
-                    value={searchParams.get('storeId') || 'all'}
-                >
-                    <option value="all">TODAS LOJAS</option>
-                    {stores.map(s => (
-                        <option key={s.id} value={s.id}>{s.name.toUpperCase()}</option>
-                    ))}
-                </select>
+            {/* Store/Branch Selector */}
+            <div className="flex flex-col gap-1.5 transition-all duration-300 group">
+                <Label className="text-[9px] font-black uppercase text-slate-500 tracking-[0.2em] flex items-center gap-1.5">
+                    <div className="w-1 h-1 rounded-full bg-brand-orange/50" />
+                    Filial Operacional
+                </Label>
+                <div className="relative">
+                    <select
+                        className="appearance-none bg-transparent text-xs font-black text-white uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
+                        onChange={(e) => handleFilterChange('storeId', e.target.value)}
+                        value={searchParams.get('storeId') || 'all'}
+                    >
+                        <option value="all" className="bg-[#0A0F1C] text-white">Unidade Geral</option>
+                        {stores.map(s => (
+                            <option key={s.id} value={s.id} className="bg-[#0A0F1C] text-white">{s.name}</option>
+                        ))}
+                    </select>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </div>
+                </div>
             </div>
         </div>
     );

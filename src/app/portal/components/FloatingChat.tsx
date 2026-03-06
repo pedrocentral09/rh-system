@@ -47,12 +47,12 @@ export function FloatingChat() {
 
     const loadTickets = async () => {
         const res = await getSupportTickets();
-        if (res.success) setTickets(res.data);
+        if (res.success) setTickets(res.data || []);
     };
 
     const loadMessages = async (id: string) => {
         const res = await getTicketMessages(id);
-        if (res.success) setMessages(res.data);
+        if (res.success) setMessages(res.data || []);
     };
 
     const handleCreateTicket = async () => {

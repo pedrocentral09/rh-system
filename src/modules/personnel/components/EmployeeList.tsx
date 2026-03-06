@@ -15,6 +15,7 @@ import { MobileEmployeeCard } from './MobileEmployeeCard';
 import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 /*
 Vacation Improvements:
@@ -196,221 +197,208 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
 
 
     return (
-        <>
-            <Card className="shadow-sm border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardHeader className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 p-4 sm:p-6 flex flex-col space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-lg sm:text-xl text-slate-800 dark:text-slate-100">Colaboradores</CardTitle>
-                            <CardDescription className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Gerencie o quadro de funcionários.</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <ExportButton
-                                data={filteredEmployees}
-                                filename="funcionarios"
-                                onExportExcel={handleExportExcel}
-                                onExportPDF={handleExportPDF}
-                            />
-                            <div className="flex space-x-2 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
-                                <button
-                                    onClick={() => setActiveTab('active')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${activeTab === 'active'
-                                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    Ativos
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('inactive')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${activeTab === 'inactive'
-                                        ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    Inativos
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('approval')}
-                                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all relative ${activeTab === 'approval'
-                                        ? 'bg-white dark:bg-slate-600 text-orange-600 dark:text-orange-400 shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    Aprovação
-                                    {employees.some(e => e.status === 'PENDING_APPROVAL') && (
-                                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-orange-500 rounded-full border border-white dark:border-slate-800" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Header / Stats Summary or Tabs */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Quadro de <span className="text-brand-orange">Colaboradores</span></h2>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Gestão Estratégica de Capital Humano</p>
+                </div>
 
-                <div className="p-4 bg-slate-50/50 dark:bg-slate-800/50 space-y-3 border-b border-slate-100 dark:border-slate-700">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <Input
-                            placeholder="🔍 Buscar..."
+                <div className="flex flex-wrap items-center gap-4">
+                    <ExportButton
+                        data={filteredEmployees}
+                        filename="funcionarios"
+                        onExportExcel={handleExportExcel}
+                        onExportPDF={handleExportPDF}
+                    />
+
+                    <div className="bg-[#0A0F1C] border border-white/5 p-1 rounded-2xl flex items-center gap-1">
+                        {[
+                            { id: 'active', label: 'Ativos', color: 'brand-orange', count: employees.filter(e => e.status === 'ACTIVE').length },
+                            { id: 'approval', label: 'Pendentes', color: 'amber-500', count: employees.filter(e => e.status === 'PENDING_APPROVAL' || e.status === 'WAITING_ONBOARDING').length },
+                            { id: 'inactive', label: 'Egressos', color: 'slate-500', count: employees.filter(e => e.status === 'TERMINATED' || e.status === 'INACTIVE').length }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative ${activeTab === tab.id
+                                    ? 'bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]'
+                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                                    }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    {tab.label}
+                                    <span className={`px-1.5 py-0.5 rounded-md bg-${tab.color}/20 text-white/80 text-[8px]`}>{tab.count}</span>
+                                </span>
+                                {activeTab === tab.id && (
+                                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-2 right-2 h-0.5 bg-brand-orange rounded-full" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Premium Filter Bar */}
+            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="lg:col-span-2 relative group">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-brand-orange transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        </div>
+                        <input
+                            placeholder="PESQUISAR POR NOME OU CPF..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="flex-1 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm h-9 text-slate-900 dark:text-slate-100"
+                            className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-brand-orange/30 focus:bg-white/10 transition-all"
                         />
-                        {/* Filters could be hidden in a collapsible on mobile to save space, keeping simple for now */}
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="relative">
                         <select
-                            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-md px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
                             value={filterStore}
                             onChange={e => setFilterStore(e.target.value)}
                         >
-                            <option value="">Lojas: Todas</option>
-                            {uniqueStores.map((s: any) => <option key={s} value={s}>{s}</option>)}
+                            <option value="" className="bg-[#0A0F1C]">Todas as Lojas</option>
+                            {uniqueStores.map((s: any) => <option key={s} value={s} className="bg-[#0A0F1C]">{s}</option>)}
                         </select>
+                    </div>
 
+                    <div className="relative">
                         <select
-                            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-md px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
                             value={filterCompany}
                             onChange={e => setFilterCompany(e.target.value)}
                         >
-                            <option value="">Empresas: Todas</option>
-                            {uniqueCompanies.map((c: any) => <option key={c} value={c}>{c}</option>)}
+                            <option value="" className="bg-[#0A0F1C]">Empresas: Geral</option>
+                            {uniqueCompanies.map((c: any) => <option key={c} value={c} className="bg-[#0A0F1C]">{c}</option>)}
                         </select>
+                    </div>
 
-                        <select
-                            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-md px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 w-full"
-                            value={filterSector}
-                            onChange={e => setFilterSector(e.target.value)}
-                        >
-                            <option value="">Setores: Todos</option>
-                            {uniqueSectors.map((s: any) => <option key={s} value={s}>{s}</option>)}
-                        </select>
-
-                        {(filterStore || filterCompany || filterSector || searchTerm) && (
+                    <div className="relative">
+                        {(filterStore || filterCompany || filterSector || searchTerm) ? (
                             <button
                                 onClick={() => { setFilterStore(''); setFilterCompany(''); setFilterSector(''); setSearchTerm(''); }}
-                                className="text-xs text-red-500 hover:text-red-700 font-medium text-center sm:text-left flex items-center justify-center sm:justify-start"
+                                className="w-full h-full bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-300"
                             >
-                                🗑️ Limpar
+                                Limpar Filtros
                             </button>
+                        ) : (
+                            <select
+                                className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
+                                value={filterSector}
+                                onChange={e => setFilterSector(e.target.value)}
+                            >
+                                <option value="" className="bg-[#0A0F1C]">Setores: Todos</option>
+                                {uniqueSectors.map((s: any) => <option key={s} value={s} className="bg-[#0A0F1C]">{s}</option>)}
+                            </select>
                         )}
                     </div>
                 </div>
+            </div>
 
-                {error && (
-                    <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 m-4">
-                        <p className="font-bold">Erro ao carregar colaboradores:</p>
-                        <p>{error}</p>
+            {/* List Containers */}
+            <div className="relative min-h-[400px]">
+                {/* Mobile View */}
+                <div className="lg:hidden space-y-4">
+                    {filteredEmployees.map(emp => (
+                        <MobileEmployeeCard
+                            key={emp.id}
+                            employee={emp}
+                            onClick={() => setSelectedEmployee(emp)}
+                            onEdit={(e) => { e.stopPropagation(); setEditingEmployee(emp); }}
+                            onTransfer={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }}
+                            onTimeTracking={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }}
+                            onVacation={(e) => { e.stopPropagation(); setVacationEmployee(emp); }}
+                            translateStatus={translateStatus}
+                        />
+                    ))}
+                </div>
+
+                {/* Desktop View Table */}
+                <div className="hidden lg:block">
+                    <div className="grid grid-cols-12 px-8 mb-4">
+                        <div
+                            className="col-span-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] cursor-pointer hover:text-brand-orange transition-colors"
+                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        >
+                            Colaborador {sortOrder === 'asc' ? '↑' : '↓'}
+                        </div>
+                        <div className="col-span-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Alocação / Unidade</div>
+                        <div className="col-span-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Cargo Estratégico</div>
+                        <div className="col-span-1 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] text-center">Status</div>
+                        <div className="col-span-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] text-right">Controle</div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {sortedEmployees.map((emp, i) => (
+                            <motion.div
+                                key={emp.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.02 }}
+                                onClick={() => setSelectedEmployee(emp)}
+                                className={`grid grid-cols-12 items-center px-8 py-5 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-brand-orange/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group cursor-pointer relative overflow-hidden ${emp.isIncomplete ? 'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-amber-500/50' : ''}`}
+                            >
+                                <div className="col-span-4 flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative group-hover:border-brand-orange/40 transition-colors">
+                                        {emp.photoUrl ? (
+                                            <img src={emp.photoUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-sm font-black text-slate-500 group-hover:text-brand-orange transition-colors">{emp.name.charAt(0)}</span>
+                                        )}
+                                        {emp.isIncomplete && <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" />}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{emp.name}</h4>
+                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{emp.cpf || 'Documento não informado'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-3">
+                                    <p className="text-[11px] font-black text-slate-300 uppercase tracking-tighter">{emp.contract?.store?.name || 'Não alocado'}</p>
+                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">{emp.contract?.sectorDef?.name || emp.department || 'Setor geral'}</p>
+                                </div>
+
+                                <div className="col-span-2">
+                                    <p className="text-[11px] font-black text-brand-orange uppercase tracking-tighter">{emp.jobTitle || emp.jobRole?.name || 'Posto indefinido'}</p>
+                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">Desde {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '--/--/--'}</p>
+                                </div>
+
+                                <div className="col-span-1 flex justify-center">
+                                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.1em] border ${emp.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                        emp.status === 'PENDING_APPROVAL' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                            emp.status === 'WAITING_ONBOARDING' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
+                                                'bg-slate-500/10 text-slate-500 border-white/5'
+                                        }`}>
+                                        {translateStatus(emp.status)}
+                                    </span>
+                                </div>
+
+                                <div className="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                                    <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Editar">✏️</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Transferir">🚚</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Ponto">⏰</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-sky-500 hover:text-white transition-all shadow-lg" title="Férias">🏖️</button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                {sortedEmployees.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-600">
+                        <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-20"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum registro localizado</p>
                     </div>
                 )}
+            </div>
 
-                <CardContent className="p-0">
-                    {/* Mobile/Tablet View (Cards) - Now visible up to 1024px (lg) */}
-                    <div className="block lg:hidden p-4 bg-slate-50 dark:bg-slate-900 min-h-[300px]">
-                        {filteredEmployees.map(emp => (
-                            <MobileEmployeeCard
-                                key={emp.id}
-                                employee={emp}
-                                onClick={() => setSelectedEmployee(emp)}
-                                onEdit={(e) => { e.stopPropagation(); setEditingEmployee(emp); }}
-                                onTransfer={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }}
-                                onTimeTracking={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }}
-                                onVacation={(e) => { e.stopPropagation(); setVacationEmployee(emp); }}
-                                translateStatus={translateStatus}
-                            />
-                        ))}
-                        {filteredEmployees.length === 0 && (
-                            <div className="text-center py-8 text-slate-400 text-sm">Nenhum funcionário encontrado.</div>
-                        )}
-                    </div>
-
-                    {/* Desktop View (Table) - Visible only on Large screens (>=1024px) */}
-                    <div className="hidden lg:block overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead className="bg-slate-50 dark:bg-slate-800">
-                                <tr>
-                                    <th
-                                        className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
-                                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                    >
-                                        Nome {sortOrder === 'asc' ? '↑' : '↓'}
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Loja / Setor</th>
-                                    <th className="hidden xl:table-cell px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Cargo / Admissão</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                                    <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
-                                {sortedEmployees.map((emp) => (
-                                    <tr key={emp.id} className={`transition-colors group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${emp.isIncomplete ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`} onClick={() => setSelectedEmployee(emp)}>
-                                        <td className="px-4 py-2 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                {emp.photoUrl ? (
-                                                    <img src={emp.photoUrl} alt="" className="w-8 h-8 rounded-full mr-3 object-cover border border-slate-200 dark:border-slate-600" />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mr-3 text-xs font-bold text-slate-500 dark:text-slate-300">
-                                                        {emp.name.charAt(0)}
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-2">
-                                                        {emp.name}
-                                                        {emp.isIncomplete && (
-                                                            <span className="bg-amber-100 text-amber-700 text-[9px] px-1.5 py-0.5 rounded border border-amber-200" title="Cadastro parcial importado de planilha.">
-                                                                Pendente
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">CPF: {emp.cpf || 'Não informado'}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-2 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{emp.contract?.store?.name || '-'}</span>
-                                                <span className="text-[10px] text-slate-400 dark:text-slate-500">{emp.contract?.sectorDef?.name || emp.department || '-'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="hidden xl:table-cell px-4 py-2 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs text-slate-600 dark:text-slate-400">{emp.jobTitle || emp.jobRole?.name || '-'}</span>
-                                                <span className="text-[10px] text-slate-400 dark:text-slate-500">{emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '-'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-center">
-                                            <span className={`px-2 py-0.5 inline-flex text-[10px] font-bold uppercase rounded-full 
-                          ${emp.status === 'ACTIVE' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800' :
-                                                    emp.status === 'PENDING_APPROVAL' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-100 dark:border-orange-800' :
-                                                        emp.status === 'WAITING_ONBOARDING' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800' :
-                                                            'bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-600'}`}>
-                                                {translateStatus(emp.status)}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-right">
-                                            <div className="flex justify-end space-x-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }}>✏️</Button>
-                                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }}>🚚</Button>
-                                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }}>⏰</Button>
-                                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-sky-400 hover:text-sky-600 dark:hover:text-sky-400" onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); }}>🏖️</Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {sortedEmployees.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500 flex flex-col items-center justify-center">
-                                            <span className="text-4xl mb-2">🔍</span>
-                                            {searchTerm ? 'Nenhum funcionário encontrado para sua busca.' : 'Nenhum funcionário cadastrado.'}
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
-
+            {/* Modals */}
             <EmployeeDetailsModal
                 isOpen={!!selectedEmployee}
                 onClose={() => setSelectedEmployee(null)}
@@ -458,6 +446,6 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                     employeeName={vacationEmployee?.name}
                 />
             )}
-        </>
+        </div>
     );
 }

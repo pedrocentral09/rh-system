@@ -70,13 +70,13 @@ const Tabs = React.forwardRef<
     if (tabs && tabs.length > 0) {
         return (
             <TabsRoot ref={ref} className={className} defaultValue={tabs[0]?.id} {...props}>
-                <div className="flex justify-start sm:justify-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2 overflow-x-auto no-scrollbar scroll-smooth">
-                    <TabsList className="inline-flex h-auto w-auto justify-start sm:justify-center p-1 bg-transparent">
+                <div className="flex justify-start pb-4 overflow-x-auto scroll-smooth no-scrollbar">
+                    <TabsList className="inline-flex h-12 w-auto justify-start p-1.5 bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl">
                         {tabs.map(tab => (
                             <TabsTrigger
                                 key={tab.id}
                                 value={tab.id}
-                                className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-2 transition-all whitespace-nowrap"
+                                className="data-[state=active]:bg-brand-orange data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(255,102,0,0.3)] text-slate-500 rounded-xl px-5 py-2 transition-all whitespace-nowrap text-[10px] font-black uppercase tracking-widest leading-none"
                             >
                                 {tab.label}
                             </TabsTrigger>
@@ -88,9 +88,9 @@ const Tabs = React.forwardRef<
                         key={tab.id}
                         value={tab.id}
                         forceMount
-                        className="mt-4 focus-visible:ring-0 outline-none data-[state=inactive]:hidden"
+                        className="mt-6 focus-visible:ring-0 outline-none data-[state=inactive]:hidden animate-in fade-in slide-in-from-bottom-2 duration-500"
                     >
-                        <div className={cn("mx-auto w-full", fullContent ? "max-w-none" : "max-w-full sm:max-w-3xl")}>
+                        <div className={cn("mx-auto w-full", fullContent ? "max-w-none" : "max-w-full")}>
                             {tab.content}
                         </div>
                     </TabsContent>

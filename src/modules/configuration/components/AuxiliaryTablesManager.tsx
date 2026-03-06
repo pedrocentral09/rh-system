@@ -24,6 +24,9 @@ interface Item {
     };
 }
 
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+
 export function AuxiliaryTablesManager() {
     const [activeTab, setActiveTab] = useState<TableType>('roles');
     const [items, setItems] = useState<Item[]>([]);
@@ -96,168 +99,190 @@ export function AuxiliaryTablesManager() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex space-x-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-lg w-fit">
-                <button
-                    onClick={() => setActiveTab('roles')}
-                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-tight ${activeTab === 'roles'
-                        ? 'bg-white dark:bg-slate-800 text-brand-blue dark:text-blue-400 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
-                >
-                    💼 Cargos
-                </button>
-                <button
-                    onClick={() => setActiveTab('sectors')}
-                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-tight ${activeTab === 'sectors'
-                        ? 'bg-white dark:bg-slate-800 text-brand-blue dark:text-blue-400 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
-                >
-                    🏢 Setores
-                </button>
-                <button
-                    onClick={() => setActiveTab('reasons')}
-                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-tight ${activeTab === 'reasons'
-                        ? 'bg-white dark:bg-slate-800 text-brand-blue dark:text-blue-400 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
-                >
-                    🚪 Motivos de Desligamento
-                </button>
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Custom Tabs */}
+            <div className="flex flex-wrap gap-2 p-1.5 bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-2xl w-fit">
+                {[
+                    { id: 'roles', label: 'Cargos', icon: '💼' },
+                    { id: 'sectors', label: 'Setores', icon: '🏢' },
+                    { id: 'reasons', label: 'Motivos de Desligamento', icon: '🚪' }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as TableType)}
+                        className={`relative px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === tab.id
+                            ? 'bg-brand-orange text-white shadow-[0_0_20px_rgba(255,102,0,0.3)]'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                            }`}
+                    >
+                        <span>{tab.icon}</span>
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Form Section */}
-                <Card className="lg:col-span-1 border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
-                    <CardHeader>
-                        <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
-                            {isEditing ? '✨ Editar Item' : '➕ Novo Item'}
-                        </CardTitle>
-                        <CardDescription className="text-slate-500 dark:text-slate-400">
-                            {activeTab === 'roles' && 'Adicione um novo cargo ao sistema.'}
-                            {activeTab === 'sectors' && 'Adicione um novo setor organizacional.'}
-                            {activeTab === 'reasons' && 'Defina motivos para desligamentos.'}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Nome / Título *</label>
-                            <Input
-                                value={currentItem.name || ''}
-                                onChange={(e) => setCurrentItem({ ...currentItem, name: e.target.value })}
-                                placeholder="Ex: Operador de Caixa"
-                            />
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Form Column */}
+                <div className="lg:col-span-4">
+                    <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden sticky top-8">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
 
-                        {activeTab === 'roles' && (
-                            <>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">CBO (Opcional)</label>
+                        <div className="relative space-y-6">
+                            <div>
+                                <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">
+                                    {isEditing ? 'Atualizar' : 'Registrar'} <span className="text-indigo-400">Entidade</span>
+                                </h3>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Configuração de Tabelas Auxiliares</p>
+                            </div>
+
+                            <div className="space-y-4 pt-4">
+                                <div className="space-y-2 group">
+                                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Identificação / Título</label>
                                     <Input
-                                        value={currentItem.cbo || ''}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, cbo: e.target.value })}
-                                        placeholder="Ex: 4211-10"
+                                        className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white focus:border-indigo-500/30 transition-all"
+                                        value={currentItem.name || ''}
+                                        onChange={(e) => setCurrentItem({ ...currentItem, name: e.target.value })}
+                                        placeholder="Ex: Gerente Operacional"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Descrição</label>
-                                    <textarea
-                                        className="flex min-h-[80px] w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                                        value={currentItem.description || ''}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, description: e.target.value })}
-                                        placeholder="Breve descrição das responsabilidades..."
-                                    />
-                                </div>
-                            </>
-                        )}
 
-                        <div className="flex gap-2 pt-2">
-                            <Button
-                                onClick={handleSave}
-                                disabled={loading}
-                                className="flex-1 bg-brand-blue hover:bg-blue-800 text-white font-bold"
-                            >
-                                {isEditing ? 'Salvar Alterações' : 'Criar Registro'}
-                            </Button>
-                            {isEditing && (
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setIsEditing(false);
-                                        setCurrentItem({});
-                                    }}
-                                    className="text-slate-500"
-                                >
-                                    Cancelar
-                                </Button>
-                            )}
+                                {activeTab === 'roles' && (
+                                    <>
+                                        <div className="space-y-2 group">
+                                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Código CBO</label>
+                                            <Input
+                                                className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white focus:border-indigo-500/30 transition-all font-mono"
+                                                value={currentItem.cbo || ''}
+                                                onChange={(e) => setCurrentItem({ ...currentItem, cbo: e.target.value })}
+                                                placeholder="0000-00"
+                                            />
+                                        </div>
+                                        <div className="space-y-2 group">
+                                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Descrição de Funções</label>
+                                            <textarea
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:border-indigo-500/30 transition-all min-h-[120px] outline-none"
+                                                value={currentItem.description || ''}
+                                                onChange={(e) => setCurrentItem({ ...currentItem, description: e.target.value })}
+                                                placeholder="Detalhamento das responsabilidades..."
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="flex flex-col gap-2 pt-4">
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={loading}
+                                        className="h-12 rounded-2xl bg-indigo-500 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] flex items-center justify-center gap-2 group"
+                                    >
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>⚡</span>}
+                                        {isEditing ? 'Confirmar Alterações' : 'Adicionar Novo Registro'}
+                                    </button>
+
+                                    {isEditing && (
+                                        <button
+                                            onClick={() => {
+                                                setIsEditing(false);
+                                                setCurrentItem({});
+                                            }}
+                                            className="h-10 text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                                        >
+                                            Descartar Edição
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* List Section */}
-                <Card className="lg:col-span-2 border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-100/80 dark:bg-slate-900 text-[11px] text-slate-700 dark:text-slate-300 uppercase border-b border-slate-200 dark:border-slate-700 font-bold tracking-wider">
-                                <tr>
-                                    <th className="px-6 py-4">Nome</th>
-                                    {activeTab === 'roles' && <th className="px-6 py-4">CBO</th>}
-                                    <th className="px-6 py-4">Uso</th>
-                                    <th className="px-6 py-4 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {loading && items.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={10} className="px-6 py-12 text-center text-slate-400 animate-pulse">Carregando dados...</td>
-                                    </tr>
-                                ) : items.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={10} className="px-6 py-12 text-center text-slate-400 italic">Nenhum registro encontrado.</td>
-                                    </tr>
-                                ) : items.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-                                            {item.name}
-                                            {item.description && <p className="text-[10px] font-normal text-slate-500 mt-0.5 max-w-xs truncate">{item.description}</p>}
-                                        </td>
-                                        {activeTab === 'roles' && (
-                                            <td className="px-6 py-4 font-mono text-xs text-slate-500">{item.cbo || '-'}</td>
-                                        )}
-                                        <td className="px-6 py-4">
-                                            <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 dark:border-slate-600">
-                                                {item._count?.employees || item._count?.contracts || 0} vínculos
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right space-x-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-brand-blue"
-                                                onClick={() => {
-                                                    setIsEditing(true);
-                                                    setCurrentItem(item);
-                                                }}
-                                            >
-                                                ✏️
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-red-500"
-                                                onClick={() => handleDelete(item.id, item.name)}
-                                            >
-                                                🗑️
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
-                </Card>
+                </div>
+
+                {/* List Column */}
+                <div className="lg:col-span-8">
+                    <div className="bg-[#0A0F1C]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                                <div className="col-span-6">Dados do Registro</div>
+                                {activeTab === 'roles' && <div className="col-span-2">CBO</div>}
+                                <div className={`${activeTab === 'roles' ? 'col-span-2' : 'col-span-4'} text-center`}>Impacto</div>
+                                <div className="col-span-2 text-right">Ações</div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <AnimatePresence mode="popLayout">
+                                    {items.map((item, i) => (
+                                        <motion.div
+                                            key={item.id}
+                                            initial={{ opacity: 0, scale: 0.98 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ delay: i * 0.02 }}
+                                            className="grid grid-cols-12 items-center px-8 py-5 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-indigo-500/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group"
+                                        >
+                                            <div className="col-span-6 min-w-0">
+                                                <h4 className="text-[14px] font-black text-white uppercase tracking-tight group-hover:text-indigo-400 transition-colors truncate">
+                                                    {item.name}
+                                                </h4>
+                                                {item.description && (
+                                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest truncate mt-0.5">
+                                                        {item.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {activeTab === 'roles' && (
+                                                <div className="col-span-2">
+                                                    <span className="text-[11px] font-black text-slate-500 font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                                                        {item.cbo || '---'}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            <div className={`${activeTab === 'roles' ? 'col-span-2' : 'col-span-4'} text-center`}>
+                                                <div className="inline-flex items-center gap-2 bg-indigo-500/5 px-3 py-1 rounded-full border border-indigo-500/10">
+                                                    <span className="text-[10px] font-black text-indigo-400">{item._count?.employees || item._count?.contracts || 0}</span>
+                                                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">Vinculados</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="col-span-2 flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setIsEditing(true);
+                                                        setCurrentItem(item);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-indigo-500 hover:text-white transition-all shadow-lg text-indigo-400"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item.id, item.name)}
+                                                    className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg text-red-500/50 hover:text-white"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+
+                                {loading && items.length === 0 && (
+                                    <div className="space-y-3">
+                                        {[1, 2, 3, 4].map(i => (
+                                            <div key={i} className="h-20 bg-white/5 rounded-[1.5rem] animate-pulse" />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {!loading && items.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
+                                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.3em]">Nenhum registro localizado</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

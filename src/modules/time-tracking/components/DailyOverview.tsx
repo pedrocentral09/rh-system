@@ -9,6 +9,7 @@ import { TimeAdjustmentModal } from './TimeAdjustmentModal';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function DailyOverview() {
     const [mounted, setMounted] = useState(false);
@@ -52,123 +53,139 @@ export function DailyOverview() {
     if (!mounted) return null;
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-4">
-                    <div>
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block">Data de Visualização</label>
-                        <Input
-                            type="date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                            className="w-40 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                        />
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Premium Header/Filter Control */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#0A0F1C]/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+
+                <div className="flex flex-col md:flex-row items-center gap-8 z-10 w-full md:w-auto">
+                    <div className="space-y-2 group w-full md:w-auto">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Período de Referência</label>
+                        <div className="relative">
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={e => setDate(e.target.value)}
+                                className="h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all shadow-inner w-full md:w-48 appearance-none"
+                            />
+                        </div>
                     </div>
-                    <div className="pt-5 flex gap-2">
-                        <Button variant="ghost" onClick={loadData} disabled={loading} className="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
-                            {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-                        </Button>
-                    </div>
+                    <button
+                        onClick={loadData}
+                        disabled={loading}
+                        className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-brand-orange hover:bg-white/10 transition-all shadow-lg active:scale-95 disabled:opacity-50 mt-auto md:mt-6"
+                    >
+                        {loading ? <Loader2 className="animate-spin h-5 w-5 text-brand-orange" /> : <RefreshCw className="h-5 w-5" />}
+                    </button>
                 </div>
 
-                <div className="flex gap-2 text-[10px] uppercase font-bold">
-                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded border border-green-200">OK</span>
-                    <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded border border-yellow-200">Atraso</span>
-                    <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded border border-red-200">Falta</span>
-                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded border border-purple-200">Extra</span>
-                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded border border-amber-200">Ímpar</span>
+                <div className="flex flex-wrap items-center gap-3 z-10">
+                    {[
+                        { label: 'OK', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+                        { label: 'Atraso', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+                        { label: 'Falta', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+                        { label: 'Extra', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+                        { label: 'Ímpar', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' }
+                    ].map(st => (
+                        <span key={st.label} className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${st.color}`}>
+                            {st.label}
+                        </span>
+                    ))}
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
-                    <thead className="bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium border-b border-slate-200 dark:border-slate-700">
-                        <tr>
-                            <th className="px-4 py-3 whitespace-nowrap">Funcionário</th>
-                            <th className="px-4 py-3">Depto</th>
-                            <th className="px-4 py-3">Turno</th>
-                            <th className="px-2 py-3 text-center text-[10px] uppercase">Entrada</th>
-                            <th className="px-2 py-3 text-center text-[10px] uppercase">S.Alm</th>
-                            <th className="px-2 py-3 text-center text-[10px] uppercase">V.Alm</th>
-                            <th className="px-2 py-3 text-center text-[10px] uppercase">Saída</th>
-                            <th className="px-4 py-3 text-center">Saldo</th>
-                            <th className="px-4 py-3 text-center">Status</th>
-                            <th className="px-4 py-3 text-center w-24">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {data.length === 0 && !loading && (
-                            <tr>
-                                <td colSpan={10} className="text-center py-12 text-slate-400">Nenhum dado encontrado para esta data.</td>
-                            </tr>
-                        )}
-                        {data.map((item: any) => (
-                            <tr key={item.employee.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 group transition-colors">
-                                <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">{item.employee.name}</td>
-                                <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">{item.employee.department}</td>
-                                <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">{item.shiftName || 'Folga'}</td>
-                                <td className="px-2 py-3 text-center">
-                                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200 dark:border-slate-600">
-                                        {item.punches[0] || '--:--'}
-                                    </span>
-                                </td>
-                                <td className="px-2 py-3 text-center">
-                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-mono">
-                                        {item.punches[1] || '--:--'}
-                                    </span>
-                                </td>
-                                <td className="px-2 py-3 text-center">
-                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-mono">
-                                        {item.punches[2] || '--:--'}
-                                    </span>
-                                </td>
-                                <td className="px-2 py-3 text-center relative">
-                                    <span className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200 dark:border-slate-600">
-                                        {item.punches[3] || '--:--'}
-                                    </span>
+            {/* Premium Data List */}
+            <div className="space-y-4">
+                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                    <div className="col-span-3 text-left">Colaborador / Departamento</div>
+                    <div className="col-span-2 text-center">Jornada</div>
+                    <div className="col-span-3 text-center">Registros de Ponto</div>
+                    <div className="col-span-1 text-center">Saldo</div>
+                    <div className="col-span-1 text-center">Status</div>
+                    <div className="col-span-2 text-right">Controle</div>
+                </div>
+
+                <div className="space-y-3">
+                    {data.length === 0 && !loading && (
+                        <div className="flex flex-col items-center justify-center py-24 text-slate-700 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
+                            <Scale className="h-12 w-12 mb-6 opacity-10" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-center">Nenhum evento localizado para este ciclo</p>
+                        </div>
+                    )}
+
+                    {data.map((item: any, i: number) => (
+                        <motion.div
+                            key={item.employee.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.02 }}
+                            className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-brand-orange/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                        >
+                            <div className="col-span-3 flex flex-col gap-0.5">
+                                <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{item.employee.name}</h4>
+                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{item.employee.department}</span>
+                            </div>
+
+                            <div className="col-span-2 text-center">
+                                <span className="bg-white/5 text-slate-500 px-2 py-1 rounded text-[8px] font-black uppercase tracking-tighter border border-white/5">{item.shiftName || 'FOLGA'}</span>
+                            </div>
+
+                            <div className="col-span-3">
+                                <div className="flex items-center justify-center gap-3">
+                                    {item.punches.slice(0, 4).map((p: string, idx: number) => (
+                                        <div key={idx} className="flex flex-col items-center gap-1">
+                                            <span className="text-[8px] font-black text-slate-600 uppercase tracking-tighter">{['ENT', 'ALM', 'VOL', 'SAI'][idx]}</span>
+                                            <span className={`text-[11px] font-mono font-black ${p ? 'text-white' : 'text-slate-700'}`}>
+                                                {p || '--:--'}
+                                            </span>
+                                        </div>
+                                    ))}
                                     {item.punches.length > 4 && (
-                                        <span className="absolute top-1 right-0 text-[9px] flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold border border-red-200" title={`Mais batidas: ${item.punches.slice(4).join(', ')}`}>
-                                            +
-                                        </span>
+                                        <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-[10px] font-black text-red-400" title={`Multiplus: ${item.punches.slice(4).join(', ')}`}>
+                                            +{item.punches.length - 4}
+                                        </div>
                                     )}
-                                </td>
-                                <td className={`px-4 py-3 text-center font-mono text-xs ${item.balanceMinutes < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                </div>
+                            </div>
+
+                            <div className="col-span-1 text-center">
+                                <div className={`inline-block px-3 py-1.5 rounded-xl border font-mono text-[11px] font-black ${item.balanceMinutes < 0 ? 'bg-red-500/5 text-red-500 border-red-500/10' : 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10'}`}>
                                     {formatMinutes(item.balanceMinutes)}
-                                </td>
-                                <td className="px-4 py-3 text-center">
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${item.statusColor}`}>
-                                        {item.status === 'MISSING' ? 'ÍMPAR' : item.status}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                        {item.balanceMinutes < -5 && (
-                                            <Link
-                                                href={`/dashboard/disciplinary?action=create&empId=${item.employee.id}&date=${date}&reason=Atraso de ${Math.abs(item.balanceMinutes)} min&desc=O colaborador apresentou um atraso de ${Math.abs(item.balanceMinutes)} minutos no dia ${new Date(date + 'T12:00:00').toLocaleDateString('pt-BR')}.`}
-                                                className="bg-red-50 hover:bg-red-100 text-red-600 p-1.5 rounded-md border border-red-100 transition-colors"
-                                                title="Gerar Ato Disciplinar"
-                                            >
-                                                <Scale className="h-4 w-4" />
-                                            </Link>
-                                        )}
-                                        <button
-                                            onClick={() => setSelectedAdjustment({
-                                                empId: item.employee.id,
-                                                empName: item.employee.name,
-                                                date: date,
-                                                punches: item.punches
-                                            })}
-                                            className="bg-slate-50 hover:bg-slate-100 text-slate-600 p-1.5 rounded-md border border-slate-200 transition-colors"
-                                            title="Ajustar Ponto"
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+
+                            <div className="col-span-1 text-center">
+                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border ${item.statusColor}`}>
+                                    {item.status === 'MISSING' ? 'ÍMPAR' : item.status}
+                                </span>
+                            </div>
+
+                            <div className="col-span-2 flex justify-end gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                                {item.balanceMinutes < -5 && (
+                                    <Link
+                                        href={`/dashboard/disciplinary?action=create&empId=${item.employee.id}&date=${date}&reason=Atraso de ${Math.abs(item.balanceMinutes)} min&desc=O colaborador apresentou um atraso de ${Math.abs(item.balanceMinutes)} minutos no dia ${new Date(date + 'T12:00:00').toLocaleDateString('pt-BR')}.`}
+                                        className="w-10 h-10 rounded-xl bg-red-500/5 border border-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95"
+                                        title="Ato Disciplinar"
+                                    >
+                                        <Scale className="h-5 w-5" />
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => setSelectedAdjustment({
+                                        empId: item.employee.id,
+                                        empName: item.employee.name,
+                                        date: date,
+                                        punches: item.punches
+                                    })}
+                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
+                                    title="Ajustar Batida"
+                                >
+                                    <Pencil className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
             {selectedAdjustment && (

@@ -15,160 +15,127 @@ interface EventMuralProps {
 export function EventMural({ events }: EventMuralProps) {
     if (!events || events.length === 0) {
         return (
-            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-                <CardHeader>
-                    <CardTitle className="text-lg font-black uppercase tracking-tighter flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-orange-500" />
-                        Mural de Eventos
-                    </CardTitle>
-                    <CardDescription>Próximos acontecimentos na empresa.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-[300px] flex flex-col items-center justify-center text-slate-400">
-                    <Palmtree className="h-12 w-12 mb-2 opacity-20" />
-                    <p className="text-sm font-medium">Nenhum evento agendado para os próximos 30 dias.</p>
-                </CardContent>
-            </Card>
+            <div className="h-full flex flex-col p-8 bg-[#0A0F1C] border border-white/5 rounded-[2rem] items-center justify-center text-slate-600">
+                <Palmtree className="h-16 w-16 mb-4 opacity-10" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">Nenhum evento detectado <br /> para o próximo ciclo</p>
+            </div>
         );
     }
 
     return (
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 flex flex-col h-full">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle className="text-lg font-black uppercase tracking-tighter flex items-center gap-2 text-slate-900 dark:text-white">
-                            <Calendar className="h-5 w-5 text-orange-500" />
-                            Mural de Eventos
-                        </CardTitle>
-                        <CardDescription className="text-xs font-medium dark:text-slate-400">Cronograma dos próximos 30 dias</CardDescription>
+        <div className="flex flex-col h-full bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 overflow-hidden relative group">
+            {/* Ambient Background Light */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+            <div className="flex justify-between items-center mb-8 relative z-10">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
+                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Cronograma Geral</h3>
                     </div>
-                    <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">
-                        {events.length} Eventos
-                    </div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Mural de <span className="text-brand-orange">Eventos</span></h2>
                 </div>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                <div className="bg-brand-orange/10 text-brand-orange px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-brand-orange/20">
+                    {events.length} Ativos
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar relative z-10">
                 {events.map((event, index) => {
                     const date = parseSafeDate(event.date)!;
 
-                    let bgClass = 'bg-slate-50 dark:bg-slate-800/40';
+                    let bgClass = 'bg-white/5 border-white/5';
                     let icon = <Calendar className="h-4 w-4" />;
-                    let accentColor = 'text-slate-500';
+                    let accentColor = 'text-slate-400';
+                    let glowColor = 'hover:border-slate-500/30';
 
                     if (event.type === 'holiday') {
-                        bgClass = 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30';
-                        icon = <Palmtree className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
-                        accentColor = 'text-emerald-600 dark:text-emerald-400';
+                        bgClass = 'bg-emerald-500/5 border-emerald-500/10';
+                        icon = <Palmtree className="h-4 w-4 text-emerald-500" />;
+                        accentColor = 'text-emerald-400';
+                        glowColor = 'hover:border-emerald-500/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]';
                     } else if (event.type === 'vacation_start') {
-                        bgClass = 'bg-orange-50 dark:bg-orange-950/20 border-orange-100 dark:border-orange-900/30';
-                        icon = <PlaneTakeoff className="h-4 w-4 text-orange-600 dark:text-orange-400" />;
-                        accentColor = 'text-orange-600 dark:text-orange-400';
+                        bgClass = 'bg-orange-500/5 border-orange-500/10';
+                        icon = <PlaneTakeoff className="h-4 w-4 text-orange-500" />;
+                        accentColor = 'text-orange-400';
+                        glowColor = 'hover:border-orange-500/40 hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]';
                     } else if (event.type === 'vacation_end') {
-                        bgClass = 'bg-sky-50 dark:bg-sky-950/20 border-sky-100 dark:border-sky-900/30';
-                        icon = <PlaneLanding className="h-4 w-4 text-sky-600 dark:text-sky-400" />;
-                        accentColor = 'text-sky-600 dark:text-sky-400';
+                        bgClass = 'bg-sky-500/5 border-sky-500/10';
+                        icon = <PlaneLanding className="h-4 w-4 text-sky-500" />;
+                        accentColor = 'text-sky-400';
+                        glowColor = 'hover:border-sky-500/40 hover:shadow-[0_0_15px_rgba(14,165,233,0.1)]';
                     } else if (event.type === 'suspension_return') {
-                        bgClass = 'bg-pink-50 dark:bg-pink-950/20 border-pink-100 dark:border-pink-900/30';
-                        icon = <HistoryIcon className="h-4 w-4 text-pink-600 dark:text-pink-400" />;
-                        accentColor = 'text-pink-600 dark:text-pink-400';
-                    } else if (event.type === 'aso_expiration') {
-                        bgClass = 'bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30';
-                        icon = <Activity className="h-4 w-4 text-red-600 dark:text-red-400" />;
-                        accentColor = 'text-red-600 dark:text-red-400';
-                    } else if (event.type === 'registration_update') {
-                        bgClass = 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30';
-                        icon = <FileEdit className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />;
-                        accentColor = 'text-indigo-600 dark:text-indigo-400';
-                    } else if (event.type === 'medical_return') {
-                        bgClass = 'bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30';
-                        icon = <Stethoscope className="h-4 w-4 text-red-600 dark:text-red-400" />;
-                        accentColor = 'text-red-600 dark:text-red-400';
+                        bgClass = 'bg-pink-500/5 border-pink-500/10';
+                        icon = <HistoryIcon className="h-4 w-4 text-pink-500" />;
+                        accentColor = 'text-pink-400';
+                        glowColor = 'hover:border-pink-500/40 hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]';
+                    } else if (event.type === 'aso_expiration' || event.type === 'medical_return') {
+                        bgClass = 'bg-rose-500/5 border-rose-500/10';
+                        icon = <Activity className="h-4 w-4 text-rose-500" />;
+                        accentColor = 'text-rose-400';
+                        glowColor = 'hover:border-rose-500/40 hover:shadow-[0_0_15px_rgba(244,63,94,0.1)]';
                     }
 
                     const getEventLink = () => {
                         if (event.type === 'holiday' || !event.employeeId) return null;
-
-                        if (event.type === 'vacation_start' || event.type === 'vacation_end') {
-                            return `/dashboard/vacations?employeeId=${event.employeeId}`;
-                        }
-
-                        if (event.type === 'medical_return') {
-                            return `/dashboard/personnel?id=${event.employeeId}&tab=medical`;
-                        }
-
-                        if (event.type === 'aso_expiration') {
-                            return `/dashboard/personnel?id=${event.employeeId}&tab=health&mode=edit`;
-                        }
-
-                        if (event.type === 'registration_update') {
-                            return `/dashboard/personnel?id=${event.employeeId}&tab=personal&mode=edit`;
-                        }
-
-                        if (event.type === 'suspension_return') {
-                            return `/dashboard/personnel?id=${event.employeeId}&tab=history`;
-                        }
-
+                        if (event.type === 'vacation_start' || event.type === 'vacation_end') return `/dashboard/vacations?employeeId=${event.employeeId}`;
                         return `/dashboard/personnel?id=${event.employeeId}`;
                     };
 
                     const eventLink = getEventLink();
 
                     const content = (
-                        <div
-                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all hover:translate-x-1 ${bgClass} h-full w-full`}
-                        >
-                            <div className="flex flex-col items-center justify-center min-w-[40px] border-r dark:border-slate-700/50 pr-3">
-                                <span className={`text-[10px] font-black uppercase tracking-tighter ${accentColor}`}>
+                        <div className={`group/item relative flex items-center gap-4 p-4 rounded-3xl border transition-all duration-300 hover:scale-[1.02] ${bgClass} ${glowColor}`}>
+                            <div className="flex flex-col items-center justify-center min-w-[45px] border-r border-white/5 pr-4">
+                                <span className={`text-[9px] font-black uppercase tracking-tighter ${accentColor}`}>
                                     {format(date, 'MMM', { locale: ptBR })}
                                 </span>
-                                <span className="text-xl font-black text-slate-800 dark:text-white leading-none">
+                                <span className="text-2xl font-black text-white leading-none tracking-tighter">
                                     {format(date, 'dd')}
                                 </span>
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5">
+                                <div className="flex items-center gap-2 mb-2">
                                     {icon}
-                                    <span className={`text-[10px] font-black uppercase tracking-widest ${accentColor}`}>
+                                    <span className={`text-[10px] font-black uppercase tracking-[0.1em] ${accentColor}`}>
                                         {event.title}
                                     </span>
                                 </div>
 
                                 {event.employee ? (
                                     <div className="flex items-center gap-2">
-                                        <div className="h-6 w-6 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex-shrink-0 border border-white dark:border-slate-600 shadow-sm">
+                                        <div className="h-7 w-7 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0 shadow-lg relative group-hover/item:border-brand-orange/50 transition-colors">
                                             {event.photoUrl ? (
                                                 <img src={event.photoUrl} alt={event.employee} className="h-full w-full object-cover" />
                                             ) : (
-                                                <span className="text-[10px] font-bold h-full w-full flex items-center justify-center uppercase">
+                                                <span className="text-[10px] font-black h-full w-full flex items-center justify-center uppercase text-slate-400 group-hover/item:text-brand-orange transition-colors">
                                                     {event.employee.charAt(0)}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+                                        <p className="text-xs font-black text-slate-200 truncate uppercase tracking-tight group-hover/item:text-white transition-colors">
                                             {event.employee}
                                         </p>
                                     </div>
                                 ) : (
-                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                        Feriado Nacional
+                                    <p className="text-xs font-black text-slate-400 group-hover/item:text-white transition-colors uppercase tracking-tight">
+                                        Empresa Geral
                                     </p>
                                 )}
                             </div>
 
-                            {event.type === 'vacation_start' && (
-                                <div className="self-start">
-                                    <span className="bg-orange-600 h-1.5 w-1.5 rounded-full flex animate-pulse"></span>
-                                </div>
-                            )}
+                            <div className="text-white/10 group-hover/item:text-brand-orange transition-colors">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
+                            </div>
                         </div>
                     );
 
                     return (
                         <motion.div
                             key={`${event.type}-${event.date}-${index}`}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.05 }}
                         >
                             {eventLink ? (
@@ -181,7 +148,7 @@ export function EventMural({ events }: EventMuralProps) {
                         </motion.div>
                     );
                 })}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

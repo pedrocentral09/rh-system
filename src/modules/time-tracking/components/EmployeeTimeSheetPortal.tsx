@@ -19,7 +19,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import { TimeJustificationModal } from './TimeJustificationModal';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PortalProps {
     employeeId: string;
@@ -83,168 +83,191 @@ export function EmployeeTimeSheetPortal({ employeeId }: PortalProps) {
     };
 
     return (
-        <div className="space-y-10 pb-12">
-            {/* Header / Month Switcher */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="flex items-center gap-3 bg-white/[0.05] border border-white/10 rounded-[32px] p-2 w-full md:w-auto backdrop-blur-3xl shadow-xl">
-                    <Button variant="ghost" size="icon" onClick={prevMonth} className="rounded-2xl h-12 w-12 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-90">
+        <div className="space-y-12 pb-20 animate-in fade-in duration-700">
+            {/* Elite Sub-Header/Switcher */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
+                <div className="flex items-center gap-4 bg-[#0A0F1C]/60 border border-white/5 rounded-[2.5rem] p-2 pr-8 backdrop-blur-xl shadow-2xl overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full -ml-16 -mt-16 pointer-events-none" />
+                    <button
+                        onClick={prevMonth}
+                        className="h-14 w-14 rounded-[1.5rem] bg-white/5 border border-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center active:scale-90"
+                    >
                         <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <div className="flex-1 px-6 font-[1000] text-white text-sm text-center uppercase tracking-[0.2em] min-w-[180px]">
-                        {monthNames[month]} <span className="text-blue-400">{year}</span>
+                    </button>
+                    <div className="px-6 flex flex-col min-w-[200px]">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Competência Ativa</span>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight">
+                            {monthNames[month]} <span className="text-blue-500">{year}</span>
+                        </h2>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={nextMonth} className="rounded-2xl h-12 w-12 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-90">
+                    <button
+                        onClick={nextMonth}
+                        className="h-14 w-14 rounded-[1.5rem] bg-white/5 border border-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center active:scale-90"
+                    >
                         <ChevronRight className="h-6 w-6" />
-                    </Button>
+                    </button>
                 </div>
 
-                <div className="flex gap-4 w-full md:w-auto">
-                    <Card className="flex-1 md:flex-none border border-white/10 bg-white/[0.05] text-white backdrop-blur-3xl rounded-[32px] overflow-hidden group shadow-2xl">
-                        <div className="px-8 py-3.5 flex items-center gap-4">
-                            <div className="p-2.5 bg-brand-orange/20 rounded-xl group-hover:scale-110 transition-transform">
-                                <Clock className="h-4 w-4 text-brand-orange" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase text-slate-500 leading-none tracking-widest mb-1.5">Saldo Mensal</span>
-                                <span className="text-xl font-[1000] leading-tight tracking-tighter text-white">
-                                    {sheetData ? formatMinutes(sheetData.totalBalance) : '00:00'}
-                                </span>
+                <div className="flex items-center gap-6">
+                    {sheetData && (
+                        <div className="bg-[#0A0F1C]/60 border border-white/5 rounded-[2.5rem] p-6 px-10 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-brand-orange/5 blur-2xl rounded-full -mr-12 -mt-12 pointer-events-none" />
+                            <div className="flex items-center gap-5 relative z-10">
+                                <div className="w-12 h-12 rounded-2xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Clock className="h-6 w-6 text-brand-orange" />
+                                </div>
+                                <div>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] block mb-1">Saldo Liquidado</span>
+                                    <div className={`text-3xl font-black tracking-tighter leading-none ${sheetData.totalBalance >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+                                        {formatMinutes(sheetData.totalBalance)}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </Card>
-                    <Button variant="ghost" className="h-auto px-8 rounded-[32px] bg-white/[0.05] border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest transition-all backdrop-blur-md">
-                        <Printer className="h-5 w-5" />
-                    </Button>
+                    )}
+                    <button className="h-20 w-20 rounded-[2.5rem] bg-white/5 border border-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center shadow-2xl active:scale-95">
+                        <Printer className="h-6 w-6" />
+                    </button>
                 </div>
             </div>
 
-            {/* Timesheet List */}
+            {/* Daily Registry Grid */}
             <div className="space-y-4">
-                {loading ? (
-                    Array(8).fill(0).map((_, i) => (
-                        <div key={i} className="h-24 w-full rounded-[36px] bg-white/[0.02] border border-white/5 animate-pulse" />
-                    ))
-                ) : sheetData?.days.length === 0 ? (
-                    <div className="text-center py-24 bg-white/[0.02] rounded-[48px] border border-dashed border-white/10 backdrop-blur-3xl">
-                        <FileWarning className="h-14 w-14 text-white/5 mx-auto mb-6" />
-                        <p className="text-slate-500 font-[1000] text-xs uppercase tracking-[0.3em]">Nenhum registro</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                        {sheetData.days.map((day: any) => {
-                            const date = new Date(day.date);
-                            const isWeekend = date.getUTCDay() === 0 || date.getUTCDay() === 6;
-                            const hasProblem = day.status === 'ABSENT' || day.status === 'DELAY' || day.status === 'MISSING';
-                            const isToday = new Date().toISOString().split('T')[0] === new Date(day.date).toISOString().split('T')[0];
+                <AnimatePresence mode="popLayout">
+                    {loading ? (
+                        Array(6).fill(0).map((_, i) => (
+                            <div key={i} className="h-24 w-full rounded-[2.5rem] bg-white/5 border border-white/5 animate-pulse" />
+                        ))
+                    ) : sheetData?.days.length === 0 ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center py-32 bg-white/2 rounded-[3.5rem] border border-dashed border-white/10 backdrop-blur-3xl"
+                        >
+                            <FileWarning className="h-16 w-16 text-white/5 mx-auto mb-6" />
+                            <p className="text-slate-600 font-black text-[12px] uppercase tracking-[0.4em] italic">Vácuo de Registros Detectado</p>
+                        </motion.div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                            {sheetData.days.map((day: any, idx: number) => {
+                                const date = new Date(day.date);
+                                const isWeekend = date.getUTCDay() === 0 || date.getUTCDay() === 6;
+                                const hasProblem = day.status === 'ABSENT' || day.status === 'DELAY' || day.status === 'MISSING';
+                                const isToday = new Date().toISOString().split('T')[0] === new Date(day.date).toISOString().split('T')[0];
 
-                            return (
-                                <motion.div key={day.day} whileTap={{ scale: 0.99 }}>
-                                    <Card className={cn(
-                                        "border border-white/5 shadow-2xl overflow-hidden group rounded-[40px] transition-all backdrop-blur-3xl",
-                                        isToday ? "bg-white/[0.08] ring-2 ring-blue-500/30 border-blue-500/20" :
-                                            isWeekend ? "bg-white/[0.01] opacity-60" : "bg-white/[0.03] hover:bg-white/[0.05]"
-                                    )}>
-                                        <div className="flex flex-col sm:flex-row min-h-[100px]">
-                                            {/* Date Section */}
+                                return (
+                                    <motion.div
+                                        key={day.day}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: idx * 0.01 }}
+                                        whileHover={{ x: 5 }}
+                                        className="group"
+                                    >
+                                        <div className={cn(
+                                            "bg-[#0A0F1C]/80 border border-white/5 rounded-[2.5rem] p-2 transition-all duration-300 backdrop-blur-xl relative overflow-hidden flex flex-col md:flex-row shadow-xl",
+                                            isToday ? "border-blue-500/30 bg-blue-500/[0.03] ring-1 ring-blue-500/20" : "hover:bg-white/5"
+                                        )}>
+                                            {/* Data Badge */}
                                             <div className={cn(
-                                                "sm:w-28 flex sm:flex-col items-center justify-center p-6 sm:p-2 border-b sm:border-b-0 sm:border-r border-white/5",
-                                                isWeekend ? "text-slate-500" : isToday ? "text-blue-400" : "text-slate-300 group-hover:text-white transition-colors"
+                                                "w-full md:w-32 flex flex-row md:flex-col items-center justify-between md:justify-center p-6 md:p-4 border-b md:border-b-0 md:border-r border-white/5 relative bg-white/[0.02]",
+                                                isWeekend ? "text-slate-600" : isToday ? "text-blue-400" : "text-white"
                                             )}>
                                                 <div className="flex flex-col items-center">
-                                                    <span className="text-[10px] font-[1000] uppercase tracking-[0.2em] mb-1 opacity-70">
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-50">
                                                         {new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}
                                                     </span>
-                                                    <span className="text-3xl font-[1000] tracking-tighter leading-none">{day.day}</span>
+                                                    <span className="text-3xl font-black tracking-tighter leading-none">{day.day.toString().padStart(2, '0')}</span>
                                                 </div>
-                                                {isToday && <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,1)] sm:mt-3 ml-4 sm:ml-0" />}
+                                                {isToday && <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,1)] animate-pulse" />}
                                             </div>
 
-                                            {/* Content Area */}
-                                            <div className="flex-1 p-6 flex flex-col justify-center">
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                                                    {/* Punches Grid */}
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {day.punches.length > 0 ? (
-                                                            day.punches.map((p: string, i: number) => (
-                                                                <div key={i} className="bg-white/5 text-white font-[1000] text-[12px] px-4 py-2 rounded-2xl border border-white/10 hover:border-blue-400/50 transition-colors shadow-inner">
-                                                                    {p}
-                                                                </div>
-                                                            ))
-                                                        ) : (
-                                                            <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white/[0.01]">
-                                                                <div className={cn("w-1.5 h-1.5 rounded-full", day.isDayOff ? "bg-slate-700" : "bg-brand-orange/50")} />
-                                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">
-                                                                    {day.isDayOff ? 'Folga' : (day.isHoliday ? 'Feriado' : 'Sem registros')}
-                                                                </span>
+                                            {/* Punches Timeline */}
+                                            <div className="flex-1 p-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                                                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                                                    {day.punches.length > 0 ? (
+                                                        day.punches.map((p: string, i: number) => (
+                                                            <div key={i} className="h-12 flex items-center px-5 bg-white/5 border border-white/5 rounded-2xl text-[13px] font-mono font-black text-white group-hover:border-white/20 transition-all shadow-inner">
+                                                                {p}
                                                             </div>
-                                                        )}
-                                                    </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/2 border border-white/2 border-dashed">
+                                                            <div className={cn("w-2 h-2 rounded-full", isWeekend ? "bg-slate-800" : "bg-brand-orange/40")} />
+                                                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">
+                                                                {day.isDayOff ? 'Folga Programada' : (day.isHoliday ? 'Feriado Nacional' : 'Inatividade Detectada')}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                    {/* Balance & Status */}
-                                                    <div className="flex items-center justify-between sm:justify-end gap-6 pt-5 sm:pt-0 border-t sm:border-none border-white/5">
-                                                        {day.balanceMinutes !== 0 && (
+                                                <div className="flex items-center gap-8 w-full md:w-auto border-t md:border-none border-white/5 pt-6 md:pt-0">
+                                                    {day.balanceMinutes !== 0 && (
+                                                        <div className="text-right">
+                                                            <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] block mb-1">Impacto</span>
                                                             <div className={cn(
-                                                                "text-xs font-[1000] tracking-widest uppercase px-4 py-2 rounded-2xl border backdrop-blur-md",
-                                                                day.balanceMinutes < 0
-                                                                    ? 'text-rose-400 bg-rose-400/10 border-rose-400/20'
-                                                                    : 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
+                                                                "text-lg font-mono font-black tracking-tighter",
+                                                                day.balanceMinutes < 0 ? 'text-red-500' : 'text-emerald-400'
                                                             )}>
                                                                 {formatMinutes(day.balanceMinutes)}
                                                             </div>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex-1 md:flex-none flex items-center justify-end gap-3">
+                                                        {hasProblem && !day.isDayOff && !day.isHoliday && (
+                                                            <button
+                                                                onClick={() => handleJustify(day.date)}
+                                                                className="h-11 px-6 rounded-2xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-[9px] font-black uppercase tracking-[0.2em] hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                                                            >
+                                                                <Camera className="h-4 w-4" /> Justificar
+                                                            </button>
                                                         )}
-
-                                                        <div className="flex items-center gap-3">
-                                                            {hasProblem && !day.isDayOff && !day.isHoliday && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="h-10 rounded-2xl text-brand-orange bg-brand-orange/10 hover:bg-brand-orange/20 font-black text-[10px] uppercase tracking-widest gap-2 px-5 border border-brand-orange/30 shadow-[0_0_15px_rgba(249,115,22,0.2)] active:scale-95"
-                                                                    onClick={() => handleJustify(day.date)}
-                                                                >
-                                                                    <Camera className="h-4 w-4" /> Justificar
-                                                                </Button>
-                                                            )}
-
-                                                            <div className={cn(
-                                                                "text-[9px] font-[1000] uppercase pt-1.5 pb-2 px-3 h-auto rounded-xl tracking-widest border shadow-2xl",
-                                                                day.statusColor ? `bg-opacity-10 border-opacity-30 ${day.statusColor.replace('bg-', 'text-').replace('text-slate-100', 'text-slate-400')}` : "bg-white/5 text-slate-500 border-white/10"
-                                                            )}>
-                                                                {day.status}
-                                                            </div>
+                                                        <div className={cn(
+                                                            "h-11 px-6 rounded-2xl bg-white/5 border border-white/5 flex items-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 shadow-2xl",
+                                                            day.statusColor?.includes('emerald') || day.statusColor?.includes('green') ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" :
+                                                                day.statusColor?.includes('red') || day.statusColor?.includes('rose') ? "text-red-400 bg-red-500/5 border-red-500/10" : ""
+                                                        )}>
+                                                            {day.status}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </Card>
-                                </motion.div>
-                            );
-                        })}
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Professional Footnote */}
+            <div className="bg-[#0A0F1C]/40 border border-white/5 rounded-[3rem] p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+                <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <Info className="h-8 w-8 text-blue-400" />
                     </div>
+                    <div className="flex-1 text-center md:text-left">
+                        <h4 className="font-black text-sm uppercase tracking-tight text-white mb-2">Protocolo de Integridade Digital</h4>
+                        <p className="text-slate-400 text-xs font-semibold leading-relaxed tracking-tight max-w-2xl">
+                            Esta interface reflete os registros validados pelo RH central. Divergências devem ser tratadas via <span className="text-blue-400 underline decoration-2 underline-offset-4 cursor-help">módulo de justificativa</span> anexando evidências digitais da jornada realizada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {selectedDate && (
+                    <TimeJustificationModal
+                        isOpen={isJustifyModalOpen}
+                        onClose={() => setIsJustifyModalOpen(false)}
+                        date={selectedDate}
+                        onSuccess={() => loadData()}
+                    />
                 )}
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-white/[0.03] border border-white/10 rounded-[40px] p-8 backdrop-blur-3xl shadow-2xl flex items-start gap-5">
-                <div className="p-3.5 bg-blue-500/10 rounded-2xl text-blue-400 border border-blue-400/20">
-                    <Info className="h-6 w-6" />
-                </div>
-                <div>
-                    <h4 className="font-[1000] text-xs uppercase tracking-[0.2em] text-white mb-2 underline decoration-blue-500 decoration-2 underline-offset-4">Controle de Jornada Digital</h4>
-                    <p className="text-slate-400 text-xs font-semibold leading-relaxed tracking-tight">
-                        Sua jornada oficial é registrada pelo terminal físico. Os dados exibidos nesta plataforma são <span className="text-white">atualizados periodicamente</span>. Se houver divergências persistentes, anexe seu comprovante na ferramenta de justificativa ou procure o RH.
-                    </p>
-                </div>
-            </div>
-
-            {selectedDate && (
-                <TimeJustificationModal
-                    isOpen={isJustifyModalOpen}
-                    onClose={() => setIsJustifyModalOpen(false)}
-                    date={selectedDate}
-                    onSuccess={() => loadData()}
-                />
-            )}
+            </AnimatePresence>
         </div>
     );
 }
