@@ -43,12 +43,14 @@ export default function PersonnelPage() {
                         <LinkIcon className="h-4 w-4" /> LINK AUTOCADASTRO
                     </button>
 
+                    {/* 
                     <button
                         onClick={() => setIsImportModalOpen(true)}
                         className="h-14 px-8 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-3 active:scale-95 shadow-xl"
                     >
                         <FileUp className="h-4 w-4" /> IMPORTAR LOTE
-                    </button>
+                    </button> 
+                    */}
 
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
