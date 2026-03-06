@@ -62,3 +62,23 @@ export async function bulkImportEmployees(employeesList: any[]) {
     } catch (e) { }
     return result;
 }
+
+export async function initiateSelfOnboarding(cpf: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.initiateSelfOnboarding(cpf, user?.id);
+    if (result.success) revalidatePath('/dashboard/personnel');
+    return result;
+}
+
+export async function submitSelfOnboarding(id: string, data: any) {
+    const result = await EmployeeService.submitSelfOnboarding(id, data);
+    // Note: No revalidatePath here as it's a public route common to employees
+    return result;
+}
+
+export async function approveSelfOnboarding(id: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.approveSelfOnboarding(id, user?.id);
+    if (result.success) revalidatePath('/dashboard/personnel');
+    return result;
+}

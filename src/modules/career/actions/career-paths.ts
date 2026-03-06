@@ -74,6 +74,12 @@ export async function addCareerLevel(data: {
     order: number;
     minMonths?: number;
     minScore?: number;
+    mission?: string;
+    responsibilities?: string;
+    differential?: string;
+    maxAbsences?: number;
+    maxDelays?: number;
+    maxWarnings?: number;
 }) {
     try {
         const level = await prisma.careerLevel.create({
@@ -83,6 +89,12 @@ export async function addCareerLevel(data: {
                 order: data.order,
                 minMonths: data.minMonths || 0,
                 minScore: data.minScore || null,
+                mission: data.mission || null,
+                responsibilities: data.responsibilities || null,
+                differential: data.differential || null,
+                maxAbsences: data.maxAbsences || null,
+                maxDelays: data.maxDelays || null,
+                maxWarnings: data.maxWarnings || null,
             },
         });
         revalidatePath('/dashboard/career');
@@ -132,7 +144,17 @@ export async function updateCareerPath(id: string, data: { name?: string; descri
     }
 }
 
-export async function updateCareerLevel(id: string, data: { minMonths?: number; minScore?: number; jobRoleId?: string }) {
+export async function updateCareerLevel(id: string, data: {
+    minMonths?: number;
+    minScore?: number;
+    jobRoleId?: string;
+    mission?: string;
+    responsibilities?: string;
+    differential?: string;
+    maxAbsences?: number;
+    maxDelays?: number;
+    maxWarnings?: number;
+}) {
     try {
         await prisma.careerLevel.update({
             where: { id },

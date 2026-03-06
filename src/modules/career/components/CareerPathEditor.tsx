@@ -31,6 +31,12 @@ interface Level {
     order: number;
     minMonths: number;
     minScore: number | null;
+    mission: string | null;
+    responsibilities: string | null;
+    differential: string | null;
+    maxAbsences: number | null;
+    maxDelays: number | null;
+    maxWarnings: number | null;
     jobRole: JobRole;
     requirements: Requirement[];
 }
@@ -63,6 +69,13 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
     const [addingLevel, setAddingLevel] = useState<string | null>(null);
     const [selectedJobRole, setSelectedJobRole] = useState('');
     const [minMonths, setMinMonths] = useState('0');
+    const [mission, setMission] = useState('');
+    const [responsibilities, setResponsibilities] = useState('');
+    const [differential, setDifferential] = useState('');
+    const [maxAbsences, setMaxAbsences] = useState('');
+    const [maxDelays, setMaxDelays] = useState('');
+    const [maxWarnings, setMaxWarnings] = useState('');
+    const [editingLevel, setEditingLevel] = useState<Level | null>(null);
     const [addingReq, setAddingReq] = useState<string | null>(null);
     const [reqType, setReqType] = useState('TIME');
     const [reqDesc, setReqDesc] = useState('');
@@ -73,9 +86,7 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
         if (!newPathName.trim()) return;
         setLoading(true);
         try {
-            console.log("Chamando createCareerPath enviando:", newPathName.trim());
             const result = await createCareerPath({ name: newPathName.trim() });
-            console.log("Resultado createCareerPath:", result);
             if (result.success && result.data) {
                 setPaths([...paths, { ...result.data, levels: [], description: null, isActive: true }]);
                 setNewPathName('');
@@ -84,7 +95,6 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                 toast.error(result.error || 'Erro ao criar trilha');
             }
         } catch (error: any) {
-            console.error("Erro fatal ao criar trilha:", error);
             toast.error('Falha de conexão ou erro no servidor.');
         } finally {
             setLoading(false);
@@ -112,6 +122,12 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                 jobRoleId: selectedJobRole,
                 order: nextOrder,
                 minMonths: parseInt(minMonths) || 0,
+                mission: mission.trim() || undefined,
+                responsibilities: responsibilities.trim() || undefined,
+                differential: differential.trim() || undefined,
+                maxAbsences: maxAbsences ? parseInt(maxAbsences) : undefined,
+                maxDelays: maxDelays ? parseInt(maxDelays) : undefined,
+                maxWarnings: maxWarnings ? parseInt(maxWarnings) : undefined,
             });
 
             if (result.success) {
@@ -120,8 +136,32 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                 toast.error(result.error || 'Erro ao adicionar nível');
             }
         } catch (error) {
-            console.error("Erro fatal ao adicionar nivel:", error);
             toast.error('Erro de conexão com o servidor.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateLevel = async (levelId: string) => {
+        setLoading(true);
+        try {
+            const result = await updateCareerLevel(levelId, {
+                minMonths: parseInt(minMonths) || 0,
+                mission: mission.trim() || undefined,
+                responsibilities: responsibilities.trim() || undefined,
+                differential: differential.trim() || undefined,
+                maxAbsences: maxAbsences ? parseInt(maxAbsences) : undefined,
+                maxDelays: maxDelays ? parseInt(maxDelays) : undefined,
+                maxWarnings: maxWarnings ? parseInt(maxWarnings) : undefined,
+            });
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                toast.error(result.error || 'Erro ao atualizar nível');
+            }
+        } catch (error) {
+            toast.error('Erro ao atualizar nível');
         } finally {
             setLoading(false);
         }
@@ -156,7 +196,6 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                 toast.error(result.error || 'Erro ao adicionar requisito');
             }
         } catch (error) {
-            console.error(error);
             toast.error('Erro de conexão com o servidor.');
         } finally {
             setLoading(false);
@@ -234,7 +273,6 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                     {/* Expanded Content */}
                     {expandedPath === path.id && (
                         <div className="border-t border-slate-200 dark:border-slate-700 p-5 bg-slate-50 dark:bg-slate-900/50">
-                            {/* Career tree visualization */}
                             <div className="space-y-0">
                                 {path.levels.map((level, idx) => (
                                     <div key={level.id} className="relative">
@@ -265,15 +303,74 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <button
-                                                    onClick={() => handleDeleteLevel(level.id, path.id)}
-                                                    className="text-red-400 hover:text-red-600 text-sm"
-                                                >
-                                                    ✕
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingLevel(level);
+                                                            setMinMonths(level.minMonths.toString());
+                                                            setMission(level.mission || '');
+                                                            setResponsibilities(level.responsibilities || '');
+                                                            setDifferential(level.differential || '');
+                                                            setMaxAbsences(level.maxAbsences?.toString() || '');
+                                                            setMaxDelays(level.maxDelays?.toString() || '');
+                                                            setMaxWarnings(level.maxWarnings?.toString() || '');
+                                                        }}
+                                                        className="text-blue-500 hover:text-blue-700 text-sm"
+                                                        title="Editar nível"
+                                                    >
+                                                        📝
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteLevel(level.id, path.id)}
+                                                        className="text-red-400 hover:text-red-600 text-sm"
+                                                        title="Excluir nível"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
                                             </div>
 
-                                            {/* Requirements */}
+                                            {/* Mission/Details */}
+                                            {(level.mission || level.responsibilities || level.differential) && (
+                                                <div className="mt-3 pl-11 grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-3 border-slate-100 dark:border-slate-700">
+                                                    {level.mission && (
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Missão</p>
+                                                            <p className="text-xs text-slate-600 dark:text-slate-300 italic">"{level.mission}"</p>
+                                                        </div>
+                                                    )}
+                                                    {level.responsibilities && (
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Responsabilidades</p>
+                                                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{level.responsibilities}</p>
+                                                        </div>
+                                                    )}
+                                                    {level.differential && (
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Diferencial</p>
+                                                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{level.differential}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Auto-Evaluation Rules */}
+                                            {(level.maxAbsences !== null || level.maxDelays !== null || level.maxWarnings !== null) && (
+                                                <div className="mt-2 pl-11 flex gap-4">
+                                                    {level.maxAbsences !== null && (
+                                                        <span className="text-[10px] bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold border border-red-100 dark:border-red-900/50">
+                                                            Máx Faltas: {level.maxAbsences}
+                                                        </span>
+                                                    )}
+                                                    {level.maxWarnings !== null && (
+                                                        <span className="text-[10px] bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300 px-2 py-0.5 rounded-full font-bold border border-red-200 dark:border-red-800">
+                                                            Máx Adv: {level.maxWarnings}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Requirements List */}
                                             {level.requirements.length > 0 && (
                                                 <div className="mt-3 pl-11 space-y-1">
                                                     {level.requirements.map((req) => (
@@ -309,7 +406,7 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                                                         <Input
                                                             value={reqDesc}
                                                             onChange={(e) => setReqDesc(e.target.value)}
-                                                            placeholder="Descrição do requisito..."
+                                                            placeholder="Descrição..."
                                                             className="text-xs flex-1 h-8"
                                                         />
                                                         <Input
@@ -320,21 +417,70 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
                                                         />
                                                     </div>
                                                     <div className="flex gap-2">
-                                                        <Button size="sm" onClick={() => handleAddRequirement(level.id)} disabled={loading}>
-                                                            Salvar
-                                                        </Button>
-                                                        <Button size="sm" variant="outline" onClick={() => { setAddingReq(null); setReqDesc(''); setReqValue(''); }}>
-                                                            Cancelar
-                                                        </Button>
+                                                        <Button size="sm" onClick={() => handleAddRequirement(level.id)} disabled={loading}>Salvar</Button>
+                                                        <Button size="sm" variant="outline" onClick={() => setAddingReq(null)}>Cancelar</Button>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <button
-                                                    onClick={() => { setAddingReq(level.id); setReqDesc(''); setReqValue(''); }}
+                                                    onClick={() => setAddingReq(level.id)}
                                                     className="mt-2 pl-11 text-xs text-blue-500 hover:text-blue-700 transition-colors"
                                                 >
                                                     + Adicionar requisito
                                                 </button>
+                                            )}
+
+                                            {/* Edit Level Form Overlay */}
+                                            {editingLevel?.id === level.id && (
+                                                <div className="mt-4 bg-slate-50 dark:bg-slate-900/80 p-4 rounded-lg border-2 border-blue-400 space-y-4 shadow-lg animate-in fade-in slide-in-from-top-2">
+                                                    <h4 className="font-bold text-sm text-blue-800 dark:text-blue-400">Editar Detalhes do Nível - {level.jobRole.name}</h4>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Tempo Mínimo (meses)</label>
+                                                            <Input type="number" value={minMonths} onChange={(e) => setMinMonths(e.target.value)} />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Missão do Nível</label>
+                                                            <Input value={mission} onChange={(e) => setMission(e.target.value)} placeholder="Propósito do cargo..." />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Responsabilidades</label>
+                                                            <textarea
+                                                                className="w-full text-xs p-2 border rounded-md dark:bg-slate-800 h-20"
+                                                                value={responsibilities}
+                                                                onChange={(e) => setResponsibilities(e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Diferencial</label>
+                                                            <textarea
+                                                                className="w-full text-xs p-2 border rounded-md dark:bg-slate-800 h-20"
+                                                                value={differential}
+                                                                onChange={(e) => setDifferential(e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4 bg-white dark:bg-slate-900 p-3 rounded-md border text-slate-700 dark:text-slate-300">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold block mb-1 uppercase">Max Faltas (6m)</label>
+                                                            <Input type="number" value={maxAbsences} onChange={(e) => setMaxAbsences(e.target.value)} />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold block mb-1 uppercase">Max Advertências (6m)</label>
+                                                            <Input type="number" value={maxWarnings} onChange={(e) => setMaxWarnings(e.target.value)} />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <Button size="sm" onClick={() => handleUpdateLevel(level.id)} disabled={loading}>Salvar Alterações</Button>
+                                                        <Button size="sm" variant="outline" onClick={() => setEditingLevel(null)}>Cancelar</Button>
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -343,46 +489,36 @@ export function CareerPathEditor({ initialPaths, jobRoles }: Props) {
 
                             {/* Add Level */}
                             {addingLevel === path.id ? (
-                                <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-3">
-                                    <h4 className="font-semibold text-sm text-slate-700 dark:text-slate-300">Adicionar Nível #{path.levels.length + 1}</h4>
+                                <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-2 border-dashed border-blue-200 space-y-3">
+                                    <h4 className="font-semibold text-sm">Adicionar Nível #{path.levels.length + 1}</h4>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-xs font-medium text-slate-600 block mb-1">Cargo</label>
+                                            <label className="text-xs font-medium">Cargo</label>
                                             <select
                                                 value={selectedJobRole}
                                                 onChange={(e) => setSelectedJobRole(e.target.value)}
-                                                className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
+                                                className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-slate-800"
                                             >
-                                                <option value="">Selecione um cargo...</option>
+                                                <option value="">Selecione...</option>
                                                 {jobRoles.map(role => (
                                                     <option key={role.id} value={role.id}>{role.name}</option>
                                                 ))}
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs font-medium text-slate-600 block mb-1">Tempo mínimo (meses)</label>
-                                            <Input
-                                                type="number"
-                                                value={minMonths}
-                                                onChange={(e) => setMinMonths(e.target.value)}
-                                                placeholder="0"
-                                                min="0"
-                                            />
+                                            <label className="text-xs font-medium">Meses Mín.</label>
+                                            <Input type="number" value={minMonths} onChange={(e) => setMinMonths(e.target.value)} />
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button onClick={() => handleAddLevel(path.id)} disabled={loading || !selectedJobRole}>
-                                            Adicionar Nível
-                                        </Button>
-                                        <Button variant="outline" onClick={() => { setAddingLevel(null); setSelectedJobRole(''); setMinMonths('0'); }}>
-                                            Cancelar
-                                        </Button>
+                                        <Button onClick={() => handleAddLevel(path.id)} disabled={loading || !selectedJobRole}>Salvar Nível</Button>
+                                        <Button variant="outline" onClick={() => setAddingLevel(null)}>Cancelar</Button>
                                     </div>
                                 </div>
                             ) : (
                                 <button
-                                    onClick={() => { setAddingLevel(path.id); setSelectedJobRole(''); setMinMonths('0'); }}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+                                    onClick={() => setAddingLevel(path.id)}
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
                                 >
                                     + Adicionar próximo nível
                                 </button>

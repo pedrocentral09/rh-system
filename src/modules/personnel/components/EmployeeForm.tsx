@@ -423,27 +423,37 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                 result = await createEmployee(formData);
             }
 
-            if (result.success) {
-                if (!currentId && result.data?.id) {
-                    const newId = result.data.id;
-                    setCurrentId(newId);
+                if (result.success) {
+                    if (!currentId && result.data?.id) {
+                        const newId = result.data.id;
+                        setCurrentId(newId);
 
-                    // Handle pending photo upload if this was a new creation
-                    if (pendingPhotoFile) {
-                        try {
-                            const url = await uploadEmployeePhoto(pendingPhotoFile, newId, employeeName);
-                            const photoFormData = new FormData();
-                            photoFormData.append('photoUrl', url);
-                            await updateEmployee(newId, photoFormData);
-                            setPhotoPreview(url);
-                            setPendingPhotoFile(null);
-                        } catch (err) {
-                            console.error("Failed to upload pending photo:", err);
+                        // Handle pending photo upload if this was a new creation
+                        if (pendingPhotoFile) {
+                            try {
+                                const url = await uploadEmployeePhoto(pendingPhotoFile, newId, employeeName);
+                                const photoFormData = new FormData();
+                                photoFormData.append('photoUrl', url);
+                                await updateEmployee(newId, photoFormData);
+                                setPhotoPreview(url);
+                                setPendingPhotoFile(null);
+                            } catch (err) {
+                                console.error("Failed to upload pending photo:", err);
+                            }
                         }
-                    }
-                }
 
-                toast.success("Dados salvos com sucesso!");
+                        // NEW: If we have a generated PIN, show it to the admin
+                        if (result.data.generatedPin) {
+                            toast.success(`Colaborador cadastrado! PIN de acesso inicial: ${result.data.generatedPin}`, {
+                                duration: 10000,
+                                description: "IMPORTANTE: Anote este PIN e entregue ao colaborador. Ele será solicitado no primeiro acesso."
+                            });
+                        } else {
+                            toast.success("Dados salvos com sucesso!");
+                        }
+                    } else {
+                        toast.success("Dados salvos com sucesso!");
+                    }
 
                 const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
 
@@ -1473,70 +1483,50 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             label: '🔐 Acesso',
             content: (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <h3 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Credenciais de Acesso ao Portal</h3>
+                    <h3 className="text-slate-800 dark:text-white font-bold mb-6 text-center border-b border-slate-100 dark:border-slate-800 pb-2 uppercase tracking-wider text-xs">Controle de Acesso ao Portal</h3>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-                        <p className="text-sm text-slate-400 mb-6">
-                            Crie um usuário para que este colaborador possa acessar o sistema (Portal do Colaborador).
-                        </p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Email de Acesso *</label>
-                                <Input
-                                    name="accessEmail"
-                                    value={accessEmail}
-                                    onChange={(e) => setAccessEmail(e.target.value)}
-                                    placeholder="email@empresa.com.br"
-                                    className="bg-slate-950 border-slate-700 text-slate-300"
-                                    required
-                                />
+                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+                        <div className="flex items-center space-x-4 mb-6">
+                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-full">
+                                <Lock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Senha Inicial *</label>
-                                <div className="flex space-x-2">
-                                    <Input
-                                        id="accessPassword"
-                                        name="accessPassword"
-                                        type="text"
-                                        placeholder="••••••••"
-                                        className="bg-slate-950 border-slate-700"
-                                        required
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="text-xs"
-                                        onClick={() => {
-                                            const pass = Math.random().toString(36).slice(-10) + Math.floor(Math.random() * 100);
-                                            const el = document.getElementById('accessPassword') as HTMLInputElement;
-                                            if (el) el.value = pass;
-                                            toast.success("Senha gerada!");
-                                        }}
-                                    >
-                                        Gerar
-                                    </Button>
+                            <div>
+                                <h4 className="font-bold text-slate-800 dark:text-slate-200">Autenticação por CPF + PIN</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    O acesso ao Portal do Colaborador agora é baseado no CPF e um PIN de 6 dígitos.
+                                </p>
+                            </div>
+                        </div>
+
+                        {!currentId ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+                                    <p className="text-amber-800 dark:text-amber-400 text-sm flex items-start">
+                                        <span className="mr-2 text-lg">💡</span>
+                                        <span>
+                                            Ao finalizar o cadastro, o sistema irá <strong>gerar um PIN automático de 6 dígitos</strong>.
+                                            Este PIN será exibido para você apenas uma vez na tela de confirmação.
+                                        </span>
+                                    </p>
+                                </div>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 italic text-center">
+                                    O colaborador será obrigado a trocar este PIN no seu primeiro login.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-sm text-slate-600 dark:text-slate-400">
+                                    O colaborador já possui acesso configurado. Em caso de perda do PIN ou bloqueio por tentativas incorretas, utilize a opção de <strong>Resetar PIN</strong> nos detalhes do colaborador.
+                                </p>
+
+                                <div className="pt-4 flex justify-center">
+                                    <div className="text-center px-6 py-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Status do Acesso</p>
+                                        <p className="text-sm font-bold text-indigo-600 select-none">ATIVO VIA CPF + PIN</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Nível de Permissão</label>
-                                <select
-                                    name="accessRole"
-                                    className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                >
-                                    <option value="EMPLOYEE">Colaborador (Padrão)</option>
-                                    <option value="HR">RH / Gestor</option>
-                                    <option value="ADMIN">Administrador</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-md flex items-start">
-                            <span className="text-indigo-400 mr-3 mt-0.5">ℹ️</span>
-                            <p className="text-indigo-200 text-sm">
-                                O colaborador receberá um email de boas-vindas com as instruções de primeiro acesso.
-                            </p>
-                        </div>
+                        )}
                     </div>
                 </div>
             )

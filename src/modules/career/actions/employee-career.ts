@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/modules/core/actions/auth';
 import { differenceInMonths } from 'date-fns';
+import { getEmployeeProgression } from './employee-progression';
 
 export async function getEmployeeCareerPath() {
     try {
@@ -70,6 +71,15 @@ export async function getEmployeeCareerPath() {
         const currentOrder = currentLevel.order;
         const nextLevel = levels.find(l => l.order > currentOrder);
 
+        // Calculate progression report if next level exists
+        let progressionReport = null;
+        if (nextLevel) {
+            const progResult = await getEmployeeProgression(employee.id, nextLevel.id);
+            if (progResult.success) {
+                progressionReport = progResult.data;
+            }
+        }
+
         // Calculate Time in Company (Tenure)
         let monthsInCompany = 0;
         const hireDate = employee.hireDate || employee.contract?.admissionDate;
@@ -91,6 +101,7 @@ export async function getEmployeeCareerPath() {
                 currentLevelId: currentLevel.id,
                 currentJobRole: employee.jobRole?.name,
                 nextLevel: nextLevel || null,
+                progressionReport: progressionReport,
             }
         };
 

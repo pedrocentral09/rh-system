@@ -24,6 +24,63 @@ export async function getEvaluationCycles() {
     }
 }
 
+export async function getCycleWithDetails(id: string) {
+    try {
+        const cycle = await prisma.evaluationCycle.findUnique({
+            where: { id },
+            include: {
+                reviews: {
+                    include: {
+                        evaluator: { select: { id: true, name: true } },
+                        evaluated: { select: { id: true, name: true } },
+                    },
+                    orderBy: { evaluated: { name: 'asc' } }
+                }
+            }
+        });
+        return { success: true, data: cycle };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getEligibleParticipants() {
+    try {
+        const employees = await prisma.employee.findMany({
+            where: { status: 'ACTIVE' },
+            select: {
+                id: true,
+                name: true,
+                department: true,
+                nextEvaluationDate: true,
+                evaluationInterval: true,
+                jobRole: { select: { name: true } },
+                contract: {
+                    select: {
+                        store: { select: { name: true } },
+                        sectorDef: { select: { name: true } }
+                    }
+                }
+            },
+            orderBy: { name: 'asc' }
+        });
+
+        // Grouping logic for the UI
+        const now = new Date();
+        const response = employees.map(emp => {
+            const isDue = emp.nextEvaluationDate ? new Date(emp.nextEvaluationDate) <= now : false;
+            return {
+                ...emp,
+                status: isDue ? 'DUE' : emp.evaluationInterval ? 'SCHEDULED' : 'PENDING'
+            };
+        });
+
+        return { success: true, data: response };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getActiveEvaluationCycle() {
     try {
         const cycle = await prisma.evaluationCycle.findFirst({
@@ -130,7 +187,17 @@ export async function generateReviewsForCycle(cycleId: string, participants: { e
         const user = await getCurrentUser();
         if (!user) return { success: false, error: 'Não autorizado' };
 
-        // Bulk insert reviews
+        // Fetch the cycle to see if it has an attached template
+        const cycle = await prisma.evaluationCycle.findUnique({
+            where: { id: cycleId },
+            include: {
+                template: {
+                    include: { questions: true }
+                }
+            }
+        });
+
+        // 1. Bulk insert reviews
         const data = participants.map(p => ({
             cycleId,
             evaluatorId: p.evaluatorId,
@@ -138,13 +205,35 @@ export async function generateReviewsForCycle(cycleId: string, participants: { e
             status: 'PENDING',
         }));
 
-        const result = await prisma.review.createMany({
+        const result = await prisma.review.createManyAndReturn({
             data,
             skipDuplicates: true, // Prevents creating same review pair twice in a cycle
         });
 
+        // 2. Pre-populate questions if a template exists
+        if (cycle?.template?.questions.length && result.length > 0) {
+            const answersToCreate = [];
+            for (const review of result) {
+                for (const question of cycle.template.questions) {
+                    answersToCreate.push({
+                        reviewId: review.id,
+                        questionId: question.id,
+                        score: 0, // Default un-answered score
+                        comment: ''
+                    });
+                }
+            }
+
+            if (answersToCreate.length > 0) {
+                await prisma.reviewAnswer.createMany({
+                    data: answersToCreate,
+                    skipDuplicates: true
+                });
+            }
+        }
+
         revalidatePath(`/dashboard/performance/cycles/${cycleId}`);
-        return { success: true, count: result.count };
+        return { success: true, count: result.length };
     } catch (error: any) {
         console.error('Error generating reviews:', error);
         return { success: false, error: error.message };

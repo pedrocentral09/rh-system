@@ -40,47 +40,56 @@ export function ClimateSurveyWidget() {
     if (step === 'IDLE') {
         const lastSurvey = typeof window !== 'undefined' ? localStorage.getItem('lastClimateSurvey') : null;
         if (lastSurvey) {
-            // Se respondeu nas últimas 24h, oculta. (Num cenário real, seria por semana/mês)
             const hoursSince = (new Date().getTime() - new Date(lastSurvey).getTime()) / (1000 * 60 * 60);
             if (hoursSince < 24) return null;
         }
 
         return (
-            <Card className="border-indigo-100 bg-indigo-50/50 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-10 -mr-10 -mt-10"></div>
-                <CardContent className="p-4 flex flex-col justify-between items-center text-center">
-                    <span className="text-3xl mb-2">🌡️</span>
-                    <h3 className="font-bold text-slate-800 text-sm">Termômetro de Clima</h3>
-                    <p className="text-xs text-slate-500 mt-1 mb-3">
-                        Conta pra gente: como está sendo trabalhar aqui ultimamente? É anônimo e rapidinho!
+            <Card className="bg-slate-900 border-none rounded-[32px] overflow-hidden relative shadow-xl">
+                <CardContent className="p-6 relative z-10">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-xl">🌡️</div>
+                        <div>
+                            <h3 className="font-black text-white text-sm uppercase tracking-widest">Termômetro</h3>
+                            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Como está seu dia?</p>
+                        </div>
+                    </div>
+                    <p className="text-slate-400 text-xs font-medium mb-5 leading-relaxed">
+                        Sua opinião é anônima e fundamental para construirmos uma empresa melhor.
                     </p>
-                    <Button size="sm" onClick={() => setStep('SCORE')} className="w-full bg-indigo-600 hover:bg-indigo-700">Responder (1 min)</Button>
+                    <Button
+                        size="sm"
+                        onClick={() => setStep('SCORE')}
+                        className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white rounded-2xl h-11 font-black text-xs uppercase tracking-wider"
+                    >
+                        Responder Agora
+                    </Button>
                 </CardContent>
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-brand-orange rounded-full blur-[60px] opacity-10" />
             </Card>
         );
     }
 
     if (step === 'SCORE') {
         return (
-            <div className="bg-white rounded-xl p-5 shadow-lg border border-indigo-200 animate-in fade-in slide-in-from-bottom-2">
-                <h3 className="font-bold text-slate-800 text-sm text-center mb-1">Numa escala de 0 a 10...</h3>
-                <p className="text-xs text-slate-500 text-center mb-4 leading-relaxed">
-                    Quanto você recomendaria a Família Supermercados como um bom lugar para se trabalhar?
+            <div className="bg-white rounded-[32px] p-6 shadow-2xl border border-slate-100 animate-in fade-in slide-in-from-bottom-2">
+                <h3 className="font-[1000] text-slate-800 text-sm text-center mb-2 uppercase tracking-tighter">Numa escala de 0 a 10...</h3>
+                <p className="text-[11px] text-slate-400 text-center mb-6 font-medium px-4">
+                    Quanto você recomendaria a Rede Família como um bom lugar para se trabalhar?
                 </p>
 
-                <div className="flex flex-wrap gap-1 justify-center max-w-sm mx-auto">
+                <div className="flex flex-wrap gap-1.5 justify-center max-w-sm mx-auto mb-4">
                     {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => {
-                        // Colors based on NPS: 0-6 Detractors (Red), 7-8 Passives (Yellow), 9-10 Promoters (Green)
-                        let colorClass = 'bg-slate-100 text-slate-700 hover:bg-slate-200';
-                        if (num <= 6) colorClass = 'bg-red-50 text-red-600 hover:bg-red-100 border-red-100';
-                        else if (num <= 8) colorClass = 'bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-100';
-                        else colorClass = 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100';
+                        let colorClass = 'bg-slate-50 text-slate-400 hover:bg-slate-100';
+                        if (num <= 6) colorClass = 'bg-rose-50 text-rose-500 hover:bg-rose-100 border-rose-100/50';
+                        else if (num <= 8) colorClass = 'bg-amber-50 text-amber-500 hover:bg-amber-100 border-amber-100/50';
+                        else colorClass = 'bg-emerald-50 text-emerald-500 hover:bg-emerald-100 border-emerald-100/50';
 
                         return (
                             <button
                                 key={num}
                                 onClick={() => handleScoreSelect(num)}
-                                className={`w-[28px] h-[36px] flex items-center justify-center rounded-md font-bold text-sm transition-transform active:scale-95 border ${colorClass}`}
+                                className={`w-8 h-10 flex items-center justify-center rounded-xl font-[1000] text-xs transition-all active:scale-90 border ${colorClass}`}
                             >
                                 {num}
                             </button>
@@ -88,14 +97,14 @@ export function ClimateSurveyWidget() {
                     })}
                 </div>
 
-                <div className="flex justify-between mt-2 text-[10px] text-slate-400 font-medium px-2">
-                    <span>Muito improvável</span>
-                    <span>Muito provável</span>
+                <div className="flex justify-between text-[8px] font-black text-slate-300 uppercase tracking-widest px-4">
+                    <span>Improvável</span>
+                    <span>Provável</span>
                 </div>
 
-                <div className="mt-4 text-center">
-                    <button onClick={() => setStep('IDLE')} className="text-xs text-slate-400 hover:text-slate-600 underline">
-                        Agora não
+                <div className="mt-8 text-center">
+                    <button onClick={() => setStep('IDLE')} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">
+                        Pular por enquanto
                     </button>
                 </div>
             </div>
@@ -103,24 +112,26 @@ export function ClimateSurveyWidget() {
     }
 
     return (
-        <div className="bg-white rounded-xl p-5 shadow-lg border border-indigo-200 animate-in fade-in slide-in-from-right-4">
-            <h3 className="font-bold text-slate-800 text-sm mb-1 text-center">Opcional</h3>
-            <p className="text-xs text-slate-500 mb-3 text-center">O que motivou sua nota? Tem alguma sugestão para melhorarmos?</p>
+        <div className="bg-white rounded-[32px] p-6 shadow-2xl border border-slate-100 animate-in fade-in slide-in-from-right-4">
+            <div className="text-center mb-6">
+                <h3 className="font-[1000] text-slate-800 text-sm mb-1 uppercase tracking-tighter">O que motivou sua nota?</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Espaço opcional para sua voz</p>
+            </div>
 
             <form onSubmit={handleSubmit}>
                 <textarea
                     value={comment}
                     onChange={e => setComment(e.target.value)}
                     placeholder="Seu feedback anônimo..."
-                    className="w-full text-sm border border-slate-200 rounded-lg p-3 min-h-[80px] bg-slate-50 mb-3 focus:bg-white transition-colors"
+                    className="w-full text-sm border border-slate-100 rounded-2xl p-4 min-h-[100px] bg-slate-50 mb-4 focus:ring-4 ring-brand-blue/5 focus:bg-white transition-all outline-none placeholder:text-slate-300"
                 />
 
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" className="flex-1" onClick={() => handleSubmit()} disabled={loading}>
+                    <Button type="button" variant="ghost" className="flex-1 rounded-2xl text-[10px] font-black uppercase tracking-widest h-12" onClick={() => handleSubmit()} disabled={loading}>
                         Pular
                     </Button>
-                    <Button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700" disabled={loading}>
-                        {loading ? 'Enviando...' : 'Enviar Feedback'}
+                    <Button type="submit" className="flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg" disabled={loading}>
+                        {loading ? 'Enviando...' : 'Enviar'}
                     </Button>
                 </div>
             </form>

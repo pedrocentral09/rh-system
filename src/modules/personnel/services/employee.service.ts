@@ -4,6 +4,7 @@ import { AuditService } from '../../core/services/audit.service';
 import { parseCurrency, parseDate } from '@/shared/utils/parsing-utils';
 import { adminAuth } from '@/lib/firebase/admin';
 import { sendMail } from '@/lib/mail';
+import { PinService } from '@/modules/core/services/pin.service';
 
 export class EmployeeService extends BaseService {
 
@@ -11,7 +12,17 @@ export class EmployeeService extends BaseService {
         try {
             const whereClause: any = {};
             if (filters?.status) {
-                whereClause.status = filters.status;
+                if (filters.status === 'ACTIVE') {
+                    whereClause.status = 'ACTIVE';
+                } else if (filters.status === 'INACTIVE') {
+                    whereClause.status = { in: ['INACTIVE', 'TERMINATED'] };
+                } else if (filters.status === 'PENDING_APPROVAL') {
+                    whereClause.status = 'PENDING_APPROVAL';
+                } else if (filters.status === 'WAITING_ONBOARDING') {
+                    whereClause.status = 'WAITING_ONBOARDING';
+                } else {
+                    whereClause.status = filters.status;
+                }
             }
 
             const employees = await prisma.employee.findMany({
@@ -229,6 +240,23 @@ export class EmployeeService extends BaseService {
                 include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true }
             });
 
+            // Auto-generate PIN and create minimal User for portal access
+            const plainPin = PinService.generatePin();
+            const pinHash = await PinService.hashPin(plainPin);
+
+            const userRecord = await prisma.user.create({
+                data: {
+                    name: employee.name,
+                    role: 'EMPLOYEE',
+                    employee: { connect: { id: employee.id } },
+                },
+            });
+
+            await prisma.employee.update({
+                where: { id: employee.id },
+                data: { pinHash, pinMustChange: true },
+            });
+
             // Audit Log
             await AuditService.log({
                 userId: performingUserId,
@@ -240,7 +268,8 @@ export class EmployeeService extends BaseService {
             });
 
             const serialized = JSON.parse(JSON.stringify(employee));
-            return this.success(serialized);
+            // Return generatedPin so the admin UI can display it once
+            return this.success({ ...serialized, generatedPin: plainPin });
         } catch (error: any) {
             console.error('EmployeeService.create error:', error);
             if (error.code === 'P2002') {
@@ -549,19 +578,9 @@ export class EmployeeService extends BaseService {
                 include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true, user: true }
             });
 
-            // ... (Handle Access/User Creation logic)
-            if (rawData.accessEmail && rawData.accessPassword) {
-                try {
-                    console.log('EmployeeService.update - Attempting to upsert user for email:', rawData.accessEmail);
-                    await this.upsertEmployeeUser(employee.id, {
-                        email: rawData.accessEmail,
-                        password: rawData.accessPassword,
-                        role: rawData.accessRole || 'EMPLOYEE'
-                    });
-                } catch (userErr) {
-                    console.error("Failed to create/link user:", userErr);
-                }
-            }
+            // Note: Firebase-based access creation removed.
+            // Employee access is now managed via CPF+PIN.
+            // Use resetEmployeePinAction() from auth actions to reset a PIN.
 
             // Audit Log
             await AuditService.log({
@@ -628,6 +647,119 @@ export class EmployeeService extends BaseService {
             return this.success(undefined);
         } catch (error) {
             return this.error(error, 'Erro ao processar desligamento do colaborador');
+        }
+    }
+
+    static async initiateSelfOnboarding(cpf: string, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            // Check if already exists
+            const existing = await prisma.employee.findUnique({ where: { cpf } });
+            if (existing) return this.error(null, 'Este CPF já está cadastrado no sistema.');
+
+            const employee = await prisma.employee.create({
+                data: {
+                    name: 'Novo Colaborador (Aguardando Cadastro)',
+                    cpf,
+                    status: 'WAITING_ONBOARDING',
+                }
+            });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'INITIATE_ONBOARDING',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: employee.id,
+                newData: { cpf, status: 'WAITING_ONBOARDING' }
+            });
+
+            return this.success(employee);
+        } catch (error) {
+            console.error('EmployeeService.initiateSelfOnboarding error:', error);
+            return this.error(error, 'Erro ao iniciar processo de autocadastro');
+        }
+    }
+
+    static async submitSelfOnboarding(id: string, rawData: any): Promise<ServiceResult<any>> {
+        try {
+            // This is a specialized update that also changes status
+            const result = await this.update(id, { ...rawData, isIncomplete: false });
+            if (!result.success) return result;
+
+            const employee = await prisma.employee.update({
+                where: { id },
+                data: { status: 'PENDING_APPROVAL' }
+            });
+
+            await AuditService.log({
+                action: 'SUBMIT_ONBOARDING',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: id,
+                newData: { status: 'PENDING_APPROVAL' }
+            });
+
+            return this.success(employee);
+        } catch (error) {
+            console.error('EmployeeService.submitSelfOnboarding error:', error);
+            return this.error(error, 'Erro ao enviar dados de cadastro');
+        }
+    }
+
+    static async approveSelfOnboarding(id: string, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            const employee = await prisma.employee.findUnique({
+                where: { id },
+                include: { address: true, contract: true }
+            });
+
+            if (!employee) return this.error(null, 'Colaborador não encontrado');
+
+            // Set as Active and ensure it has access
+            const updatedEmployee = await prisma.employee.update({
+                where: { id },
+                data: { status: 'ACTIVE' },
+                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true }
+            });
+
+            // Auto-generate PIN and create minimal User for portal access if not exists
+            const existingUser = await prisma.user.findFirst({ where: { employee: { id: employee.id } } });
+
+            if (!existingUser) {
+                const plainPin = PinService.generatePin();
+                const pinHash = await PinService.hashPin(plainPin);
+
+                await prisma.user.create({
+                    data: {
+                        name: updatedEmployee.name,
+                        role: 'EMPLOYEE',
+                        employee: { connect: { id: updatedEmployee.id } },
+                    },
+                });
+
+                await prisma.employee.update({
+                    where: { id: updatedEmployee.id },
+                    data: { pinHash, pinMustChange: true },
+                });
+
+                // Note: We might want to return the PIN here to show the admin, 
+                // but usually the employee already knows their CPF and a default PIN?
+                // Actually, the user flow here is they just filled it.
+            }
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'APPROVE_ONBOARDING',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: id,
+                newData: { status: 'ACTIVE' }
+            });
+
+            return this.success(updatedEmployee);
+        } catch (error) {
+            console.error('EmployeeService.approveSelfOnboarding error:', error);
+            return this.error(error, 'Erro ao aprovar cadastro');
         }
     }
 

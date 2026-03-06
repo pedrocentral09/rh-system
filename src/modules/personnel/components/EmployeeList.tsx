@@ -40,7 +40,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     const [timeTrackingEmployee, setTimeTrackingEmployee] = useState<any>(null);
     const [vacationEmployee, setVacationEmployee] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
+    const [activeTab, setActiveTab] = useState<'active' | 'inactive' | 'approval'>('active');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Filters
@@ -101,6 +101,8 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
             'ACTIVE': 'Ativo',
             'INACTIVE': 'Inativo',
             'TERMINATED': 'Desligado',
+            'WAITING_ONBOARDING': 'Aguardando Cadastro',
+            'PENDING_APPROVAL': 'Pendente de Aprovação'
         };
         return map[status] || status;
     };
@@ -125,7 +127,14 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
         const matchesCompany = !filterCompany || emp.contract?.company?.name === filterCompany;
         const matchesSector = !filterSector || (emp.contract?.sectorDef?.name || emp.department) === filterSector;
 
-        const matchesStatus = activeTab === 'active' ? emp.status === 'ACTIVE' : emp.status !== 'ACTIVE';
+        let matchesStatus = false;
+        if (activeTab === 'active') {
+            matchesStatus = emp.status === 'ACTIVE';
+        } else if (activeTab === 'approval') {
+            matchesStatus = emp.status === 'PENDING_APPROVAL' || emp.status === 'WAITING_ONBOARDING';
+        } else {
+            matchesStatus = emp.status === 'INACTIVE' || emp.status === 'TERMINATED';
+        }
 
         return matchesSearch && matchesStatus && matchesStore && matchesCompany && matchesSector;
     });
@@ -220,6 +229,18 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                         }`}
                                 >
                                     Inativos
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('approval')}
+                                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all relative ${activeTab === 'approval'
+                                        ? 'bg-white dark:bg-slate-600 text-orange-600 dark:text-orange-400 shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                        }`}
+                                >
+                                    Aprovação
+                                    {employees.some(e => e.status === 'PENDING_APPROVAL') && (
+                                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-orange-500 rounded-full border border-white dark:border-slate-800" />
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -359,7 +380,10 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap text-center">
                                             <span className={`px-2 py-0.5 inline-flex text-[10px] font-bold uppercase rounded-full 
-                          ${emp.status === 'ACTIVE' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-600'}`}>
+                          ${emp.status === 'ACTIVE' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800' :
+                                                    emp.status === 'PENDING_APPROVAL' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-100 dark:border-orange-800' :
+                                                        emp.status === 'WAITING_ONBOARDING' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800' :
+                                                            'bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-600'}`}>
                                                 {translateStatus(emp.status)}
                                             </span>
                                         </td>

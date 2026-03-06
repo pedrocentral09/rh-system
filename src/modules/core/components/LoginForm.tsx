@@ -88,10 +88,21 @@ export function LoginForm() {
                     </Button>
                 </form>
 
+                <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-sm text-slate-500 mb-2">Acesso para Colaboradores</p>
+                    <a
+                        href="/login/colaborador"
+                        className="text-sm font-semibold text-brand-blue hover:underline flex items-center justify-center gap-1.5"
+                    >
+                        <span>Portal do Colaborador</span>
+                        <span className="text-xs">→</span>
+                    </a>
+                </div>
+
                 <div className="mt-6">
                     <form action={devLoginAction}>
-                        <Button variant="outline" className="w-full border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue" type="submit">
-                            🔧 Modo Desenvolvedor: Entrar como Admin
+                        <Button variant="outline" className="w-full border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue font-mono text-[10px]" type="submit">
+                            🔧 MODO DEV
                         </Button>
                     </form>
                 </div>

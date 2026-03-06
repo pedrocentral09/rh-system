@@ -15,7 +15,7 @@ interface Log {
     timestamp: Date;
     user: {
         name: string | null;
-        email: string;
+        email: string | null;
     } | null;
 }
 

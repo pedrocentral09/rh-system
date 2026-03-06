@@ -12,6 +12,10 @@ import { EmployeeTerminationModal } from './EmployeeTerminationModal';
 import { EmployeeRehireModal } from './EmployeeRehireModal';
 import { EmployeeTimeSheetTab } from '@/modules/time-tracking/components/EmployeeTimeSheetTab';
 import { MedicalLeaveTab } from './MedicalLeaveTab';
+import { resetEmployeePinAction } from '@/modules/core/actions/auth';
+import { toast } from 'sonner';
+import { ShieldAlert, KeyRound, Copy, CheckCircle, AlertCircle, Heart } from 'lucide-react';
+import { approveSelfOnboarding } from '../actions/employees';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
@@ -60,6 +64,19 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
         return map[gender] || gender || '-';
     };
 
+    const handleApprove = async () => {
+        if (confirm(`Deseja aprovar o cadastro de ${displayEmployee.name}?`)) {
+            const res = await approveSelfOnboarding(displayEmployee.id);
+            if (res.success) {
+                toast.success('Cadastro aprovado com sucesso!');
+                onClose();
+                if (onSuccess) onSuccess();
+            } else {
+                toast.error(res.message || 'Erro ao aprovar cadastro');
+            }
+        }
+    };
+
     const tabs = [
         {
             id: 'details_personal',
@@ -101,6 +118,63 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                             <p className="text-sm font-medium">{displayEmployee.landline || '-'}</p>
                         </div>
                     </div>
+                </div>
+            )
+        },
+        {
+            id: 'details_family',
+            label: '💍 Família',
+            content: (
+                <div className="space-y-6">
+                    {displayEmployee.spouse && (
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Dados do Cônjuge</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-xs text-slate-500">Nome</p>
+                                    <p className="text-sm font-medium">{displayEmployee.spouse.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-500">CPF</p>
+                                    <p className="text-sm font-medium">{displayEmployee.spouse.cpf || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {displayEmployee.legalGuardian && (
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Responsável Legal</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-xs text-slate-500">Nome</p>
+                                    <p className="text-sm font-medium">{displayEmployee.legalGuardian.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-500">Telefone / Relacionamento</p>
+                                    <p className="text-sm font-medium">{displayEmployee.legalGuardian.phone} / {displayEmployee.legalGuardian.relationship}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {displayEmployee.dependents && displayEmployee.dependents.length > 0 ? (
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Dependentes ({displayEmployee.dependents.length})</h4>
+                            <div className="space-y-3">
+                                {displayEmployee.dependents.map((dep: any, idx: number) => (
+                                    <div key={idx} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <div className="grid grid-cols-2 gap-x-4">
+                                            <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{dep.name}</p>
+                                            <p className="text-xs text-slate-500 text-right">{dep.relationship || 'Dependente'}</p>
+                                            <p className="text-xs text-slate-500">{dep.cpf || '-'}</p>
+                                            <p className="text-xs text-slate-500 text-right">{formatDate(dep.birthDate)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (!displayEmployee.spouse && !displayEmployee.legalGuardian) && (
+                        <p className="text-slate-500 italic text-center py-8">Nenhum dado familiar cadastrado.</p>
+                    )}
                 </div>
             )
         },
@@ -301,6 +375,67 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_medical',
             label: '🩺 Atestados',
             content: <MedicalLeaveTab employeeId={displayEmployee.id} />
+        },
+        {
+            id: 'details_access',
+            label: '🔐 Acesso',
+            content: (
+                <div className="space-y-6">
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700 pb-2 mb-6 text-center">Segurança & Acesso ao Portal</h4>
+
+                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-full">
+                                <KeyRound className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <div>
+                                <h5 className="font-bold text-slate-800 dark:text-slate-200">Senha (PIN) do Colaborador</h5>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">
+                                    O colaborador acessa o portal usando o CPF e um PIN de 6 dígitos.
+                                    Se ele esqueceu o PIN ou a conta foi bloqueada, você pode resetar aqui.
+                                </p>
+                            </div>
+
+                            <div className="pt-4 w-full flex justify-center">
+                                <Button
+                                    variant="outline"
+                                    className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 flex items-center gap-2"
+                                    onClick={async () => {
+                                        if (confirm(`Deseja realmente resetar o PIN de ${displayEmployee.name}? O PIN atual deixará de funcionar imediatamente.`)) {
+                                            const res = await resetEmployeePinAction(displayEmployee.id);
+                                            if (res.success && res.plainPin) {
+                                                toast.success(`PIN resetado com sucesso!`, {
+                                                    description: `O NOVO PIN É: ${res.plainPin}`,
+                                                    duration: 0, // Stay open
+                                                    action: {
+                                                        label: "Copiar PIN",
+                                                        onClick: () => {
+                                                            navigator.clipboard.writeText(res.plainPin!);
+                                                            toast.success("PIN copiado!");
+                                                        }
+                                                    }
+                                                });
+                                            } else {
+                                                toast.error(res.error || "Erro ao resetar o PIN.");
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <ShieldAlert className="h-4 w-4" />
+                                    Resetar & Gerar Novo PIN
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-md">
+                        <p className="text-blue-800 dark:text-blue-400 text-xs leading-relaxed">
+                            <strong>Nota:</strong> Após o reset, o colaborador será obrigado a trocar este PIN temporário no próximo login.
+                            Certifique-se de comunicar o novo número a ele de forma segura.
+                        </p>
+                    </div>
+                </div>
+            )
         }
     ];
 
@@ -313,6 +448,23 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                     </div>
                 ) : (
                     <>
+                        {displayEmployee.status === 'PENDING_APPROVAL' && (
+                            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex items-center justify-between animate-pulse">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-orange-100 dark:bg-orange-800 rounded-full flex items-center justify-center text-orange-600">
+                                        <AlertCircle className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-orange-800 dark:text-orange-400">Aguardando Aprovação de Cadastro</h4>
+                                        <p className="text-xs text-orange-700 dark:text-orange-500">Este colaborador preencheu os dados via link. Revise antes de aprovar.</p>
+                                    </div>
+                                </div>
+                                <Button onClick={handleApprove} className="bg-orange-600 hover:bg-orange-700 text-white gap-2 shadow-lg shadow-orange-200 dark:shadow-none font-bold">
+                                    <CheckCircle className="h-4 w-4" />
+                                    Aprovar Agora
+                                </Button>
+                            </div>
+                        )}
                         {/* Header Profile - Compact */}
                         <div className="flex flex-col items-center justify-center space-y-3 pb-8 border-b border-slate-200 dark:border-slate-700 text-center">
                             <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-3xl font-bold border-2 border-indigo-200 dark:border-indigo-700 shadow-sm overflow-hidden">
@@ -360,6 +512,14 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                             className="text-red-600 border-red-200 hover:bg-red-50"
                         >
                             🚫 Desligar
+                        </Button>
+                    ) : employee.status === 'PENDING_APPROVAL' ? (
+                        <Button
+                            onClick={handleApprove}
+                            className="bg-green-600 hover:bg-green-700 text-white gap-2 font-bold"
+                        >
+                            <CheckCircle className="h-4 w-4" />
+                            Aprovar Cadastro
                         </Button>
                     ) : (
                         <Button

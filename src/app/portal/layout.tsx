@@ -1,72 +1,75 @@
 
 import { Toaster } from 'sonner';
-import Link from 'next/link';
 import { requireAuth } from '@/modules/core/actions/auth';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { PortalSidebar } from './components/PortalSidebar';
+import { PortalBottomNav } from './components/PortalBottomNav';
+import { PortalHeader } from './components/PortalHeader';
+import { FloatingChat } from './components/FloatingChat';
 
 export default async function PortalLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // Verify Auth (EMPLOYEE only)
-    await requireAuth(['EMPLOYEE']);
+    // 1. Verify Auth (EMPLOYEE only)
+    const user = await requireAuth(['EMPLOYEE']);
+
+    // 2. Fetch Employee Data
+    const employee = await prisma.employee.findUnique({
+        where: { userId: user.id },
+        select: {
+            name: true,
+            pinMustChange: true
+        }
+    });
+
+    const employeeName = employee?.name || "Colaborador";
+
+    // 3. Security Check: Force PIN change if required
+    const headerList = await headers();
+    const pathname = headerList.get('x-pathname') || '';
+    const isChangePinPage = pathname.includes('/portal/change-pin');
+
+    if (employee?.pinMustChange && !isChangePinPage) {
+        redirect('/portal/change-pin');
+    }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* Mobile Header */}
-            <header className="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
-                <div className="flex justify-between items-center max-w-md mx-auto w-full">
-                    <h1 className="text-lg font-bold">Portal do Colaborador</h1>
-                    <div className="flex gap-2">
-                        {/* Placeholder for User Menu */}
-                        <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-xs font-bold border border-indigo-400">
-                            E
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content Area - Centered for Desktop, Full for Mobile */}
-            <main className="flex-1 w-full max-w-md mx-auto p-4 pb-20">
-                {children}
-            </main>
-
-            {/* Bottom Navigation Bar (Mobile Style) */}
-            <nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 py-2 px-6 safe-area-bottom z-40 lg:hidden">
-                <div className="flex justify-between items-center max-w-md mx-auto">
-                    <Link href="/portal" className="flex flex-col items-center text-indigo-600">
-                        <span className="text-2xl">🏠</span>
-                        <span className="text-[10px] font-medium">Início</span>
-                    </Link>
-                    <Link href="/portal/time-tracking" className="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
-                        <span className="text-2xl">⏰</span>
-                        <span className="text-[10px] font-medium">Ponto</span>
-                    </Link>
-                    <Link href="/portal/payslips" className="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
-                        <span className="text-2xl">💲</span>
-                        <span className="text-[10px] font-medium">Holerite</span>
-                    </Link>
-                    <Link href="/portal/vacations" className="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
-                        <span className="text-2xl">🏖️</span>
-                        <span className="text-[10px] font-medium">Férias</span>
-                    </Link>
-                    <Link href="/portal/career" className="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
-                        <span className="text-2xl">🌳</span>
-                        <span className="text-[10px] font-medium">Carreira</span>
-                    </Link>
-                    <Link href="/portal/rewards" className="flex flex-col items-center text-amber-500 hover:text-amber-600 transition-colors">
-                        <span className="text-2xl">🪙</span>
-                        <span className="text-[10px] font-medium">Coins</span>
-                    </Link>
-                </div>
-            </nav>
-
-            {/* Desktop Helper Warning */}
-            <div className="hidden lg:block fixed bottom-4 right-4 bg-yellow-50 text-yellow-800 p-4 rounded-lg border border-yellow-200 shadow-lg text-sm max-w-xs">
-                <strong>Modo Portal:</strong> Esta interface foi desenhada para acesso móvel. Resolução limitada simulada.
+        <div className="h-[100dvh] bg-[#0A0F1C] text-slate-100 font-sans overflow-hidden relative">
+            {/* Ambient Glows */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-brand-blue/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-orange/5 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 opacity-[0.03] z-[9999] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
             </div>
 
-            <Toaster position="top-center" />
+            <div className="flex h-full relative z-10 overflow-hidden">
+                {/* Desktop Sidebar - Glass */}
+                <div className="hidden md:block w-72 h-full border-r border-white/5 bg-white/[0.01] backdrop-blur-3xl shrink-0">
+                    <PortalSidebar employeeName={employeeName} />
+                </div>
+
+                <div className="flex-1 flex flex-col min-w-0 h-full relative">
+                    {/* Header - Sticky for Mobile */}
+                    <PortalHeader employeeName={employeeName} />
+
+                    {/* Content Scroll Area */}
+                    <main className="flex-1 overflow-y-auto overflow-x-hidden pt-6 px-4 md:px-12 pb-32 md:pb-12 scroll-smooth">
+                        <div className="max-w-4xl mx-auto">
+                            {children}
+                        </div>
+                    </main>
+
+                    {/* Floating Bottom Nav for Mobile */}
+                    <PortalBottomNav />
+                </div>
+            </div>
+
+            <FloatingChat />
+            <Toaster position="top-center" richColors theme="dark" />
         </div>
     );
 }

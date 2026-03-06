@@ -17,105 +17,92 @@ export function PayslipViewModal({ payslip, isOpen, onClose }: ViewProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl border-none shadow-2xl bg-white dark:bg-slate-950 p-0 overflow-hidden">
+            <DialogContent className="max-w-4xl border-none shadow-2xl bg-white p-0 overflow-hidden rounded-[40px]">
                 <DialogHeader className="sr-only">
                     <DialogTitle>Visualização de Holerite - {payslip.employee.name}</DialogTitle>
                 </DialogHeader>
 
-                {/* Header Estilizado */}
-                <div className="bg-slate-900 p-6 text-white border-b border-white/10">
-                    <div className="flex justify-between items-start">
+                {/* Header Estilizado - Premium Dark */}
+                <div className="bg-slate-900 px-8 py-10 text-white relative overflow-hidden">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-10">
                         <div>
-                            <div className="flex items-center space-x-2 mb-2">
-                                <Badge variant="outline" className="text-white border-white/20 bg-white/10 uppercase tracking-widest text-[9px]">
-                                    Holerite de Pagamento
-                                </Badge>
-                                <span className="text-slate-400 text-xs font-medium">Ref: {payslip.period?.month.toString().padStart(2, '0')}/{payslip.period?.year}</span>
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-white/10 rounded-xl backdrop-blur-xl">
+                                    <Wallet className="h-5 w-5 text-brand-orange" />
+                                </div>
+                                <Badge className="bg-white/10 text-white border-none font-black text-[9px] uppercase tracking-widest px-3 py-1">Holerite Digital</Badge>
+                                <span className="text-slate-500 font-bold text-[11px] uppercase tracking-widest">
+                                    {payslip.period?.month.toString().padStart(2, '0')}/{payslip.period?.year}
+                                </span>
                             </div>
-                            <h2 className="text-3xl font-black tracking-tight">{payslip.employee.name}</h2>
-                            <div className="flex items-center text-slate-400 text-sm mt-1 font-medium italic">
-                                {payslip.employee.jobTitle} • Matrícula: {payslip.employee.id.split('-')[0].toUpperCase()}
-                            </div>
+                            <h2 className="text-4xl font-[1000] tracking-tight leading-none mb-3">{payslip.employee.name}</h2>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest opacity-80 italic">
+                                {payslip.employee.jobTitle} • Matrícula {payslip.employee.id.split('-')[0].toUpperCase()}
+                            </p>
                         </div>
-                        <div className="text-right">
-                            <div className="text-emerald-400 font-black text-2xl">{formatCurrency(payslip.netSalary)}</div>
-                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Valor Líquido</div>
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] md:text-right min-w-[200px]">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Valor Líquido</p>
+                            <div className="text-3xl font-[1000] text-emerald-400 tracking-tighter">
+                                {formatCurrency(payslip.netSalary)}
+                            </div>
                         </div>
                     </div>
+                    {/* Visual Decoration */}
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-brand-blue rounded-full blur-[100px] opacity-20 pointer-events-none" />
                 </div>
 
-                <div className="p-6 bg-slate-50/50 dark:bg-slate-950 space-y-6">
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <div className="flex items-center text-slate-400 text-[9px] font-bold uppercase mb-1">
-                                <Building2 className="h-3 w-3 mr-1" /> Empresa
+                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
+                    {/* Compact Info Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            { icon: Building2, label: 'Empresa', value: payslip.employee.contract?.company?.name || '---' },
+                            { icon: Store, label: 'Unidade', value: payslip.employee.contract?.store?.name || '---' },
+                            { icon: Calendar, label: 'Admissão', value: payslip.employee.hireDate ? new Date(payslip.employee.hireDate).toLocaleDateString('pt-BR') : '---' },
+                            { icon: Wallet, label: 'Base', value: formatCurrency(payslip.grossSalary) },
+                        ].map((item, idx) => (
+                            <div key={idx} className="bg-slate-50 border border-slate-100 p-4 rounded-[22px]">
+                                <div className="flex items-center text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1.5 gap-2">
+                                    <item.icon className="h-3 w-3" /> {item.label}
+                                </div>
+                                <div className="text-[11px] font-[1000] text-slate-800 line-clamp-1">
+                                    {item.value}
+                                </div>
                             </div>
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
-                                {payslip.employee.contract?.company?.name || '---'}
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <div className="flex items-center text-slate-400 text-[9px] font-bold uppercase mb-1">
-                                <Store className="h-3 w-3 mr-1" /> Unidade/Loja
-                            </div>
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
-                                {payslip.employee.contract?.store?.name || '---'}
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <div className="flex items-center text-slate-400 text-[9px] font-bold uppercase mb-1">
-                                <Calendar className="h-3 w-3 mr-1" /> Admissão
-                            </div>
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                {payslip.employee.hireDate ? new Date(payslip.employee.hireDate).toLocaleDateString('pt-BR') : '---'}
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <div className="flex items-center text-slate-400 text-[9px] font-bold uppercase mb-1">
-                                <Wallet className="h-3 w-3 mr-1" /> Salário Base
-                            </div>
-                            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                {formatCurrency(payslip.grossSalary)}
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
-                    {/* Table of Items */}
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
-                        <table className="w-full text-sm border-collapse">
-                            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    {/* Streamlined Table */}
+                    <div className="rounded-[32px] border border-slate-100 bg-white shadow-sm overflow-hidden">
+                        <table className="w-full text-xs">
+                            <thead className="bg-slate-50 border-b border-slate-100">
                                 <tr className="text-[10px] uppercase tracking-widest text-slate-400 font-black">
-                                    <th className="px-4 py-3 text-left w-16">Cód</th>
-                                    <th className="px-4 py-3 text-left">Descrição do Evento</th>
-                                    <th className="px-4 py-3 text-center w-24">Referência</th>
-                                    <th className="px-4 py-3 text-right w-32">Vencimentos</th>
-                                    <th className="px-4 py-3 text-right w-32 text-red-400">Descontos</th>
+                                    <th className="px-6 py-4 text-left font-black">Item</th>
+                                    <th className="px-4 py-4 text-center font-black">Ref</th>
+                                    <th className="px-6 py-4 text-right font-black">Proventos</th>
+                                    <th className="px-6 py-4 text-right font-black text-rose-500">Descontos</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                            <tbody className="divide-y divide-slate-50">
                                 {payslip.items?.map((item: any) => (
-                                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                        <td className="px-4 py-3 text-xs font-bold text-slate-400">{item.event?.code || '---'}</td>
-                                        <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">
-                                            {item.name}
-                                            {item.source === 'SYNC' && <Badge className="ml-2 h-3 text-[7px] bg-amber-50 text-amber-600 border-amber-100">PONTO</Badge>}
+                                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-[900] text-slate-800 uppercase tracking-tighter text-[11px]">{item.name}</span>
+                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{item.event?.code || '--'}</span>
+                                            </div>
                                         </td>
-                                        <td className="px-4 py-3 text-center text-slate-500 font-medium">
-                                            {item.reference ? (
-                                                <span className="flex flex-col items-center">
-                                                    <span className="text-xs">{item.reference}</span>
-                                                    <span className="text-[8px] opacity-60 uppercase">
-                                                        {item.code === '5001' || item.code === '5002' ? '%' : (item.code === '1001' ? 'dias' : 'hrs')}
-                                                    </span>
-                                                </span>
-                                            ) : '-'}
+                                        <td className="px-4 py-4 text-center">
+                                            <span className="bg-slate-100 px-2 py-0.5 rounded-lg font-[1000] text-slate-500 text-[10px]">{item.reference || '-'}</span>
                                         </td>
-                                        <td className="px-4 py-3 text-right font-bold text-slate-800 dark:text-slate-200">
-                                            {item.type === 'EARNING' ? formatCurrency(item.value) : ''}
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="font-[1000] text-slate-800">
+                                                {item.type === 'EARNING' ? formatCurrency(item.value) : ''}
+                                            </span>
                                         </td>
-                                        <td className="px-4 py-3 text-right font-bold text-red-500">
-                                            {item.type === 'DEDUCTION' ? formatCurrency(item.value) : ''}
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="font-[1000] text-rose-500">
+                                                {item.type === 'DEDUCTION' ? formatCurrency(item.value) : ''}
+                                            </span>
                                         </td>
                                     </tr>
                                 ))}
@@ -123,33 +110,30 @@ export function PayslipViewModal({ payslip, isOpen, onClose }: ViewProps) {
                         </table>
                     </div>
 
-                    {/* Footer Totals */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30">
-                                <span className="flex items-center text-emerald-700 dark:text-emerald-400 font-bold uppercase text-[10px] tracking-widest">
-                                    <ArrowUpCircle className="h-4 w-4 mr-2" /> Total de Vencimentos
-                                </span>
-                                <span className="font-black text-emerald-600">{formatCurrency(payslip.totalAdditions)}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-red-50/50 dark:bg-red-950/20 border border-red-100/50 dark:border-red-900/30">
-                                <span className="flex items-center text-red-700 dark:text-red-400 font-bold uppercase text-[10px] tracking-widest">
-                                    <ArrowDownCircle className="h-4 w-4 mr-2" /> Total de Descontos
-                                </span>
-                                <span className="font-black text-red-600">{formatCurrency(payslip.totalDeductions)}</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-indigo-600 p-6 rounded-xl text-white shadow-xl shadow-indigo-100 dark:shadow-none flex flex-col justify-center relative overflow-hidden group">
+                    {/* Totals Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-slate-900 rounded-[32px] p-8 text-white flex flex-col justify-center relative overflow-hidden">
                             <div className="relative z-10 flex justify-between items-end">
                                 <div>
-                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Líquido a Receber</div>
-                                    <div className="text-4xl font-black">{formatCurrency(payslip.netSalary)}</div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 mb-2">Total Líquido</p>
+                                    <h4 className="text-4xl font-[1000] tracking-tighter text-brand-orange">{formatCurrency(payslip.netSalary)}</h4>
                                 </div>
-                                <Wallet className="h-12 w-12 opacity-20 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="p-3 bg-white/5 rounded-2xl">
+                                    <Wallet className="h-6 w-6 text-slate-500" />
+                                </div>
                             </div>
-                            {/* Efeito Visual */}
-                            <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-brand-orange rounded-full blur-[80px] opacity-10 pointer-events-none" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center p-5 rounded-[24px] bg-emerald-50 border border-emerald-100">
+                                <span className="font-black uppercase text-[10px] tracking-widest text-emerald-600/60">Proventos</span>
+                                <span className="font-[1000] text-emerald-600 text-lg">{formatCurrency(payslip.totalAdditions)}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-5 rounded-[24px] bg-rose-50 border border-rose-100">
+                                <span className="font-black uppercase text-[10px] tracking-widest text-rose-600/60">Descontos</span>
+                                <span className="font-[1000] text-rose-600 text-lg">{formatCurrency(payslip.totalDeductions)}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

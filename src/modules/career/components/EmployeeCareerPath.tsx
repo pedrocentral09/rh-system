@@ -15,6 +15,12 @@ interface Level {
     order: number;
     minMonths: number;
     minScore: number | null;
+    mission: string | null;
+    responsibilities: string | null;
+    differential: string | null;
+    maxAbsences: number | null;
+    maxDelays: number | null;
+    maxWarnings: number | null;
     jobRole: { name: string };
     requirements: Requirement[];
 }
@@ -36,6 +42,14 @@ interface Props {
         currentLevelId?: string;
         currentJobRole?: string;
         nextLevel?: Level;
+        progressionReport?: {
+            allPassed: boolean;
+            report: {
+                warnings: { current: number; limit: number; passed: boolean };
+                absences: { current: number; limit: number; passed: boolean };
+                delays: { current: number; limit: number; passed: boolean };
+            };
+        } | null;
     };
 }
 
@@ -87,69 +101,161 @@ export function EmployeeCareerPath({ careerData }: Props) {
 
             {/* Next Level Goals */}
             {nextLevel && (
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-indigo-100 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <span>🎯</span> Próximo Passo
-                    </h3>
+                <div className="space-y-4">
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-indigo-100 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span>🎯</span> Próximo Passo
+                        </h3>
 
-                    <div className="mb-4">
-                        <p className="font-bold text-lg text-indigo-700">{nextLevel.jobRole.name}</p>
-                        <p className="text-xs text-slate-500 mt-1">Nível {nextLevel.order} na trilha</p>
-                    </div>
+                        <div className="mb-4">
+                            <p className="font-bold text-lg text-indigo-700">{nextLevel.jobRole.name}</p>
+                            <p className="text-xs text-slate-500 mt-1">Nível {nextLevel.order} na trilha</p>
+                        </div>
 
-                    <div className="space-y-3">
-                        <p className="text-xs font-bold text-slate-700 uppercase">Requisitos para promoção:</p>
+                        {/* Mission & Purpose */}
+                        {nextLevel.mission && (
+                            <div className="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Missão do Cargo</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 italic">"{nextLevel.mission}"</p>
+                            </div>
+                        )}
 
-                        {/* Tenure Requirement */}
-                        {nextLevel.minMonths > 0 && (
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="flex items-center gap-2 text-slate-700">
-                                        <span className="w-5 text-center">⏱️</span> Tempo no cargo
-                                    </span>
-                                    <span className="font-semibold text-slate-900">
-                                        {monthsInCompany} / {nextLevel.minMonths} meses
-                                    </span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-1000 ${monthsInCompany >= nextLevel.minMonths ? 'bg-emerald-500' : 'bg-indigo-500'}`}
-                                        style={{ width: `${Math.min(100, Math.max(0, (monthsInCompany / nextLevel.minMonths) * 100))}%` }}
-                                    ></div>
+                        {/* Automated Progress Check */}
+                        {careerData.progressionReport && (
+                            <div className="mb-5 p-4 rounded-xl border bg-slate-50/50 dark:bg-slate-900/30">
+                                <h4 className="text-xs font-bold text-slate-600 uppercase mb-3 flex items-center gap-2">
+                                    🛡️ Avaliação Disciplinar (Últimos 6 meses)
+                                    {careerData.progressionReport.allPassed ? (
+                                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Regular</span>
+                                    ) : (
+                                        <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Atenção</span>
+                                    )}
+                                </h4>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-slate-500">Advertências</span>
+                                            <span className={`font-bold ${careerData.progressionReport.report.warnings.passed ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                {careerData.progressionReport.report.warnings.current} / {careerData.progressionReport.report.warnings.limit === Infinity ? '∞' : careerData.progressionReport.report.warnings.limit}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full ${careerData.progressionReport.report.warnings.passed ? 'bg-emerald-500' : 'bg-red-500'}`}
+                                                style={{ width: `${Math.min(100, (careerData.progressionReport.report.warnings.current / (careerData.progressionReport.report.warnings.limit || 1)) * 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-slate-500">Faltas/Susp.</span>
+                                            <span className={`font-bold ${careerData.progressionReport.report.absences.passed ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                {careerData.progressionReport.report.absences.current} / {careerData.progressionReport.report.absences.limit === Infinity ? '∞' : careerData.progressionReport.report.absences.limit}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full ${careerData.progressionReport.report.absences.passed ? 'bg-emerald-500' : 'bg-red-500'}`}
+                                                style={{ width: `${Math.min(100, (careerData.progressionReport.report.absences.current / (careerData.progressionReport.report.absences.limit || 1)) * 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-slate-500">Atrasos</span>
+                                            <span className={`font-bold ${careerData.progressionReport.report.delays.passed ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                {careerData.progressionReport.report.delays.current} / {careerData.progressionReport.report.delays.limit === Infinity ? '∞' : careerData.progressionReport.report.delays.limit}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full ${careerData.progressionReport.report.delays.passed ? 'bg-emerald-500' : 'bg-red-500'}`}
+                                                style={{ width: `${Math.min(100, (careerData.progressionReport.report.delays.current / (careerData.progressionReport.report.delays.limit || 1)) * 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Performance Requirement */}
-                        {nextLevel.minScore && (
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="flex items-center gap-2 text-slate-700">
-                                        <span className="w-5 text-center">📊</span> Nota de Avaliação
-                                    </span>
-                                    <span className="font-semibold text-slate-900">
-                                        Min: {nextLevel.minScore.toFixed(1)}
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-slate-500 pl-7">Aguardando ciclo de avaliação.</p>
-                            </div>
-                        )}
+                        <div className="space-y-4">
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Requisitos e Metas:</p>
 
-                        {/* Additional Requirements */}
-                        {nextLevel.requirements.map(req => (
-                            <div key={req.id} className="flex items-start gap-2 text-sm text-slate-700">
-                                <span className="w-5 text-center">{REQ_ICONS[req.type] || '📌'}</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                    {/* Tenure Requirement */}
+                                    {nextLevel.minMonths > 0 && (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="flex items-center gap-2 text-slate-700 dark:text-slate-400">
+                                                    <span className="w-5 text-center">⏱️</span> Tempo no cargo
+                                                </span>
+                                                <span className="font-semibold text-slate-900 dark:text-white">
+                                                    {monthsInCompany} / {nextLevel.minMonths} m
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-1000 ${monthsInCompany >= nextLevel.minMonths ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                                                    style={{ width: `${Math.min(100, Math.max(0, (monthsInCompany / nextLevel.minMonths) * 100))}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Performance Requirement */}
+                                    {nextLevel.minScore && (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="flex items-center gap-2 text-slate-700 dark:text-slate-400">
+                                                    <span className="w-5 text-center">📊</span> Nota de Avaliação
+                                                </span>
+                                                <span className="font-semibold text-slate-900 dark:text-white">
+                                                    Min: {nextLevel.minScore.toFixed(1)}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 pl-7">Aguardando ciclo de avaliação.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    {/* Additional Requirements */}
+                                    {nextLevel.requirements.map(req => (
+                                        <div key={req.id} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                            <span className="p-1 bg-slate-50 dark:bg-slate-800 rounded text-xs">{REQ_ICONS[req.type] || '📌'}</span>
+                                            <div>
+                                                <span className="font-medium">{req.description}</span>
+                                                {req.value && <span className="text-indigo-600 dark:text-indigo-400 block text-[10px] font-bold">META: {req.value}</span>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {nextLevel.requirements.length === 0 && !nextLevel.minMonths && !nextLevel.minScore && (
+                                <p className="text-xs text-slate-500 italic">Nenhum requisito específico configurado.</p>
+                            )}
+                        </div>
+
+                        {/* Responsibilities & Differential */}
+                        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {nextLevel.responsibilities && (
                                 <div>
-                                    <span className="font-medium">{req.description}</span>
-                                    {req.value && <span className="text-indigo-600 block text-xs">Meta: {req.value}</span>}
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-2">Principais Responsabilidades</h4>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{nextLevel.responsibilities}</p>
                                 </div>
-                            </div>
-                        ))}
-
-                        {nextLevel.requirements.length === 0 && !nextLevel.minMonths && !nextLevel.minScore && (
-                            <p className="text-xs text-slate-500 italic">Nenhum requisito específico configurado.</p>
-                        )}
+                            )}
+                            {nextLevel.differential && (
+                                <div>
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-2">O que buscamos (Diferencial)</h4>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{nextLevel.differential}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

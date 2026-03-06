@@ -14,7 +14,7 @@ interface Question {
     isActive: boolean | null;
 }
 
-const CATEGORIES = ['CULTURA', 'TECNICO', 'LIDERANCA', 'COMPORTAMENTAL'];
+const CATEGORIES = ['CULTURA', 'TECNICO', 'LIDERANCA', 'COMPORTAMENTAL', 'PRODUTIVIDADE'];
 
 export function QuestionsList({ initialQuestions }: { initialQuestions: Question[] }) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions);
@@ -59,7 +59,7 @@ export function QuestionsList({ initialQuestions }: { initialQuestions: Question
             <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div>
                     <h2 className="text-lg font-bold text-slate-800 dark:text-white">Banco de Perguntas</h2>
-                    <p className="text-xs text-slate-500">Cadastre perguntas para as avaliações de desempenho</p>
+                    <p className="text-xs text-slate-500">Cadastre perguntas para avaliações de desempenho (Escala de 1 a 5)</p>
                 </div>
                 {!isCreating && (
                     <Button onClick={() => setIsCreating(true)}>+ Nova Pergunta</Button>
