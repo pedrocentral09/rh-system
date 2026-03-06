@@ -32,6 +32,8 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         name: '',
         email: '',
         phone: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
         dateOfBirth: '',
         gender: '',
         maritalStatus: '',
@@ -69,18 +71,68 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
     };
 
     const handleNext = () => {
-        // Simple validation for required fields per step
-        if (step === 1 && !formData.name) {
-            toast.error('Informe seu nome completo');
-            return;
+        // Strict validation per step
+        if (step === 1) {
+            if (!formData.name) {
+                toast.error('Informe seu nome completo para continuar');
+                return;
+            }
         }
-        if (step === 2 && (!formData.phone || !formData.dateOfBirth)) {
-            toast.error('Preencha os dados obrigatórios');
-            return;
+        if (step === 2) {
+            if (!formData.dateOfBirth || !formData.phone || !formData.email || !formData.maritalStatus || !formData.emergencyContactName || !formData.emergencyContactPhone) {
+                toast.error('Preencha todos os dados de contato obrigatórios');
+                return;
+            }
         }
-        if (step === 3 && (!formData.zipCode || !formData.number)) {
-            toast.error('Informe seu endereço');
-            return;
+        if (step === 3) {
+            if (!formData.zipCode || !formData.number || !formData.street || !formData.neighborhood || !formData.city || !formData.state) {
+                toast.error('Preencha o endereço completo');
+                return;
+            }
+        }
+        if (step === 4) {
+            // Note: Dependents step is technically step 4 now (0-indexed, wait, dependents step is currently under step === 3 in UI, but technically it was duplicated, I will fix the UI step map later)
+            // But validation logic will be simpler: Let's assume Family step validation
+            if (isMarried && (!formData.spouseName || !formData.spouseCpf)) {
+                toast.error('Preencha os dados do cônjuge');
+                return;
+            }
+            if (isMinor && (!formData.guardianName || !formData.guardianCpf)) {
+                toast.error('Preencha os dados do responsável legal');
+                return;
+            }
+            let validDeps = true;
+            for (const dep of formData.dependents) {
+                if (!dep.name || !dep.cpf || !dep.birthDate) {
+                    validDeps = false;
+                }
+            }
+            if (!validDeps) {
+                toast.error('Preencha todos os dados dos dependentes, ou remova os campos vazios');
+                return;
+            }
+        }
+        if (step === 5) {
+            // Financeiro
+            if (!formData.bankName || !formData.agency || !formData.accountNumber || !formData.pixKey) {
+                toast.error('Preencha todos os dados bancários');
+                return;
+            }
+        }
+        if (step === 6) {
+            // Documentos
+            if (!formData.photoUrl) {
+                toast.error('A foto de perfil é obrigatória. Capture ou anexe uma foto.');
+                return;
+            }
+            if (!formData.documents.some(d => d.type === 'IDENTIDADE_FRENTE')) {
+                toast.error('A foto do RG ou CNH é obrigatória.');
+                return;
+            }
+            if (!formData.documents.some(d => d.type === 'ENDERECO')) {
+                toast.error('O Comprovante de Residência é obrigatório.');
+                return;
+            }
         }
 
         setStep(prev => prev + 1);
@@ -162,13 +214,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
     };
 
     const steps = [
-        { title: 'Início', icon: <Sparkles className="h-5 w-5" /> },
-        { title: 'Identificação', icon: <User className="h-5 w-5" /> },
-        { title: 'Contato', icon: <MapPin className="h-5 w-5" /> },
-        { title: 'Família', icon: <Heart className="h-5 w-5" /> },
-        { title: 'Financeiro', icon: <CreditCard className="h-5 w-5" /> },
-        { title: 'Documentos', icon: <Camera className="h-5 w-5" /> },
-        { title: 'Finalizar', icon: <CheckCircle2 className="h-5 w-5" /> },
+        { title: 'Início', icon: <Sparkles className="h-5 w-5" /> }, // 0
+        { title: 'Identificação', icon: <User className="h-5 w-5" /> }, // 1
+        { title: 'Contato', icon: <MapPin className="h-5 w-5" /> }, // 2
+        { title: 'Residência', icon: <MapPin className="h-5 w-5" /> }, // 3
+        { title: 'Família', icon: <Heart className="h-5 w-5" /> }, // 4
+        { title: 'Financeiro', icon: <CreditCard className="h-5 w-5" /> }, // 5
+        { title: 'Documentos', icon: <Camera className="h-5 w-5" /> }, // 6
+        { title: 'Finalizar', icon: <CheckCircle2 className="h-5 w-5" /> }, // 7
     ];
 
     if (isCompleted) {
@@ -306,7 +359,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                             <Card className="bg-white/[0.03] border-white/10 backdrop-blur-3xl overflow-hidden rounded-[2rem]">
                                 <CardContent className="pt-10 pb-10 space-y-6">
                                     <div className="space-y-3">
-                                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-[#FF7800] ml-1">NOME COMPLETO</Label>
+                                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-[#FF7800] ml-1">NOME COMPLETO *</Label>
                                         <Input
                                             id="name"
                                             value={formData.name}
@@ -314,6 +367,16 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             placeholder="Ex: João da Silva Santos"
                                             className="bg-black/40 border-white/5 text-xl py-8 rounded-2xl focus:ring-[#FF7800] placeholder:text-slate-700"
                                             autoFocus
+                                        />
+                                    </div>
+                                    <div className="space-y-3 pt-4 border-t border-white/5">
+                                        <Label htmlFor="rg" className="text-[10px] font-black uppercase tracking-widest text-[#FF7800] ml-1">RG *</Label>
+                                        <Input
+                                            id="rg"
+                                            value={formData.rg}
+                                            onChange={(e) => updateField('rg', e.target.value)}
+                                            placeholder="Apenas números e letras"
+                                            className="bg-black/40 border-white/5 text-xl py-8 rounded-2xl focus:ring-[#FF7800] placeholder:text-slate-700"
                                         />
                                     </div>
                                     <div className="space-y-3 pt-4 border-t border-white/5">
@@ -400,6 +463,25 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <option value="Viuvo">Viúvo(a)</option>
                                             </select>
                                         </div>
+                                        <hr className="border-white/5 my-4" />
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-orange-400">Nome do Contato de Emergência *</Label>
+                                            <Input
+                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
+                                                placeholder="Ex: Maria (Mãe)"
+                                                value={formData.emergencyContactName}
+                                                onChange={(e) => updateField('emergencyContactName', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-orange-400">Telefone de Emergência *</Label>
+                                            <Input
+                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
+                                                placeholder="(00) 00000-0000"
+                                                value={formData.emergencyContactPhone}
+                                                onChange={(e) => updateField('emergencyContactPhone', maskPhone(e.target.value))}
+                                            />
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -452,7 +534,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                         </div>
                     )}
 
-                    {step === 3 && (
+                    {step === 4 && (
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold text-white">Dados dos Dependentes</h2>
                             <p className="text-slate-400 text-sm italic">Opcional: Informe dados de cônjuge ou filhos para salário-família e benefícios.</p>
@@ -525,7 +607,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                         </div>
                     )}
 
-                    {step === 4 && (
+                    {step === 5 && (
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold text-white">Dados Bancários</h2>
                             <p className="text-slate-400 text-sm">Onde você deseja receber seu salário e benefícios?</p>
@@ -555,7 +637,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                         </div>
                     )}
 
-                    {step === 5 && (
+                    {step === 6 && (
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold text-white">Fotos dos Documentos</h2>
                             <p className="text-slate-400 text-sm">Tire uma foto legível de cada documento solicitado. Use o botão 📷 para capturar ou selecionar da galeria.</p>
@@ -633,7 +715,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                         </div>
                     )}
 
-                    {step === 6 && (
+                    {step === 7 && (
                         <div className="space-y-6 text-center py-8">
                             <div className="h-20 w-20 bg-[#FF7800]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle2 className="h-10 w-10 text-[#FF7800]" />
