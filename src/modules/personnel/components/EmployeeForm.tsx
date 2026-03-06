@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap, CheckCircle2, ArrowRightCircle, ChevronLeft, Calendar as CalendarIcon, User, Home, Building2, Banknote, ShieldPlus, FolderOpen, Key, Star, Plus, X } from 'lucide-react';
 import { uploadEmployeePhoto, uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
 import { formatSafeDate, parseSafeDate } from '@/shared/utils/date-utils';
+import { useHorizontalScroll } from '@/shared/hooks/use-horizontal-scroll';
 
 interface EmployeeFormProps {
     onSuccess?: () => void;
@@ -79,6 +80,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const [success, setSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState(defaultTab || 'personal');
     const [currentId, setCurrentId] = useState<string | null>(employeeId || null);
+    const { scrollRef, onMouseMove, onMouseLeave } = useHorizontalScroll();
 
     // Form States for masked inputs
     const [cpf, setCpf] = useState(initialData?.cpf || '');
@@ -509,6 +511,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     type="file"
                                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                     disabled={isUploading}
+                                    onClick={(e) => (e.currentTarget.value = '')}
                                     onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
@@ -1746,6 +1749,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                             type="file"
                                             multiple
                                             className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                            onClick={(e) => (e.currentTarget.value = '')}
                                             onChange={(e) => handleFileSelect(e, cat.label)}
                                             disabled={isUploading}
                                         />
@@ -1860,7 +1864,12 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2 overflow-x-auto pb-6 custom-scrollbar-horizontal no-scrollbar px-4">
+                    <div
+                        className="flex items-center gap-2 overflow-x-auto pb-6 custom-scrollbar-horizontal no-scrollbar px-4 scroll-smooth"
+                        ref={scrollRef}
+                        onMouseMove={onMouseMove}
+                        onMouseLeave={onMouseLeave}
+                    >
                         {visibleTabs.map((tab) => {
                             const isTabActive = activeTab === tab.id;
                             return (

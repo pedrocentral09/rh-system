@@ -82,3 +82,17 @@ export async function approveSelfOnboarding(id: string) {
     if (result.success) revalidatePath('/dashboard/personnel');
     return result;
 }
+
+export async function deleteEmployee(id: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.delete(id, user?.id);
+    if (result.success) revalidatePath('/dashboard/personnel');
+    return result;
+}
+
+export async function resetOnboarding(id: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.resetOnboarding(id, user?.id);
+    if (result.success) revalidatePath('/dashboard/personnel');
+    return result;
+}

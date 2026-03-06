@@ -1001,4 +1001,61 @@ export class EmployeeService extends BaseService {
         }
     }
 
+    static async resetOnboarding(id: string, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            const employee = await prisma.employee.update({
+                where: { id },
+                data: { status: 'WAITING_ONBOARDING' }
+            });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'RESET_ONBOARDING',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: id,
+                newData: { status: 'WAITING_ONBOARDING' }
+            });
+
+            return this.success(employee);
+        } catch (error) {
+            console.error('EmployeeService.resetOnboarding error:', error);
+            return this.error(error, 'Erro ao resetar processo de cadastro');
+        }
+    }
+
+    static async delete(id: string, performingUserId?: string): Promise<ServiceResult<void>> {
+        try {
+            // Check if employee exists and can be deleted
+            const employee = await prisma.employee.findUnique({
+                where: { id },
+                include: { contract: true }
+            });
+
+            if (!employee) return this.error(null, 'Colaborador não encontrado');
+
+            // Optional: Block deletion of active employees to prevent accidents? 
+            // The user specifically asked for those who DID NOT finish registration.
+            // But let's allow it if the user is sure.
+
+            await prisma.employee.delete({
+                where: { id }
+            });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'DELETE',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: id,
+                oldData: employee
+            });
+
+            return this.success(undefined);
+        } catch (error) {
+            console.error('EmployeeService.delete error:', error);
+            return this.error(error, 'Erro ao excluir colaborador');
+        }
+    }
+
 }

@@ -1,8 +1,11 @@
+'use client';
 
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { cn } from "@/lib/utils"
 
+
+import { useHorizontalScroll } from "@/shared/hooks/use-horizontal-scroll"
 
 const TabsRoot = TabsPrimitive.Root
 
@@ -67,10 +70,17 @@ const Tabs = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Root>,
     TabsProps
 >(({ className, tabs, fullContent = false, children, ...props }, ref) => {
+    const { scrollRef, onMouseMove, onMouseLeave } = useHorizontalScroll();
+
     if (tabs && tabs.length > 0) {
         return (
             <TabsRoot ref={ref} className={className} defaultValue={tabs[0]?.id} {...props}>
-                <div className="flex justify-start pb-4 overflow-x-auto scroll-smooth no-scrollbar">
+                <div
+                    className="flex justify-start pb-4 overflow-x-auto scroll-smooth no-scrollbar"
+                    ref={scrollRef}
+                    onMouseMove={onMouseMove}
+                    onMouseLeave={onMouseLeave}
+                >
                     <TabsList className="inline-flex h-12 w-auto justify-start p-1.5 bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl">
                         {tabs.map(tab => (
                             <TabsTrigger

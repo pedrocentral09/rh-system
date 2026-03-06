@@ -58,8 +58,11 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         guardianName: '',
         guardianCpf: '',
         documents: [] as any[],
-        photoUrl: ''
+        photoUrl: '',
+        previews: {} as Record<string, string>
     });
+
+    const [uploadingSlots, setUploadingSlots] = useState<Record<string, boolean>>({});
 
     const [isMinor, setIsMinor] = useState(false);
     const [isMarried, setIsMarried] = useState(false);
@@ -192,24 +195,43 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setLoading(true);
+        // Create local preview immediately
+        const localUrl = URL.createObjectURL(file);
+        setFormData(prev => ({
+            ...prev,
+            previews: { ...prev.previews, [type]: localUrl }
+        }));
+
+        setUploadingSlots(prev => ({ ...prev, [type]: true }));
         try {
+            console.log(`Uploading ${type}...`, file.name);
             if (type === 'PROFILE') {
                 const url = await uploadEmployeePhoto(file, employee.id, formData.name || 'Nova_Foto');
-                updateField('photoUrl', url);
+                setFormData(prev => ({ ...prev, photoUrl: url }));
                 toast.success('Foto de perfil salva!');
             } else {
                 const doc = await uploadEmployeeDocument(file, employee.id, formData.name || 'Doc', type);
-                setFormData(prev => ({
-                    ...prev,
-                    documents: [...prev.documents, doc]
-                }));
-                toast.success('Documento enviado!');
+                setFormData(prev => {
+                    const filtered = prev.documents.filter(d => d.type !== type);
+                    return {
+                        ...prev,
+                        documents: [...filtered, doc]
+                    };
+                });
+                toast.success('Documento sincronizado!');
             }
         } catch (err) {
-            toast.error('Falha no upload');
+            console.error('Upload Error:', err);
+            toast.error('Falha ao processar arquivo. Verifique sua conexão.');
+            // Clear preview on failure
+            setFormData(prev => {
+                const newPreviews = { ...prev.previews };
+                delete newPreviews[type];
+                return { ...prev, previews: newPreviews };
+            });
         } finally {
-            setLoading(false);
+            setUploadingSlots(prev => ({ ...prev, [type]: false }));
+            e.target.value = '';
         }
     };
 
@@ -647,27 +669,53 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 <div className="space-y-2">
                                     <Label className="text-white font-bold">Foto de Perfil</Label>
                                     <div className="h-48 bg-slate-900 rounded-xl border-2 border-dashed border-slate-800 flex items-center justify-center relative overflow-hidden group">
-                                        {formData.photoUrl ? (
-                                            <img src={formData.photoUrl} className="w-full h-full object-cover" />
+                                        {uploadingSlots['PROFILE'] ? (
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
+                                                <span className="text-[10px] text-slate-500 uppercase font-black">Processando...</span>
+                                            </div>
+                                        ) : (formData.previews['PROFILE'] || formData.photoUrl) ? (
+                                            <img src={formData.previews['PROFILE'] || formData.photoUrl} className="w-full h-full object-cover animate-in fade-in duration-500" />
                                         ) : (
                                             <div className="text-center p-4">
                                                 <Camera className="h-10 w-10 text-[#FF7800] mx-auto mb-2 opacity-50" />
-                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Uma foto sua estilo 3x4</span>
+                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Sua foto (Estilo 3x4)</span>
                                             </div>
                                         )}
-                                        <input type="file" accept="image/*" capture="user" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleFileUpload(e, 'PROFILE')} />
-                                        {formData.photoUrl && <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold pointer-events-none">Alterar Foto</div>}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="user"
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            onClick={(e) => (e.currentTarget.value = '')}
+                                            onChange={e => handleFileUpload(e, 'PROFILE')}
+                                            disabled={uploadingSlots['PROFILE']}
+                                        />
+                                        {formData.photoUrl && !uploadingSlots['PROFILE'] && (
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-black uppercase tracking-widest pointer-events-none">
+                                                <Camera className="h-6 w-6 mb-2" />
+                                                Alterar Foto
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* RG/CNH Front */}
                                 <div className="space-y-2">
                                     <Label className="text-white font-bold">RG ou CNH (Frente)</Label>
-                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group ${formData.documents.some(d => d.type === 'IDENTIDADE_FRENTE') ? 'bg-[#FF7800]/10 border-[#FF7800]/40' : 'bg-slate-900 border-slate-800'}`}>
-                                        {formData.documents.some(d => d.type === 'IDENTIDADE_FRENTE') ? (
-                                            <div className="text-center">
-                                                <CheckCircle2 className="h-12 w-12 text-[#FF7800]" />
-                                                <span className="text-xs text-[#FF7800] font-bold uppercase tracking-widest">Enviado!</span>
+                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all ${formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE') ? 'border-green-500/50 bg-green-500/5' : 'bg-slate-900 border-slate-800'}`}>
+                                        {uploadingSlots['IDENTIDADE_FRENTE'] ? (
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
+                                                <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Enviando...</span>
+                                            </div>
+                                        ) : (formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE')) ? (
+                                            <div className="relative w-full h-full">
+                                                <img src={formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE').fileUrl} className="w-full h-full object-cover opacity-50" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <CheckCircle2 className="h-10 w-10 text-green-500 mb-1" />
+                                                    <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Documento Anexado</span>
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="text-center p-4">
@@ -675,18 +723,34 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Capturar Frente</span>
                                             </div>
                                         )}
-                                        <input type="file" accept="image/*" capture="environment" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleFileUpload(e, 'IDENTIDADE_FRENTE')} />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            onClick={(e) => (e.currentTarget.value = '')}
+                                            onChange={e => handleFileUpload(e, 'IDENTIDADE_FRENTE')}
+                                            disabled={uploadingSlots['IDENTIDADE_FRENTE']}
+                                        />
                                     </div>
                                 </div>
 
                                 {/* Comp Residência */}
                                 <div className="space-y-2">
-                                    <Label className="text-white font-bold">Comprovante de Endereço</Label>
-                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group ${formData.documents.some(d => d.type === 'ENDERECO') ? 'bg-[#FF7800]/10 border-[#FF7800]/40' : 'bg-slate-900 border-slate-800'}`}>
-                                        {formData.documents.some(d => d.type === 'ENDERECO') ? (
-                                            <div className="text-center">
-                                                <CheckCircle2 className="h-12 w-12 text-[#FF7800]" />
-                                                <span className="text-xs text-[#FF7800] font-bold uppercase tracking-widest">Enviado!</span>
+                                    <Label className="text-white font-bold">Comprovante de Residência</Label>
+                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all ${formData.documents.find(d => d.type === 'ENDERECO') ? 'border-green-500/50 bg-green-500/5' : 'bg-slate-900 border-slate-800'}`}>
+                                        {uploadingSlots['ENDERECO'] ? (
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
+                                                <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Enviando...</span>
+                                            </div>
+                                        ) : (formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO')) ? (
+                                            <div className="relative w-full h-full">
+                                                <img src={formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO').fileUrl} className="w-full h-full object-cover opacity-50" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <CheckCircle2 className="h-10 w-10 text-green-500 mb-1" />
+                                                    <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Comprovante Anexado</span>
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="text-center p-4">
@@ -694,7 +758,15 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Capturar Comprovante</span>
                                             </div>
                                         )}
-                                        <input type="file" accept="image/*" capture="environment" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleFileUpload(e, 'ENDERECO')} />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            onClick={(e) => (e.currentTarget.value = '')}
+                                            onChange={e => handleFileUpload(e, 'ENDERECO')}
+                                            disabled={uploadingSlots['ENDERECO']}
+                                        />
                                     </div>
                                 </div>
 

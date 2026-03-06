@@ -2,7 +2,7 @@
 
 import { useEffect, useState, ChangeEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getEmployees, terminateEmployee } from '../actions';
+import { getEmployees, terminateEmployee, deleteEmployee, resetOnboarding } from '../actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { EmployeeDetailsModal } from './EmployeeDetailsModal';
 import { Button } from '@/shared/components/ui/button';
@@ -378,6 +378,48 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                 </div>
 
                                 <div className="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                                    {(emp.status === 'PENDING_APPROVAL' || emp.status === 'WAITING_ONBOARDING') && (
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (confirm('Tem certeza que deseja excluir este colaborador? Esta ação é permanente.')) {
+                                                    const res = await deleteEmployee(emp.id);
+                                                    if (res.success) {
+                                                        toast.success('Colaborador excluído');
+                                                        loadEmployees();
+                                                    } else {
+                                                        toast.error(res.message);
+                                                    }
+                                                }
+                                            }}
+                                            className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                                            title="Excluir Colaborador"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
+
+                                    {emp.status === 'PENDING_APPROVAL' && (
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (confirm('Deseja resetar o cadastro deste colaborador? Ele precisará preencher os dados novamente.')) {
+                                                    const res = await resetOnboarding(emp.id);
+                                                    if (res.success) {
+                                                        toast.success('Cadastro resetado com sucesso');
+                                                        loadEmployees();
+                                                    } else {
+                                                        toast.error(res.message);
+                                                    }
+                                                }
+                                            }}
+                                            className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xs hover:bg-amber-500 hover:text-white transition-all shadow-lg"
+                                            title="Refazer Cadastro"
+                                        >
+                                            🔄
+                                        </button>
+                                    )}
+
                                     <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Editar">✏️</button>
                                     <button onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Transferir">🚚</button>
                                     <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Ponto">⏰</button>
