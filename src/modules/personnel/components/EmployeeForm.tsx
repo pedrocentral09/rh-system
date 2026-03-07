@@ -129,6 +129,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const [sectorsList, setSectorsList] = useState<any[]>([]);
     const [shiftsList, setShiftsList] = useState<any[]>([]);
 
+    const [healthRecords, setHealthRecords] = useState<any[]>(initialData?.healthRecords || []);
+
     useEffect(() => {
         const loadRefs = async () => {
             try {
@@ -316,7 +318,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const contractEndData = calculateContractEnd();
 
     // --- ASO Logic ---
-    const latestAsoRecord = initialData?.healthRecords?.[0];
+    const latestAsoRecord = healthRecords?.[0];
     const [asoType, setAsoType] = useState(latestAsoRecord ? "Periodico" : "Admissional");
     const [targetRoleId, setTargetRoleId] = useState('');
     const [lastAso, setLastAso] = useState('');
@@ -1800,7 +1802,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                                 setLastAso('');
                                                 setAsoFileUrl(null);
                                                 setAsoObservations('');
-                                                if (onSuccess) onSuccess();
+                                                if (res.data) {
+                                                    setHealthRecords(prev => [...prev, res.data]);
+                                                }
                                             } else {
                                                 toast.error(res.error || 'Erro ao adicionar', { id: loadingToast });
                                             }
@@ -1818,7 +1822,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* ASO HISTORY SECTION */}
-                    {initialData?.healthRecords?.length > 0 && (
+                    {healthRecords?.length > 0 && (
                         <div className="pt-10 border-t border-white/5">
                             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Histórico de Exames Ocupacionais</h4>
 
@@ -1835,7 +1839,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {initialData.healthRecords.map((record: any) => (
+                                        {healthRecords.map((record: any) => (
                                             <tr key={record.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
                                                 <td className="p-5">
                                                     <div className="flex items-center gap-4">
@@ -1884,7 +1888,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                                                     const res = await deleteEmployeeHealthRecord(record.id);
                                                                     if (res.success) {
                                                                         toast.success("Registro removido com sucesso!", { id: loadingToast });
-                                                                        if (onSuccess) onSuccess(); // Refresh data via callback
+                                                                        setHealthRecords(prev => prev.filter(r => r.id !== record.id));
                                                                     } else {
                                                                         toast.error(res.error || "Erro ao remover registro", { id: loadingToast });
                                                                     }
