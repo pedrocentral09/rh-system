@@ -1126,4 +1126,71 @@ export class EmployeeService extends BaseService {
         }
     }
 
+    static async addHealthRecord(employeeId: string, rawData: any, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+            if (!employee) return this.error(null, 'Colaborador não encontrado');
+
+            const asoDate = parseDate(rawData.lastAsoDate)!;
+            const asoType = rawData.asoType;
+            const periodicity = parseInt(rawData.asoPeriodicity || '12');
+
+            // Set main updates
+            const recordData: any = {
+                employeeId,
+                asoType,
+                lastAsoDate: asoDate,
+                periodicity,
+                observations: rawData.asoObservations,
+                fileUrl: rawData.asoFileUrl,
+                targetRoleId: rawData.newRoleId
+            };
+
+            const record = await prisma.healthData.create({ data: recordData });
+
+            // If it's a function change, we must also update JobRole history
+            if (asoType === 'MudancaFuncao' && rawData.newRoleId) {
+                const newRoleId = rawData.newRoleId;
+
+                await prisma.careerHistory.create({
+                    data: {
+                        employeeId,
+                        previousRoleId: employee.jobRoleId,
+                        newRoleId: newRoleId,
+                        changeDate: asoDate,
+                        reason: 'Mudança de Função (ASO)',
+                        notes: rawData.asoObservations
+                    }
+                });
+
+                // Update employee current jobRole
+                await prisma.employee.update({
+                    where: { id: employeeId },
+                    data: {
+                        jobRoleId: newRoleId,
+                        contract: {
+                            update: {
+                                jobRoleId: newRoleId
+                            }
+                        }
+                    }
+                });
+            }
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'CREATE',
+                module: 'PERSONNEL',
+                resource: 'HealthData',
+                resourceId: record.id,
+                newData: record
+            });
+
+            return this.success(record);
+        } catch (error) {
+            console.error('EmployeeService.addHealthRecord error:', error);
+            return this.error(error, 'Erro ao inserir novo registro de saúde (ASO)');
+        }
+    }
+
 }

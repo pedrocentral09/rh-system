@@ -107,3 +107,14 @@ export async function deleteEmployeeHealthRecord(recordId: string) {
     }
     return result;
 }
+
+export async function addEmployeeHealthRecord(employeeId: string, data: any) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.addHealthRecord(employeeId, data, user?.id);
+    if (result.success) {
+        try {
+            revalidatePath('/dashboard/personnel');
+        } catch (e) { }
+    }
+    return result;
+}

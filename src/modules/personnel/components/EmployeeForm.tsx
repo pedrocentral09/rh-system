@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createEmployee, updateEmployee, deleteEmployeeHealthRecord } from '../actions';
+import { createEmployee, updateEmployee, deleteEmployeeHealthRecord, addEmployeeHealthRecord } from '../actions';
 import { getCompanies } from '../../configuration/actions/companies';
 import { getStores } from '../../configuration/actions/stores';
 import { getJobRoles, getSectors } from '../../configuration/actions/auxiliary';
@@ -322,6 +322,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const [lastAso, setLastAso] = useState('');
     const [asoPeriodicity, setAsoPeriodicity] = useState(latestAsoRecord?.periodicity || 12);
     const [asoFileUrl, setAsoFileUrl] = useState<string | null>(null);
+    const [asoObservations, setAsoObservations] = useState('');
 
     const calculateNextAso = () => {
         const baseDate = lastAso ? new Date(lastAso) : (latestAsoRecord?.lastAsoDate ? new Date(latestAsoRecord.lastAsoDate) : null);
@@ -1766,9 +1767,54 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Parecer e Restrições Clínicas</label>
                             <textarea
                                 name="asoObservations"
+                                value={asoObservations}
+                                onChange={(e) => setAsoObservations(e.target.value)}
                                 className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-teal-500/50 min-h-[140px] resize-none"
                                 placeholder="DESCREVER AVALIAÇÃO DE APTIDÃO E POTENCIAIS LIMITAÇÕES FÍSICAS..."></textarea>
                         </div>
+
+                        {currentId && (
+                            <div className="md:col-span-2 flex justify-end mt-4">
+                                <Button
+                                    type="button"
+                                    disabled={!lastAso || isUploading}
+                                    onClick={async () => {
+                                        if (!lastAso) {
+                                            toast.error('Informe a data do exame.');
+                                            return;
+                                        }
+                                        const loadingToast = toast.loading('Salvando exame...');
+                                        try {
+                                            const res = await addEmployeeHealthRecord(currentId, {
+                                                asoType,
+                                                newRoleId: targetRoleId,
+                                                lastAsoDate: lastAso,
+                                                asoPeriodicity,
+                                                asoFileUrl,
+                                                asoObservations
+                                            });
+                                            if (res.success) {
+                                                toast.success('Exame adicionado com sucesso', { id: loadingToast });
+                                                setAsoType('Periodico');
+                                                setTargetRoleId('');
+                                                setLastAso('');
+                                                setAsoFileUrl(null);
+                                                setAsoObservations('');
+                                                if (onSuccess) onSuccess();
+                                            } else {
+                                                toast.error(res.error || 'Erro ao adicionar', { id: loadingToast });
+                                            }
+                                        } catch (error) {
+                                            toast.error('Erro na comunicação com o servidor', { id: loadingToast });
+                                        }
+                                    }}
+                                    className="bg-teal-500 text-white rounded-xl px-8 h-12 text-[11px] font-black tracking-widest hover:bg-teal-400 transition-all uppercase"
+                                >
+                                    {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                                    Adicionar Registro (Múltiplos ASOs)
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     {/* ASO HISTORY SECTION */}
