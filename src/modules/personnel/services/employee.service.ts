@@ -50,6 +50,10 @@ export class EmployeeService extends BaseService {
                             baseSalary: true,
                             admissionDate: true
                         }
+                    },
+                    healthRecords: {
+                        orderBy: { lastAsoDate: 'desc' },
+                        take: 1
                     }
                 }
             });
@@ -78,11 +82,22 @@ export class EmployeeService extends BaseService {
                             terminationReasonDef: true
                         }
                     },
-                    healthData: true,
+                    healthRecords: {
+                        orderBy: { lastAsoDate: 'desc' }
+                    },
                     legalGuardian: true,
                     spouse: true,
                     dependents: true,
-                    documents: true
+                    documents: true,
+                    careerHistory: {
+                        include: {
+                            previousRole: true,
+                            newRole: true
+                        },
+                        orderBy: {
+                            changeDate: 'desc'
+                        }
+                    }
                 },
             });
 
@@ -177,14 +192,15 @@ export class EmployeeService extends BaseService {
                 };
             }
 
-            // Handle HealthData
+            // Handle HealthData (Initial ASO)
             if (rawData.lastAsoDate || rawData.asoType) {
-                data.healthData = {
+                data.healthRecords = {
                     create: {
                         asoType: rawData.asoType || 'Admissional',
                         lastAsoDate: parseDate(rawData.lastAsoDate) || new Date(),
                         periodicity: parseInt(rawData.asoPeriodicity || '12'),
-                        observations: rawData.asoObservations
+                        observations: rawData.asoObservations,
+                        fileUrl: rawData.asoFileUrl
                     }
                 };
             }
@@ -237,7 +253,7 @@ export class EmployeeService extends BaseService {
 
             const employee = await prisma.employee.create({
                 data,
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true }
+                include: { address: true, contract: true, bankData: true, healthRecords: true, legalGuardian: true, spouse: true, dependents: true }
             });
 
             // Auto-generate PIN and create minimal User for portal access
@@ -287,7 +303,7 @@ export class EmployeeService extends BaseService {
             // Fetch old data for audit
             const oldEmployee = await prisma.employee.findUnique({
                 where: { id },
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true }
+                include: { address: true, contract: true, bankData: true, healthRecords: true, legalGuardian: true }
             });
 
             const data: any = {};
@@ -461,24 +477,53 @@ export class EmployeeService extends BaseService {
                 };
             }
 
-            // Handle HealthData
-            if (rawData.lastAsoDate !== undefined || rawData.asoType !== undefined) {
-                data.healthData = {
-                    upsert: {
-                        create: {
-                            asoType: rawData.asoType || 'Admissional',
-                            lastAsoDate: parseDate(rawData.lastAsoDate) || new Date(),
-                            periodicity: parseInt(rawData.asoPeriodicity || '12'),
-                            observations: rawData.asoObservations
-                        },
-                        update: {
-                            asoType: rawData.asoType,
-                            lastAsoDate: rawData.lastAsoDate ? parseDate(rawData.lastAsoDate) : undefined,
-                            periodicity: rawData.asoPeriodicity ? parseInt(rawData.asoPeriodicity) : undefined,
-                            observations: rawData.asoObservations
-                        }
+            // Handle HealthData (Add as new record if provided)
+            if (rawData.lastAsoDate && rawData.asoType) {
+                const asoDate = parseDate(rawData.lastAsoDate)!;
+                const asoType = rawData.asoType;
+                const periodicity = parseInt(rawData.asoPeriodicity || '12');
+
+                data.healthRecords = {
+                    create: {
+                        asoType,
+                        lastAsoDate: asoDate,
+                        periodicity,
+                        observations: rawData.asoObservations,
+                        fileUrl: rawData.asoFileUrl,
+                        targetRoleId: rawData.newRoleId
                     }
                 };
+
+                // Career History Logic for Function Change
+                if (asoType === 'MudancaFuncao' && rawData.newRoleId) {
+                    const newRoleId = rawData.newRoleId;
+
+                    data.careerHistory = {
+                        create: {
+                            previousRoleId: oldEmployee?.jobRoleId,
+                            newRoleId: newRoleId,
+                            changeDate: asoDate,
+                            reason: 'Mudança de Função (ASO)',
+                            notes: rawData.asoObservations
+                        }
+                    };
+
+                    // Update main JobRole
+                    data.jobRoleId = newRoleId;
+
+                    // Update Contract JobRole
+                    if (data.contract?.upsert) {
+                        data.contract.upsert.update.jobRoleId = newRoleId;
+                        data.contract.upsert.update.sector = rawData.department || undefined;
+                    } else if (oldEmployee?.contract) {
+                        data.contract = {
+                            update: {
+                                jobRoleId: newRoleId,
+                                sector: rawData.department || undefined
+                            }
+                        };
+                    }
+                }
             }
 
             // Handle LegalGuardian
@@ -575,7 +620,7 @@ export class EmployeeService extends BaseService {
             const employee = await prisma.employee.update({
                 where: { id },
                 data,
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true, user: true }
+                include: { address: true, contract: true, bankData: true, healthRecords: true, legalGuardian: true, spouse: true, dependents: true, user: true }
             });
 
             // Note: Firebase-based access creation removed.
@@ -719,7 +764,7 @@ export class EmployeeService extends BaseService {
             const updatedEmployee = await prisma.employee.update({
                 where: { id },
                 data: { status: 'ACTIVE' },
-                include: { address: true, contract: true, bankData: true, healthData: true, legalGuardian: true, spouse: true, dependents: true }
+                include: { address: true, contract: true, bankData: true, healthRecords: true, legalGuardian: true, spouse: true, dependents: true }
             });
 
             // Auto-generate PIN and create minimal User for portal access if not exists
@@ -1055,6 +1100,29 @@ export class EmployeeService extends BaseService {
         } catch (error) {
             console.error('EmployeeService.delete error:', error);
             return this.error(error, 'Erro ao excluir colaborador');
+        }
+    }
+
+    static async deleteHealthRecord(id: string, performingUserId?: string): Promise<ServiceResult<void>> {
+        try {
+            const record = await prisma.healthData.findUnique({ where: { id } });
+            if (!record) return this.error(null, 'Registro de saúde não encontrado');
+
+            await prisma.healthData.delete({ where: { id } });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'DELETE',
+                module: 'PERSONNEL',
+                resource: 'HealthData',
+                resourceId: id,
+                oldData: record
+            });
+
+            return this.success(undefined);
+        } catch (error) {
+            console.error('EmployeeService.deleteHealthRecord error:', error);
+            return this.error(error, 'Erro ao excluir registro de saúde (ASO)');
         }
     }
 

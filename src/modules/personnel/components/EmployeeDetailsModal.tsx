@@ -14,7 +14,7 @@ import { EmployeeTimeSheetTab } from '@/modules/time-tracking/components/Employe
 import { MedicalLeaveTab } from './MedicalLeaveTab';
 import { resetEmployeePinAction } from '@/modules/core/actions/auth';
 import { toast } from 'sonner';
-import { ShieldAlert, KeyRound, Copy, CheckCircle, AlertCircle, Heart } from 'lucide-react';
+import { ShieldAlert, KeyRound, Copy, CheckCircle, AlertCircle, Heart, HeartPulse } from 'lucide-react';
 import { approveSelfOnboarding } from '../actions/employees';
 
 interface EmployeeDetailsModalProps {
@@ -323,36 +323,72 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_history',
             label: '🕒 Histórico',
             content: (
-                <div className="space-y-8 py-4">
-                    <div className="text-center">
-                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Histórico de Transferências</h4>
-                    </div>
-                    {history.length > 0 ? (
-                        <div className="relative border-l border-white/5 ml-4 flex flex-col gap-10">
-                            {history.map((item: any, index: number) => (
-                                <div key={item.id} className="relative pl-10 group">
-                                    <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-[#0A0F1C] border-2 border-brand-orange group-hover:scale-125 group-hover:shadow-[0_0_10px_rgba(255,102,0,0.5)] transition-all duration-300"></div>
-                                    <time className="text-[10px] font-black text-slate-600 uppercase tracking-widest block mb-2">{formatDate(item.date)}</time>
-                                    <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all shadow-xl">
-                                        <h3 className="text-sm font-black text-white uppercase tracking-tight mb-2 flex items-center gap-2">
-                                            Transferido para <span className="text-brand-orange">{item.newStore}</span>
-                                        </h3>
-                                        <div className="text-xs font-bold text-slate-500 uppercase tracking-tight mb-4">
-                                            Anterior: <span className="text-slate-300">{item.previousStore}</span>
-                                        </div>
-                                        <div className="bg-[#0A0F1C]/40 border border-white/5 p-4 rounded-xl relative">
-                                            <span className="absolute -top-3 left-4 px-2 bg-[#0A0F1C] text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Motivo</span>
-                                            <p className="text-xs text-slate-400 italic font-medium leading-relaxed">"{item.reason}"</p>
+                <div className="space-y-12 py-4">
+                    {/* Career History */}
+                    <div>
+                        <div className="text-center">
+                            <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Histórico de Cargos</h4>
+                        </div>
+                        {displayEmployee.careerHistory?.length > 0 ? (
+                            <div className="relative border-l border-white/5 ml-4 flex flex-col gap-10">
+                                {displayEmployee.careerHistory.map((item: any) => (
+                                    <div key={item.id} className="relative pl-10 group">
+                                        <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-[#0A0F1C] border-2 border-emerald-500 group-hover:scale-125 group-hover:shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-300"></div>
+                                        <time className="text-[10px] font-black text-slate-600 uppercase tracking-widest block mb-2">{formatDate(item.changeDate)}</time>
+                                        <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all shadow-xl">
+                                            <h3 className="text-sm font-black text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+                                                Novo Cargo: <span className="text-emerald-400">{item.newRole?.name}</span>
+                                            </h3>
+                                            <div className="text-xs font-bold text-slate-500 uppercase tracking-tight mb-4">
+                                                Anterior: <span className="text-slate-300">{item.previousRole?.name || 'Não registrado'}</span>
+                                            </div>
+                                            <div className="bg-[#0A0F1C]/40 border border-white/5 p-4 rounded-xl relative">
+                                                <span className="absolute -top-3 left-4 px-2 bg-[#0A0F1C] text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Motivo</span>
+                                                <p className="text-xs text-slate-400 italic font-medium leading-relaxed">"{item.reason}"</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                                <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhuma alteração de cargo registrada</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Store Transfers */}
+                    <div>
+                        <div className="text-center">
+                            <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Histórico de Unidades</h4>
                         </div>
-                    ) : (
-                        <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
-                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhum registro encontrado</p>
-                        </div>
-                    )}
+                        {history.length > 0 ? (
+                            <div className="relative border-l border-white/5 ml-4 flex flex-col gap-10">
+                                {history.map((item: any, index: number) => (
+                                    <div key={item.id} className="relative pl-10 group">
+                                        <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-[#0A0F1C] border-2 border-brand-orange group-hover:scale-125 group-hover:shadow-[0_0_10px_rgba(255,102,0,0.5)] transition-all duration-300"></div>
+                                        <time className="text-[10px] font-black text-slate-600 uppercase tracking-widest block mb-2">{formatDate(item.date)}</time>
+                                        <div className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all shadow-xl">
+                                            <h3 className="text-sm font-black text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+                                                Transferido para <span className="text-brand-orange">{item.newStore}</span>
+                                            </h3>
+                                            <div className="text-xs font-bold text-slate-500 uppercase tracking-tight mb-4">
+                                                Anterior: <span className="text-slate-300">{item.previousStore}</span>
+                                            </div>
+                                            <div className="bg-[#0A0F1C]/40 border border-white/5 p-4 rounded-xl relative">
+                                                <span className="absolute -top-3 left-4 px-2 bg-[#0A0F1C] text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Motivo</span>
+                                                <p className="text-xs text-slate-400 italic font-medium leading-relaxed">"{item.reason}"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                                <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Nenhuma transferência registrada</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )
         },
@@ -403,6 +439,82 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             id: 'details_medical',
             label: '🩺 Atestados',
             content: <MedicalLeaveTab employeeId={displayEmployee.id} />
+        },
+        {
+            id: 'details_health',
+            label: '🏥 Saúde (ASO)',
+            content: (
+                <div className="space-y-4 py-4">
+                    <div className="text-center">
+                        <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Histórico de Exames Ocupacionais</h4>
+                    </div>
+
+                    {displayEmployee.healthRecords && displayEmployee.healthRecords.length > 0 ? (
+                        <div className="overflow-x-auto rounded-3xl border border-white/5 bg-[#0A0F1C]/50 shadow-inner">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/5 bg-white/[0.02]">
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Tipo de Exame</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Data Realização</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Validade</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Atributos</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Doc.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {displayEmployee.healthRecords.map((record: any) => (
+                                        <tr key={record.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                                            <td className="p-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex flex-shrink-0 items-center justify-center text-lg shadow-inner ring-1 ring-teal-500/30">
+                                                        {record.asoType === 'Admissional' ? '🆕' : record.asoType === 'MudancaFuncao' ? '🔄' : record.asoType === 'Demissional' ? '🚫' : '📅'}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <p className="text-[11px] font-black text-white uppercase tracking-widest mb-1">{record.asoType.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{new Date(record.lastAsoDate).toLocaleDateString()}</span>
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest py-1 px-3 bg-teal-500/10 rounded-full border border-teal-500/20">{record.periodicity} MESES</span>
+                                            </td>
+                                            <td className="p-5 text-center max-w-[200px]">
+                                                {record.observations ? (
+                                                    <p className="text-[9px] text-slate-400 font-medium truncate" title={record.observations}>{record.observations}</p>
+                                                ) : <span className="text-slate-600">—</span>}
+                                            </td>
+                                            <td className="p-5">
+                                                <div className="flex items-center justify-center">
+                                                    {record.fileUrl ? (
+                                                        <button
+                                                            onClick={() => window.open(record.fileUrl, '_blank')}
+                                                            className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 hover:bg-teal-500 hover:text-white flex items-center justify-center transition-all shadow-lg border border-teal-500/20 scale-95 hover:scale-105"
+                                                            title="Visualizar Anexo"
+                                                        >
+                                                            📄
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-slate-600 text-[9px] uppercase font-bold tracking-widest opacity-50">S/ ANEXO</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white/5 rounded-[3rem] border border-white/5 border-dashed">
+                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 opacity-20">
+                                <HeartPulse className="w-10 h-10" />
+                            </div>
+                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Nenhum registro de saúde localizado</p>
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
             id: 'details_access',
@@ -498,9 +610,9 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                             </div>
                         )}
                         {/* Header Profile - Premium */}
-                        <div className="flex flex-col md:flex-row items-center gap-8 pb-8 border-b border-white/5 relative">
+                        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 pb-6 md:pb-8 border-b border-white/5 relative">
                             <div className="absolute -top-4 -left-4 w-24 h-24 bg-brand-orange/10 blur-[50px] rounded-full pointer-events-none" />
-                            <div className="w-24 h-24 bg-[#0A0F1C] rounded-[2rem] flex items-center justify-center text-brand-orange text-3xl font-black border border-white/10 shadow-2xl overflow-hidden flex-shrink-0 relative group">
+                            <div className="w-20 h-20 md:w-24 md:h-24 bg-[#0A0F1C] rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-brand-orange text-2xl md:text-3xl font-black border border-white/10 shadow-2xl overflow-hidden flex-shrink-0 relative group">
                                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 {displayEmployee.photoUrl ? (
                                     <img src={displayEmployee.photoUrl} alt={displayEmployee.name} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
@@ -509,19 +621,19 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                 )}
                             </div>
                             <div className="flex-1 text-center md:text-left">
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-                                    <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.2em] bg-brand-orange/10 px-3 py-1 rounded-full border border-brand-orange/20">
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mb-2">
+                                    <span className="text-[8px] md:text-[10px] font-black text-brand-orange uppercase tracking-[0.2em] bg-brand-orange/10 px-3 py-1 rounded-full border border-brand-orange/20">
                                         {displayEmployee.jobRole?.name || displayEmployee.jobTitle || 'Sem cargo'}
                                     </span>
-                                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${displayEmployee.status === 'ACTIVE'
+                                    <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${displayEmployee.status === 'ACTIVE'
                                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                         : 'bg-white/5 text-slate-500 border-white/10'
                                         }`}>
                                         {displayEmployee.status === 'ACTIVE' ? 'Status Ativo' : 'Status Inativo'}
                                     </span>
                                 </div>
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none mb-2">{displayEmployee.name}</h3>
-                                <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                                <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-tight md:leading-none mb-2">{displayEmployee.name}</h3>
+                                <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 font-bold text-[10px] md:text-xs uppercase tracking-widest">
                                     <span className="text-brand-orange/60">ID #{displayEmployee.id.slice(-6).toUpperCase()}</span>
                                     <span className="w-1 h-1 rounded-full bg-slate-800" />
                                     <span>{displayEmployee.contract?.store?.name || '-'}</span>

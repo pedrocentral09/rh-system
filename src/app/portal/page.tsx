@@ -19,6 +19,7 @@ import { Button } from '@/shared/components/ui/button';
 import { getTimeSheet } from '@/modules/time-tracking/actions/timesheet';
 import { getVacationData, checkVacationRights } from '@/modules/vacations/actions';
 import { getEmployeePayslips } from '@/modules/payroll/actions/employee-portal';
+import { getEmployeeCareerPath } from '@/modules/career/actions/employee-career';
 import PortalHomeV2 from '@/modules/core/components/PortalHomeV2';
 
 export default async function PortalHome() {
@@ -47,6 +48,7 @@ export default async function PortalHome() {
     let hoursBalanceRaw = 0;
     let nextVacation = "Sem previsão";
     let lastPayslipDate = "Indisponível";
+    let careerData = null;
 
     if (employee) {
         const now = new Date();
@@ -86,6 +88,12 @@ export default async function PortalHome() {
             const last = payslipResult.data[0] as any;
             lastPayslipDate = `${last.period.month.toString().padStart(2, '0')}/${last.period.year}`;
         }
+
+        // 4. Get Career Data
+        const careerResult = await getEmployeeCareerPath();
+        if (careerResult.success) {
+            careerData = careerResult.data;
+        }
     }
 
     return (
@@ -98,6 +106,7 @@ export default async function PortalHome() {
             nextVacation={nextVacation}
             lastPayslipDate={lastPayslipDate}
             hoursBalanceRaw={hoursBalanceRaw}
+            careerData={careerData}
         />
     );
 }

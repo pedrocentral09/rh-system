@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createEmployee, updateEmployee } from '../actions';
+import { createEmployee, updateEmployee, deleteEmployeeHealthRecord } from '../actions';
 import { getCompanies } from '../../configuration/actions/companies';
 import { getStores } from '../../configuration/actions/stores';
 import { getJobRoles, getSectors } from '../../configuration/actions/auxiliary';
@@ -10,7 +10,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap, CheckCircle2, ArrowRightCircle, ChevronLeft, Calendar as CalendarIcon, User, Home, Building2, Banknote, ShieldPlus, FolderOpen, Key, Star, Plus, X } from 'lucide-react';
+import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap, CheckCircle2, ArrowRightCircle, ChevronLeft, Calendar as CalendarIcon, User, Home, Building2, Banknote, ShieldPlus, FolderOpen, Key, Star, Plus, X, Trash2 } from 'lucide-react';
 import { uploadEmployeePhoto, uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
 import { formatSafeDate, parseSafeDate } from '@/shared/utils/date-utils';
 import { useHorizontalScroll } from '@/shared/hooks/use-horizontal-scroll';
@@ -71,6 +71,21 @@ const maskLandline = (value: string) => {
         .replace(/(\d{2})(\d)/, '($1) $2')
         .replace(/(\d{4})(\d)/, '$1-$2')
         .replace(/(-\d{4})\d+?$/, '$1');
+};
+
+const maskCurrency = (value: string | number) => {
+    if (value === undefined || value === null || value === '') return '';
+    let strValue = String(value);
+    if (typeof value === 'number') {
+        strValue = value.toFixed(2).replace('.', '');
+    }
+    const numbers = strValue.replace(/\D/g, '');
+    if (!numbers) return '';
+    const amount = parseInt(numbers, 10) / 100;
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(amount);
 };
 
 export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, defaultTab }: EmployeeFormProps) {
@@ -301,15 +316,20 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const contractEndData = calculateContractEnd();
 
     // --- ASO Logic ---
-    const [lastAso, setLastAso] = useState(initialData?.healthData?.lastAsoDate ? safeDate(initialData.healthData.lastAsoDate) : '');
-    const [asoPeriodicity, setAsoPeriodicity] = useState(initialData?.healthData?.periodicity || 12);
+    const latestAsoRecord = initialData?.healthRecords?.[0];
+    const [asoType, setAsoType] = useState(latestAsoRecord ? "Periodico" : "Admissional");
+    const [targetRoleId, setTargetRoleId] = useState('');
+    const [lastAso, setLastAso] = useState('');
+    const [asoPeriodicity, setAsoPeriodicity] = useState(latestAsoRecord?.periodicity || 12);
+    const [asoFileUrl, setAsoFileUrl] = useState<string | null>(null);
 
     const calculateNextAso = () => {
-        if (!lastAso) return null;
-        const date = new Date(lastAso);
-        // Add months
-        date.setMonth(date.getMonth() + parseInt(asoPeriodicity));
-        return date.toLocaleDateString();
+        const baseDate = lastAso ? new Date(lastAso) : (latestAsoRecord?.lastAsoDate ? new Date(latestAsoRecord.lastAsoDate) : null);
+        if (!baseDate) return null;
+
+        const nextDate = new Date(baseDate);
+        nextDate.setMonth(nextDate.getMonth() + parseInt(String(asoPeriodicity)));
+        return nextDate.toLocaleDateString();
     };
 
     const nextAsoDate = calculateNextAso();
@@ -378,7 +398,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             address: ['zipCode', 'city', 'state', 'street', 'number', 'neighborhood'],
             contract: ['companyId', 'jobRoleId', 'sectorId', 'storeId', 'hireDate', 'baseSalary', 'workShiftId'],
             bank: ['bankName', 'accountType', 'agency', 'accountNumber', 'pixKey'],
-            health: ['asoType', 'lastAsoDate'],
+            health: asoType === 'MudancaFuncao' ? ['asoType', 'lastAsoDate', 'newRoleId'] : ['asoType', 'lastAsoDate'],
             access: ['accessEmail', 'accessPassword'],
             legal_guardian: isMinor ? ['guardianName', 'guardianCpf', 'guardianRg', 'guardianPhone', 'guardianRelationship'] : [],
             spouse: maritalStatus === 'Casado' ? ['spouseName'] : []
@@ -491,11 +511,11 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'personal',
             label: '👤 Dados Pessoais',
             content: (
-                <div className="space-y-12">
+                <div className="space-y-6 md:space-y-12">
                     {/* Section 1: Basic Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
                         {/* Avatar Column */}
-                        <div className="md:col-span-3 flex flex-col items-center space-y-4">
+                        <div className="lg:col-span-3 flex flex-col items-center space-y-4">
                             <div className="relative w-40 h-52 bg-white/5 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden group cursor-pointer hover:border-indigo-500/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
                                 {isUploading ? (
                                     <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
@@ -546,7 +566,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </div>
 
                         {/* Fields Column */}
-                        <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                             <div className="space-y-2 md:col-span-2 lg:col-span-3">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nome Completo do Ativo *</label>
                                 <Input
@@ -992,16 +1012,16 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'address',
             label: '📍 Localização Residencial',
             content: (
-                <div className="space-y-10">
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                <div className="space-y-6 md:space-y-10">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
-                        <h4 className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                        <h4 className="text-emerald-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
                             <span className="text-xl">📍</span>
-                            DADOS DOMICILIARES
+                            DADOS DE MORADIA
                         </h4>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Código Postal (CEP) *</label>
                             <div className="relative">
@@ -1096,17 +1116,17 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'contract',
             label: '💼 Vínculo Empregatício',
             content: (
-                <div className="space-y-10">
-                    <div className="bg-indigo-500/10 border border-indigo-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                <div className="space-y-6 md:space-y-10">
+                    <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
-                        <h4 className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                        <h4 className="text-indigo-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
                             <span className="text-xl">🏢</span>
                             DADOS CONTRATUAIS
                         </h4>
                     </div>
 
                     {/* Professional Header Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-8">
                         <div className="space-y-2 md:col-span-2 lg:col-span-1">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade Contratante *</label>
                             <select
@@ -1194,10 +1214,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Remuneração Base (R$) *</label>
                             <Input
                                 name="baseSalary"
-                                type="number"
-                                step="0.01"
-                                defaultValue={initialData?.contract?.baseSalary}
-                                placeholder="1621.00"
+                                type="text"
+                                defaultValue={initialData?.contract?.baseSalary ? maskCurrency(initialData.contract.baseSalary) : ''}
+                                onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                placeholder="R$ 1.621,00"
                                 required
                                 className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
                             />
@@ -1327,7 +1347,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         <option>% Por</option>
                                         <option>R$ Fixo</option>
                                     </select>
-                                    <Input name="cashHandlingBase" type="number" step="0.01" defaultValue={initialData?.contract?.cashHandlingBase} placeholder="10" className="h-8 w-24" />
+                                    <Input
+                                        name="cashHandlingBase"
+                                        type="text"
+                                        defaultValue={initialData?.contract?.cashHandlingBase ? maskCurrency(initialData.contract.cashHandlingBase) : ''}
+                                        onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                        placeholder="R$ 10,00"
+                                        className="h-8 w-24"
+                                    />
                                 </div>
                             </div>
 
@@ -1342,7 +1369,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         <option>% Por</option>
                                         <option>grau</option>
                                     </select>
-                                    <Input name="insalubrityBase" type="number" step="0.01" defaultValue={initialData?.contract?.insalubrityBase} placeholder="20" className="h-8 flex-1 sm:w-24" />
+                                    <Input
+                                        name="insalubrityBase"
+                                        type="text"
+                                        defaultValue={initialData?.contract?.insalubrityBase ? maskCurrency(initialData.contract.insalubrityBase) : ''}
+                                        onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                        placeholder="R$ 20,00"
+                                        className="h-8 flex-1 sm:w-24"
+                                    />
                                 </div>
                             </div>
 
@@ -1356,7 +1390,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     <select className="h-8 rounded w-24 sm:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
                                         <option>% Por</option>
                                     </select>
-                                    <Input name="dangerousnessBase" type="number" step="0.01" defaultValue={initialData?.contract?.dangerousnessBase} placeholder="30" className="h-8 flex-1 sm:w-24" />
+                                    <Input
+                                        name="dangerousnessBase"
+                                        type="text"
+                                        defaultValue={initialData?.contract?.dangerousnessBase ? maskCurrency(initialData.contract.dangerousnessBase) : ''}
+                                        onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                        placeholder="R$ 30,00"
+                                        className="h-8 flex-1 sm:w-24"
+                                    />
                                 </div>
                             </div>
 
@@ -1370,7 +1411,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     <select className="h-8 rounded md:w-20 bg-slate-950 border border-slate-700 text-xs text-slate-400">
                                         <option>% Por</option>
                                     </select>
-                                    <Input name="trustPositionBase" type="number" step="0.01" defaultValue={initialData?.contract?.trustPositionBase} placeholder="40" className="h-8 w-24" />
+                                    <Input
+                                        name="trustPositionBase"
+                                        type="text"
+                                        defaultValue={initialData?.contract?.trustPositionBase ? maskCurrency(initialData.contract.trustPositionBase) : ''}
+                                        onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                        placeholder="R$ 40,00"
+                                        className="h-8 w-24"
+                                    />
                                 </div>
                             </div>
 
@@ -1383,16 +1431,16 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'bank',
             label: '💰 Dados Bancários',
             content: (
-                <div className="space-y-10">
-                    <div className="bg-rose-500/10 border border-rose-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                <div className="space-y-6 md:space-y-10">
+                    <div className="bg-rose-500/10 border border-rose-500/20 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
-                        <h4 className="text-rose-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                        <h4 className="text-rose-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
                             <span className="text-xl">💰</span>
                             INFORMAÇÕES FINANCEIRAS
                         </h4>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Instituição Financeira *</label>
                             <Input
@@ -1499,10 +1547,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 </div>
                                 <Input
                                     name="mealVoucherValue"
-                                    type="number"
-                                    step="0.01"
-                                    defaultValue={initialData?.contract?.mealVoucherValue}
-                                    placeholder="COTA MENSAL (R$)"
+                                    type="text"
+                                    defaultValue={initialData?.contract?.mealVoucherValue ? maskCurrency(initialData.contract.mealVoucherValue) : ''}
+                                    onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                    placeholder="R$ 0,00"
                                     className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
                                 />
                             </div>
@@ -1514,10 +1562,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 </div>
                                 <Input
                                     name="foodVoucherValue"
-                                    type="number"
-                                    step="0.01"
-                                    defaultValue={initialData?.contract?.foodVoucherValue}
-                                    placeholder="COTA MENSAL (R$)"
+                                    type="text"
+                                    defaultValue={initialData?.contract?.foodVoucherValue ? maskCurrency(initialData.contract.foodVoucherValue) : ''}
+                                    onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                    placeholder="R$ 0,00"
                                     className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
                                 />
                             </div>
@@ -1569,10 +1617,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Gratificação Recorrente (R$)</label>
                                 <Input
                                     name="monthlyBonus"
-                                    type="number"
-                                    step="0.01"
-                                    defaultValue={initialData?.contract?.monthlyBonus}
-                                    placeholder="VALOR FIXO ADICIONAL"
+                                    type="text"
+                                    defaultValue={initialData?.contract?.monthlyBonus ? maskCurrency(initialData.contract.monthlyBonus) : ''}
+                                    onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
+                                    placeholder="R$ 0,00"
                                     className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
                                 />
                                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
@@ -1595,7 +1643,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
                         <h4 className="text-teal-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
                             <span className="text-xl">🩺</span>
-                            DIRETRIZES DE SAÚDE OCUPACIONAL (ASO)
+                            LANÇAR NOVO EXAME OCUPACIONAL (ASO)
                         </h4>
                     </div>
 
@@ -1604,18 +1652,35 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Classificação do Exame</label>
                             <select
                                 name="asoType"
-                                defaultValue={initialData?.healthData?.asoType || "Admissional"}
+                                value={asoType}
+                                onChange={(e) => setAsoType(e.target.value)}
                                 className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
                             >
                                 <option value="Admissional" className="bg-[#0A0F1C]">ADMISSIONAL</option>
                                 <option value="Periodico" className="bg-[#0A0F1C]">PERIÓDICO</option>
                                 <option value="Retorno" className="bg-[#0A0F1C]">RETORNO AO TRABALHO</option>
-                                <option value="MudancaFuncao" className="bg-[#0A0F1C]">MUDANÇA DE ATRIBUIÇÃO</option>
+                                <option value="MudancaFuncao" className="bg-[#0A0F1C]">MUDANÇA DE FUNÇÃO</option>
                                 <option value="Demissional" className="bg-[#0A0F1C]">DEMISSIONAL</option>
                             </select>
                         </div>
+                        {asoType === 'MudancaFuncao' && (
+                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-4">Nova Função (Designação)</label>
+                                <select
+                                    name="newRoleId"
+                                    value={targetRoleId}
+                                    onChange={(e) => setTargetRoleId(e.target.value)}
+                                    className="w-full h-14 bg-white/5 border border-rose-500/30 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500"
+                                >
+                                    <option value="" className="bg-[#0A0F1C]">SELECIONE A NOVA FUNÇÃO...</option>
+                                    {jobRolesList.map(role => (
+                                        <option key={role.id} value={role.id} className="bg-[#0A0F1C]">{role.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro do Último Exame *</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data do Exame *</label>
                             <Input
                                 name="lastAsoDate"
                                 type="date"
@@ -1625,7 +1690,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Intervalo Preconizado (Meses)</label>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Próximo Vencimento (Meses)</label>
                             <select
                                 name="asoPeriodicity"
                                 value={asoPeriodicity}
@@ -1638,6 +1703,48 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             </select>
                         </div>
 
+                        <div className="md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 block mb-2">Upload do Certificado (Opcional)</label>
+                            <div className="relative group/aso">
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    id="aso-upload"
+                                    accept="application/pdf,image/*"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file && currentId) {
+                                            setIsUploading(true);
+                                            try {
+                                                const res = await uploadEmployeeDocument(file, currentId, employeeName, 'health');
+                                                setAsoFileUrl(res.fileUrl);
+                                                toast.success("Documento do ASO anexado!");
+                                            } catch (err) {
+                                                toast.error("Erro ao subir documento");
+                                            } finally {
+                                                setIsUploading(false);
+                                            }
+                                        }
+                                    }}
+                                />
+                                <label
+                                    htmlFor="aso-upload"
+                                    className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer group-hover/aso:border-teal-500/30 transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
+                                            <CloudUpload className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-[10px] font-black text-white tracking-widest uppercase">
+                                            {asoFileUrl ? "DOCUMENTO ANEXADO" : "CLIQUE PARA ANEXAR O PDF/FOTO"}
+                                        </span>
+                                    </div>
+                                    {asoFileUrl && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                                </label>
+                                <input type="hidden" name="asoFileUrl" value={asoFileUrl || ''} />
+                            </div>
+                        </div>
+
                         {/* Next Exam Prediction Display */}
                         <div className="md:col-span-2 bg-gradient-to-r from-teal-500/10 to-transparent border border-teal-500/20 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
@@ -1646,7 +1753,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 </div>
                                 <div>
                                     <h5 className="text-[10px] font-black text-teal-500 uppercase tracking-widest">
-                                        PROJEÇÃO DO PRÓXIMO EXAME
+                                        PROXIMA RENOVAÇÃO ESTIMADA
                                     </h5>
                                     <p className="text-sm font-bold text-white mt-1">
                                         {nextAsoDate || "AGUARDANDO DEFINIÇÃO DE DATA BASE"}
@@ -1659,11 +1766,100 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Parecer e Restrições Clínicas</label>
                             <textarea
                                 name="asoObservations"
-                                defaultValue={initialData?.healthData?.observations}
                                 className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-teal-500/50 min-h-[140px] resize-none"
                                 placeholder="DESCREVER AVALIAÇÃO DE APTIDÃO E POTENCIAIS LIMITAÇÕES FÍSICAS..."></textarea>
                         </div>
                     </div>
+
+                    {/* ASO HISTORY SECTION */}
+                    {initialData?.healthRecords?.length > 0 && (
+                        <div className="pt-10 border-t border-white/5">
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Histórico de Exames Ocupacionais</h4>
+
+                            <div className="overflow-x-auto rounded-3xl border border-white/5 bg-[#0A0F1C]/50 shadow-inner">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-white/5 bg-white/[0.02]">
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Tipo de Exame</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Data Realização</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Validade</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Atributos</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Doc.</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {initialData.healthRecords.map((record: any) => (
+                                            <tr key={record.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex flex-shrink-0 items-center justify-center text-lg shadow-inner ring-1 ring-teal-500/30">
+                                                            {record.asoType === 'Admissional' ? '🆕' : record.asoType === 'MudancaFuncao' ? '🔄' : record.asoType === 'Demissional' ? '🚫' : '📅'}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <p className="text-[11px] font-black text-white uppercase tracking-widest mb-1">{record.asoType.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{new Date(record.lastAsoDate).toLocaleDateString()}</span>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest py-1 px-3 bg-teal-500/10 rounded-full border border-teal-500/20">{record.periodicity} MESES</span>
+                                                </td>
+                                                <td className="p-5 text-center max-w-[200px]">
+                                                    {record.observations ? (
+                                                        <p className="text-[9px] text-slate-400 font-medium truncate" title={record.observations}>{record.observations}</p>
+                                                    ) : <span className="text-slate-600">—</span>}
+                                                </td>
+                                                <td className="p-5">
+                                                    <div className="flex items-center justify-center">
+                                                        {record.fileUrl ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => window.open(record.fileUrl, '_blank')}
+                                                                className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 hover:bg-teal-500 hover:text-white flex items-center justify-center transition-all shadow-lg border border-teal-500/20 scale-95 hover:scale-105"
+                                                                title="Visualizar Anexo"
+                                                            >
+                                                                📄
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-slate-600 text-[9px] uppercase font-bold tracking-widest opacity-50">S/ ANEXO</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-right w-12">
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            if (confirm('Tem certeza que deseja apagar este registro de saúde? Esta ação não pode ser desfeita.')) {
+                                                                const loadingToast = toast.loading("Removendo registro de ASO...");
+                                                                try {
+                                                                    const res = await deleteEmployeeHealthRecord(record.id);
+                                                                    if (res.success) {
+                                                                        toast.success("Registro removido com sucesso!", { id: loadingToast });
+                                                                        if (onSuccess) onSuccess(); // Refresh data via callback
+                                                                    } else {
+                                                                        toast.error(res.error || "Erro ao remover registro", { id: loadingToast });
+                                                                    }
+                                                                } catch (error) {
+                                                                    toast.error("Falha na comunicação com o servidor", { id: loadingToast });
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="w-10 h-10 rounded-xl bg-rose-500/5 text-rose-400/50 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 mx-auto"
+                                                        title="Excluir Registro"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )
         },
@@ -1671,16 +1867,16 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             id: 'documents',
             label: '📂 Documentos',
             content: (
-                <div className="space-y-10">
-                    <div className="bg-sky-500/10 border border-sky-500/20 p-8 rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
+                <div className="space-y-6 md:space-y-10">
+                    <div className="bg-sky-500/10 border border-sky-500/20 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
-                        <h4 className="text-sky-400 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
-                            <span className="text-xl">📂</span>
-                            ARQUIVOS COMPLEMENTARES
+                        <h4 className="text-sky-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="text-xl">🏛️</span>
+                            CONTRATO CORPORATIVO
                         </h4>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Inscrição Social (PIS/PASEP)</label>
                             <Input
@@ -1723,7 +1919,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {docCategories.map(cat => (
                                 <div key={cat.id} className="p-6 border border-white/5 rounded-[2rem] bg-white/[0.02] hover:border-sky-500/30 transition-all group">
-                                    <div className="flex items-center justify-between mb-6">
+                                    <div className="mt-8 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 pb-10">
                                         <h5 className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-3">
                                             <span className="text-xl opacity-80">{cat.icon}</span> {cat.label}
                                         </h5>
@@ -1834,27 +2030,26 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     });
 
     return (
-        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 overflow-hidden relative shadow-2xl">
+        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-full">
             {/* Ambient Background Glow */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col min-h-[700px]">
-
+            <div className="relative z-10 flex flex-col flex-1 min-h-0">
                 {/* Premium Navigation Header */}
-                <div className="border-b border-white/5 bg-white/[0.02] px-8 pt-8">
-                    <div className="flex items-center justify-between mb-8 px-4">
+                <div className="border-b border-white/5 bg-white/[0.02] px-4 md:px-8 pt-6 md:pt-8 min-h-0 flex flex-col overflow-hidden">
+                    <div className="flex items-center justify-between mb-6 md:mb-8 px-2">
                         <div>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
                                 {currentId ? 'Modificar Perfil' : 'Novo Recrutamento'}
-                                <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full tracking-[0.2em] ml-2 border border-indigo-500/20">
+                                <span className="hidden sm:inline-block text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full tracking-[0.2em] ml-2 border border-indigo-500/20">
                                     HUMAN CAPITAL • 2026
                                 </span>
                             </h2>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2 ml-1">Terminal de Controle de Ativos e Talentos</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2 ml-1">Terminal de Controle de Ativos e Talentos</p>
                         </div>
                         {currentId && (
-                            <div className="hidden md:flex items-center gap-4 bg-white/5 border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-xl">
+                            <div className="hidden lg:flex items-center gap-4 bg-white/5 border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-xl">
                                 <User className="w-5 h-5 text-indigo-400" />
                                 <div>
                                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Matriz de Dados</p>
@@ -1865,7 +2060,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     <div
-                        className="flex items-center gap-2 overflow-x-auto pb-6 custom-scrollbar-horizontal no-scrollbar px-4 scroll-smooth"
+                        className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-6 custom-scrollbar-horizontal no-scrollbar px-2 scroll-smooth touch-pan-x"
                         ref={scrollRef}
                         onMouseMove={onMouseMove}
                         onMouseLeave={onMouseLeave}
@@ -1877,7 +2072,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     key={tab.id}
                                     type="button"
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap group ${isTabActive
+                                    className={`relative flex items-center gap-3 px-4 md:px-6 py-3 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap group ${isTabActive
                                         ? 'text-black'
                                         : 'text-slate-500 hover:text-white hover:bg-white/5'
                                         }`}
@@ -1909,8 +2104,8 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 overflow-y-auto px-12 py-10 custom-scrollbar-vertical no-scrollbar scroll-smooth">
+                <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 bg-transparent">
+                    <div className="flex-1 overflow-y-auto px-4 md:px-12 py-6 md:py-10 custom-scrollbar-vertical no-scrollbar scroll-smooth">
                         <AnimatePresence mode="wait">
                             {refsLoading ? (
                                 <motion.div
@@ -1977,7 +2172,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 type="button"
                                 disabled={loading}
                                 onClick={handleSaveStep}
-                                className="w-full sm:w-auto min-w-[320px] h-16 px-12 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] hover:bg-indigo-500 hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                                className="w-full sm:w-auto sm:min-w-[320px] h-14 md:h-16 px-8 md:px-12 rounded-2xl bg-white text-black text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-indigo-500 hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
                             >
                                 {loading ? (
                                     <>

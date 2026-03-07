@@ -96,3 +96,14 @@ export async function resetOnboarding(id: string) {
     if (result.success) revalidatePath('/dashboard/personnel');
     return result;
 }
+
+export async function deleteEmployeeHealthRecord(recordId: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.deleteHealthRecord(recordId, user?.id);
+    if (result.success) {
+        try {
+            revalidatePath('/dashboard/personnel');
+        } catch (e) { }
+    }
+    return result;
+}

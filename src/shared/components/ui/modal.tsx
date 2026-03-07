@@ -45,10 +45,10 @@ export function Modal({ isOpen, onClose, title, children, width = 'md' }: ModalP
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-2 md:p-4 animate-in fade-in duration-200">
             <div
                 ref={modalRef}
-                className={`bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full ${widthClasses[width]} max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800`}
+                className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full ${widthClasses[width]} max-h-[95vh] md:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800 overflow-hidden`}
                 role="dialog"
                 aria-modal="true"
             >

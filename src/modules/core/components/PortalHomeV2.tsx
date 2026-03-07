@@ -29,6 +29,7 @@ interface PortalHomeV2Props {
     nextVacation: string;
     lastPayslipDate: string;
     hoursBalanceRaw: number;
+    careerData: any;
 }
 
 export default function PortalHomeV2({
@@ -39,8 +40,15 @@ export default function PortalHomeV2({
     hoursBalance,
     nextVacation,
     lastPayslipDate,
-    hoursBalanceRaw
+    hoursBalanceRaw,
+    careerData
 }: PortalHomeV2Props) {
+
+    const hasPath = careerData?.hasCareerPath;
+    const currentLevel = hasPath ? careerData.levels.find((l: any) => l.id === careerData.currentLevelId) : null;
+    const progress = hasPath ? (careerData?.progressionReport?.totalProgress ?? 0) : 0;
+    const levelLabel = currentLevel ? `Nível ${currentLevel.order}` : (hasPath ? 'Nível 1' : 'Em breve');
+    const nextLevelLabel = careerData?.nextLevel?.jobRole?.name || (hasPath ? 'Nível Máximo' : 'Aguardando Trilha');
 
     const item = {
         hidden: { opacity: 0, y: 20 },
@@ -176,7 +184,7 @@ export default function PortalHomeV2({
                     <div className="shrink-0 relative">
                         <div className="h-32 w-32 rounded-full border-[10px] border-white/5 flex items-center justify-center relative overflow-hidden group-hover:border-brand-orange/20 transition-all duration-700 shadow-inner">
                             <div className="absolute inset-0 bg-brand-orange rotate-[120deg] origin-bottom opacity-10" />
-                            <span className="text-4xl font-[1000] text-white italic">75%</span>
+                            <span className="text-4xl font-[1000] text-white italic">{progress}%</span>
                         </div>
                         <div className="absolute -top-1 -right-1 h-9 w-9 bg-brand-orange rounded-full flex items-center justify-center shadow-lg shadow-brand-orange/40 rotate-12">
                             <Star className="h-5 w-5 text-white fill-white" />
@@ -184,29 +192,37 @@ export default function PortalHomeV2({
                     </div>
                     <div className="flex-1 text-center md:text-left space-y-4">
                         <div>
-                            <h4 className="text-3xl font-[1000] text-white tracking-widest uppercase italic mb-1">Nível Experiente</h4>
-                            <p className="text-[10px] font-[1000] text-blue-400 uppercase tracking-[0.3em]">Jornada de Reconhecimento</p>
+                            <h4 className="text-3xl font-[1000] text-white tracking-widest uppercase italic mb-1">
+                                {currentLevel?.jobRole?.name || 'Nível Operacional'}
+                            </h4>
+                            <p className="text-[10px] font-[1000] text-blue-400 uppercase tracking-[0.3em]">{levelLabel}</p>
                         </div>
                         <p className="text-slate-400 text-xs font-[1000] leading-relaxed uppercase tracking-tighter max-w-[480px]">
-                            Seu desempenho impactou <span className="text-white">várias famílias</span> este mês. Continue evoluindo para desbloquear <span className="text-brand-orange">novos benefícios corporativos</span>.
+                            {hasPath ? (
+                                <>Seu desempenho como <span className="text-white">{jobRole}</span> impactou positivamente nossa rede este mês. Continue evoluindo para desbloquear <span className="text-brand-orange">novos benefícios</span>.</>
+                            ) : (
+                                <>Sua jornada como <span className="text-white">{jobRole}</span> está apenas começando. Em breve o RH disponibilizará sua <span className="text-brand-orange">trilha de evolução personalizada</span>.</>
+                            )}
                         </p>
 
                         <div className="space-y-2 mt-4 max-w-sm mx-auto md:mx-0">
                             <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-[2px] border border-white/10 shadow-inner">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    whileInView={{ width: '75%' }}
+                                    whileInView={{ width: `${progress}%` }}
                                     transition={{ duration: 2, ease: "circOut" }}
                                     className="h-full bg-gradient-to-r from-brand-orange to-orange-400 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)]"
                                 />
                             </div>
                             <div className="flex justify-between items-center text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                                <span>Iniciante</span>
-                                <span className="text-white">Mestre do Cuidado</span>
+                                <span>{levelLabel}</span>
+                                <span className="text-white">{nextLevelLabel}</span>
                             </div>
                         </div>
                     </div>
-                    <Button className="rounded-full px-10 py-8 bg-white text-slate-900 font-[1000] text-[11px] uppercase tracking-[0.25em] shadow-2xl hover:bg-slate-100 active:scale-95 transition-all">Ver Minha Trilha</Button>
+                    <Link href="/portal/career">
+                        <Button className="rounded-full px-10 py-8 bg-white text-slate-900 font-[1000] text-[11px] uppercase tracking-[0.25em] shadow-2xl hover:bg-slate-100 active:scale-95 transition-all">Ver Minha Trilha</Button>
+                    </Link>
                 </div>
                 {/* Background Decoration */}
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none" />

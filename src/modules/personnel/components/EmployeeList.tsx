@@ -40,6 +40,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     const [transferringEmployee, setTransferringEmployee] = useState<any>(null);
     const [timeTrackingEmployee, setTimeTrackingEmployee] = useState<any>(null);
     const [vacationEmployee, setVacationEmployee] = useState<any>(null);
+    const [vacationModalTab, setVacationModalTab] = useState<'vacations' | 'atestados'>('vacations');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive' | 'approval'>('active');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -311,7 +312,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                             onEdit={(e) => { e.stopPropagation(); setEditingEmployee(emp); }}
                             onTransfer={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }}
                             onTimeTracking={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }}
-                            onVacation={(e) => { e.stopPropagation(); setVacationEmployee(emp); }}
+                            onVacation={(e) => { e.stopPropagation(); setVacationEmployee(emp); setVacationModalTab('vacations'); }}
                             translateStatus={translateStatus}
                         />
                     ))}
@@ -343,13 +344,33 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                 className={`grid grid-cols-12 items-center px-8 py-5 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-brand-orange/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group cursor-pointer relative overflow-hidden ${emp.isIncomplete ? 'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-amber-500/50' : ''}`}
                             >
                                 <div className="col-span-4 flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative group-hover:border-brand-orange/40 transition-colors">
-                                        {emp.photoUrl ? (
-                                            <img src={emp.photoUrl} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="text-sm font-black text-slate-500 group-hover:text-brand-orange transition-colors">{emp.name.charAt(0)}</span>
-                                        )}
-                                        {emp.isIncomplete && <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" />}
+                                    <div className="relative group/photo">
+                                        <div className="w-10 h-10 md:w-11 md:h-11 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-brand-orange/30 group-hover:scale-105 shadow-xl">
+                                            {emp.photoUrl ? (
+                                                <img src={emp.photoUrl} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-sm font-black text-slate-500 group-hover:text-brand-orange transition-colors">{emp.name.charAt(0)}</span>
+                                            )}
+                                            {emp.isIncomplete && <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" />}
+
+                                            {/* ASO STATUS INDICATOR */}
+                                            {(() => {
+                                                const latestAso = emp.healthRecords?.[0];
+                                                if (!latestAso) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-[#0A0F1C]" title="Sem ASO Admissional" />;
+
+                                                const expirationDate = new Date(latestAso.date);
+                                                expirationDate.setMonth(expirationDate.getMonth() + (latestAso.periodicity || 12));
+                                                const isExpired = expirationDate < new Date();
+
+                                                if (isExpired) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-[#0A0F1C] animate-pulse" title="ASO Vencido" />;
+
+                                                const in30Days = new Date();
+                                                in30Days.setDate(in30Days.getDate() + 30);
+                                                if (expirationDate < in30Days) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" title="Vence em breve" />;
+
+                                                return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0A0F1C]" title="ASO em dia" />;
+                                            })()}
+                                        </div>
                                     </div>
                                     <div>
                                         <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{emp.name}</h4>
@@ -423,7 +444,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                     <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Editar">✏️</button>
                                     <button onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Transferir">🚚</button>
                                     <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Ponto">⏰</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-sky-500 hover:text-white transition-all shadow-lg" title="Férias">🏖️</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); setVacationModalTab('vacations'); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-sky-500 hover:text-white transition-all shadow-lg" title="Férias e Afastamentos">🏖️</button>
                                 </div>
                             </motion.div>
                         ))}
@@ -486,6 +507,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                     onClose={() => setVacationEmployee(null)}
                     employeeId={vacationEmployee?.id}
                     employeeName={vacationEmployee?.name}
+                    defaultTab={vacationModalTab}
                 />
             )}
         </div>

@@ -83,7 +83,8 @@ export class StatsService extends BaseService {
                         orderBy: { returnDate: 'asc' }
                     }),
                     prisma.healthData.findMany({
-                        include: { employee: { select: { id: true, name: true, photoUrl: true, department: true } } }
+                        include: { employee: { select: { id: true, name: true, photoUrl: true, department: true } } },
+                        orderBy: { lastAsoDate: 'desc' }
                     }),
                     prisma.medicalLeave.findMany({
                         where: { endDate: { gte: today, lte: in30Days }, status: 'APPROVED' },
@@ -194,7 +195,13 @@ export class StatsService extends BaseService {
                         color: 'pink'
                     }));
 
+                const seenEmployees = new Set();
                 const asoExpirations = (allHealthData || [])
+                    .filter((h: any) => {
+                        if (seenEmployees.has(h.employeeId)) return false;
+                        seenEmployees.add(h.employeeId);
+                        return true;
+                    })
                     .map((h: any) => {
                         const expirationDate = new Date(h.lastAsoDate);
                         expirationDate.setMonth(expirationDate.getMonth() + (h.periodicity || 12));

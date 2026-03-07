@@ -103,7 +103,7 @@ model Employee {
   jobRole                      JobRole?                @relation(fields: [jobRoleId], references: [id])
   user                         User?                   @relation(fields: [userId], references: [id])
   employmentHistory            EmploymentHistory[]
-  healthData                   HealthData?
+  healthRecords                HealthData[]
   legalGuardian                LegalGuardian?
   spouse                       Spouse?
   dependents                   Dependent[]
@@ -115,6 +115,8 @@ model Employee {
   vacationPeriods              VacationPeriod[]
   vacationRequests             VacationRequest[]
   supportTickets               SupportTicket[]
+  careerHistory               CareerHistory[]
+  managedStores                Store[]                 @relation("StoreManager")
 
   @@index([status])
   @@index([department])
@@ -191,11 +193,14 @@ model Dependent {
 
 model HealthData {
   id           String   @id @default(uuid())
-  employeeId   String   @unique
+  employeeId   String
   asoType      String
-  lastAsoDate  DateTime
+  lastAsoDate  DateTime @default(now())
   periodicity  Int
   observations String?
+  fileUrl      String?
+  targetRoleId String?
+  createdAt    DateTime @default(now())
   employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("personnel_health_data")
@@ -378,6 +383,8 @@ model Store {
   company               Company?          @relation(fields: [companyId], references: [id])
   storeAccess           UserStoreAccess[]
   contracts             Contract[]
+  managerId             String?
+  manager               Employee?         @relation("StoreManager", fields: [managerId], references: [id])
 
   @@map("core_stores")
 }
@@ -392,8 +399,26 @@ model JobRole {
   contracts     Contract[]
   employees     Employee[]
   careerLevels  CareerLevel[]
+  asPreviousRole CareerHistory[] @relation("PreviousRole")
+  asNewRole      CareerHistory[] @relation("NewRole")
 
   @@map("config_job_roles")
+}
+
+model CareerHistory {
+  id              String   @id @default(uuid())
+  employeeId      String
+  previousRoleId  String?
+  newRoleId       String
+  changeDate      DateTime
+  reason          String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  previousRole    JobRole? @relation("PreviousRole", fields: [previousRoleId], references: [id])
+  newRole         JobRole  @relation("NewRole", fields: [newRoleId], references: [id])
+
+  @@map("personnel_career_history")
 }
 
 model Sector {

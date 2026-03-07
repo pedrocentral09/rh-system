@@ -6,7 +6,9 @@ import { Button } from '@/shared/components/ui/button';
 import { exportToExcel, exportToPDF } from '@/shared/utils/export-utils';
 import { getTurnoverReport, getPayrollReportPreview } from '../actions/reports';
 import { toast } from 'sonner';
-import { FileText, Table as TableIcon, Download, Loader2, Users, Receipt } from 'lucide-react';
+import { FileText, Table as TableIcon, Download, Loader2, Users, Receipt, BarChart3 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { PeopleAnalytics } from '@/modules/core/components/PeopleAnalytics';
 
 interface ReportCenterProps {
     companies: { id: string, name: string }[];
@@ -107,72 +109,91 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Turnover Card */}
-                <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(249,115,22,0.4)] transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <div className="space-y-1">
-                            <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-                                <Users className="w-5 h-5 text-orange-500" />
-                                Turnover e Equipe
-                            </CardTitle>
-                            <CardDescription>Lista completa de ativos e desligados.</CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-slate-600 leading-tight">
-                            Gera um relatório detalhado com nomes, CPFs, cargos, datas de admissão e status atual dos colaboradores selecionados nos filtros.
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2">
-                            <Button
-                                onClick={() => handleExportTurnover('excel')}
-                                disabled={loading === 'turnover'}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
-                            >
-                                {loading === 'turnover' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <TableIcon className="w-4 h-4 mr-2" />}
-                                EXCEL (XLSX)
-                            </Button>
-                            <Button
-                                onClick={() => handleExportTurnover('pdf')}
-                                disabled={loading === 'turnover'}
-                                variant="outline"
-                                className="border-slate-900 border-2 rounded-none font-bold uppercase text-xs tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
-                            >
-                                <FileText className="w-4 h-4 mr-2" />
-                                PDF
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+            <Tabs defaultValue="export" className="space-y-6">
+                <TabsList className="bg-slate-900 border border-white/5 p-1 rounded-2xl">
+                    <TabsTrigger value="export" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6">
+                        <Download className="w-3.5 h-3.5 mr-2" />
+                        Exportação
+                    </TabsTrigger>
+                    <TabsTrigger value="analytics" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6">
+                        <BarChart3 className="w-3.5 h-3.5 mr-2" />
+                        People Analytics
+                    </TabsTrigger>
+                </TabsList>
 
-                {/* Payroll Preview Card */}
-                <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(79,70,229,0.4)] transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <div className="space-y-1">
-                            <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-                                <Receipt className="w-5 h-5 text-indigo-600" />
-                                Prévia de Folha
-                            </CardTitle>
-                            <CardDescription>Estimativa de custos e salários base.</CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-slate-600 leading-tight">
-                            Analise os custos fixos estimados baseados em salários base, bônus e adicionais configurados nos contratos dos colaborares ATIVOS.
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2">
-                            <Button
-                                onClick={() => handleExportPayroll('excel')}
-                                disabled={loading === 'payroll'}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
-                            >
-                                {loading === 'payroll' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-                                EXCEL (EST.)
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                <TabsContent value="export" className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Turnover Card */}
+                        <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(249,115,22,0.4)] transition-all">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-orange-500" />
+                                        Turnover e Equipe
+                                    </CardTitle>
+                                    <CardDescription>Lista completa de ativos e desligados.</CardDescription>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-slate-600 leading-tight">
+                                    Gera um relatório detalhado com nomes, CPFs, cargos, datas de admissão e status atual dos colaboradores selecionados nos filtros.
+                                </p>
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    <Button
+                                        onClick={() => handleExportTurnover('excel')}
+                                        disabled={loading === 'turnover'}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
+                                    >
+                                        {loading === 'turnover' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <TableIcon className="w-4 h-4 mr-2" />}
+                                        EXCEL (XLSX)
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleExportTurnover('pdf')}
+                                        disabled={loading === 'turnover'}
+                                        variant="outline"
+                                        className="border-slate-900 border-2 rounded-none font-bold uppercase text-xs tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
+                                    >
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        PDF
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Payroll Preview Card */}
+                        <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(79,70,229,0.4)] transition-all">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                                        <Receipt className="w-5 h-5 text-indigo-600" />
+                                        Prévia de Folha
+                                    </CardTitle>
+                                    <CardDescription>Estimativa de custos e salários base.</CardDescription>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-slate-600 leading-tight">
+                                    Analise os custos fixos estimados baseados em salários base, bônus e adicionais configurados nos contratos dos colaborares ATIVOS.
+                                </p>
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    <Button
+                                        onClick={() => handleExportPayroll('excel')}
+                                        disabled={loading === 'payroll'}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
+                                    >
+                                        {loading === 'payroll' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
+                                        EXCEL (EST.)
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="analytics" className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <PeopleAnalytics />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

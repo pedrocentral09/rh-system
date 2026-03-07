@@ -1,4 +1,5 @@
 import { getEmployeeCoinBalance, getRewardCatalog, getActiveMissions } from '@/modules/rewards/actions/coins';
+import { getColleaguesList } from '@/modules/rewards/actions/p2p';
 import { EmployeeRewardsPortal } from '@/modules/rewards/components/EmployeeRewardsPortal';
 import { getCurrentUser } from '@/modules/core/actions/auth';
 import { prisma } from '@/lib/prisma';
@@ -12,10 +13,11 @@ export default async function PortalRewardsPage() {
     if (!employee) return <div className="p-6 text-center text-red-500">Colaborador não encontrado</div>;
 
     // 2. Fetch Data
-    const [balanceResult, catalogResult, missionsResult] = await Promise.all([
+    const [balanceResult, catalogResult, missionsResult, colleaguesResult] = await Promise.all([
         getEmployeeCoinBalance(employee.id),
         getRewardCatalog(false), // Only active items for employees
-        getActiveMissions()
+        getActiveMissions(),
+        getColleaguesList()
     ]);
 
     const balanceData = balanceResult.success && balanceResult.data
@@ -24,6 +26,7 @@ export default async function PortalRewardsPage() {
 
     const catalog = catalogResult.success ? catalogResult.data : [];
     const missions = missionsResult.success ? missionsResult.data : [];
+    const colleagues = colleaguesResult.success ? colleaguesResult.data : [];
 
     return (
         <div className="space-y-6">
@@ -37,6 +40,7 @@ export default async function PortalRewardsPage() {
                 transactions={balanceData.transactions as any}
                 catalog={catalog as any}
                 missions={missions as any}
+                colleagues={colleagues as any}
             />
         </div>
     );

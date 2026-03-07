@@ -7,6 +7,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Modal } from '@/shared/components/ui/modal';
 import { getStores, createStore, updateStore, deleteStore } from '../actions/stores';
+import { getEmployees } from '@/modules/personnel/actions/employees';
 import { toast } from 'sonner';
 import { getAddressByCep } from '@/lib/via-cep';
 import { Loader2 } from 'lucide-react';
@@ -18,6 +19,7 @@ export function StoreList() {
     const [editingStore, setEditingStore] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [isCepLoading, setIsCepLoading] = useState(false);
+    const [employees, setEmployees] = useState<any[]>([]);
 
     const initialForm = {
         name: '',
@@ -29,6 +31,7 @@ export function StoreList() {
         phone: '',
         email: '',
         responsible: '',
+        managerId: '',
         street: '',
         number: '',
         complement: '',
@@ -81,8 +84,12 @@ export function StoreList() {
     }, [formData.zipCode]);
 
     async function load() {
-        const res = await getStores();
-        if (res.success) setStores(res.data || []);
+        const [resStores, resEmployees] = await Promise.all([
+            getStores(),
+            getEmployees({ status: 'ACTIVE' })
+        ]);
+        if (resStores.success) setStores(resStores.data || []);
+        if (resEmployees.success) setEmployees(resEmployees.data || []);
     }
 
     const openModal = (store?: any) => {
@@ -165,12 +172,10 @@ export function StoreList() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
-                        <div className="col-span-12 md:col-span-5 text-left">Nome da Unidade / Razão Social</div>
-                        <div className="hidden md:block md:col-span-3 text-left">Localização</div>
-                        <div className="hidden md:block md:col-span-2 text-center">Colaboradores</div>
-                        <div className="hidden md:block md:col-span-2 text-right">Ações</div>
-                    </div>
+                    <div className="col-span-12 md:col-span-4 text-left">Nome da Unidade / Razão Social</div>
+                    <div className="hidden md:block md:col-span-3 text-left">Gerente responsável</div>
+                    <div className="hidden md:block md:col-span-2 text-center">Colaboradores</div>
+                    <div className="hidden md:block md:col-span-3 text-right">Ações</div>
 
                     <div className="space-y-3">
                         {stores.map((store, i) => (
@@ -199,8 +204,15 @@ export function StoreList() {
                                 </div>
 
                                 <div className="hidden md:block md:col-span-3">
-                                    <p className="text-[11px] font-black text-slate-300 uppercase tracking-tighter">{store.city || 'Cidade não inf.'}</p>
-                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">{store.state || 'UF'}</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-brand-orange/10 flex items-center justify-center text-[10px]">👤</div>
+                                        <div>
+                                            <p className="text-[11px] font-black text-slate-300 uppercase tracking-tighter truncate max-w-[150px]">
+                                                {store.manager?.name || store.responsible || 'Sem Gerente'}
+                                            </p>
+                                            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">{store.city || 'Sede'} - {store.state || 'UF'}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="hidden md:block md:col-span-2 text-center">
@@ -210,7 +222,7 @@ export function StoreList() {
                                     </div>
                                 </div>
 
-                                <div className="col-span-12 md:col-span-2 flex justify-end gap-2 mt-4 md:mt-0">
+                                <div className="col-span-12 md:col-span-3 flex justify-end gap-2 mt-4 md:mt-0">
                                     <button
                                         onClick={() => openModal(store)}
                                         className="h-9 px-4 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
@@ -276,6 +288,21 @@ export function StoreList() {
                                     value={formData.erpId}
                                     onChange={e => handleChange('erpId', e.target.value)}
                                 />
+                            </div>
+                            <div className="space-y-2 group">
+                                <label className="text-[9px] font-black text-emerald-500 uppercase tracking-widest ml-1">Gerente da Unidade</label>
+                                <select
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-2xl px-4 text-sm font-bold text-white outline-none focus:border-brand-orange/30 transition-all appearance-none cursor-pointer"
+                                    value={formData.managerId}
+                                    onChange={e => handleChange('managerId', e.target.value)}
+                                >
+                                    <option value="" className="bg-[#0A0F1C]">SELECIONE UM GERENTE...</option>
+                                    {employees.map(emp => (
+                                        <option key={emp.id} value={emp.id} className="bg-[#0A0F1C]">
+                                            {emp.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 

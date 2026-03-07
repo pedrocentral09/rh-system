@@ -2,10 +2,15 @@
 
 import { useState } from 'react';
 import { requestRedemption, submitMissionCompletion } from '@/modules/rewards/actions/coins';
+import { sendCoinsToColleague } from '@/modules/rewards/actions/p2p';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+    Gift, Target, History, Heart, Send, Search, Sparkles,
+    TrendingUp, TrendingDown, Clock
+} from 'lucide-react';
 
 interface Reward {
     id: string;
@@ -20,7 +25,7 @@ interface Reward {
 interface Transaction {
     id: string;
     amount: number;
-    type: string;
+    type: 'SPENT' | 'EARNED' | 'P2P_SENT' | 'P2P_RECEIVED';
     description: string;
     createdAt: Date;
 }
@@ -33,18 +38,33 @@ interface Mission {
     isActive: boolean;
 }
 
+interface Colleague {
+    id: string;
+    name: string;
+    photoUrl: string | null;
+    jobRole: { name: string } | null;
+}
+
 interface Props {
     balance: number;
     transactions: Transaction[];
     catalog: Reward[];
     missions: Mission[];
+    colleagues: Colleague[];
 }
 
-export function EmployeeRewardsPortal({ balance: initialBalance, transactions: initialTransactions, catalog, missions }: Props) {
+export function EmployeeRewardsPortal({ balance: initialBalance, transactions: initialTransactions, catalog, missions, colleagues }: Props) {
     const [balance, setBalance] = useState(initialBalance);
     const [transactions, setTransactions] = useState(initialTransactions);
-    const [activeTab, setActiveTab] = useState<'LOJA' | 'MISSOES' | 'HISTORICO'>('LOJA');
+    const [activeTab, setActiveTab] = useState<'LOJA' | 'MISSOES' | 'HISTORICO' | 'RECONHECIMENTO'>('LOJA');
     const [loadingIds, setLoadingIds] = useState<string[]>([]);
+
+    // P2P states
+    const [p2pSearch, setP2pSearch] = useState('');
+    const [selectedColleague, setSelectedColleague] = useState<Colleague | null>(null);
+    const [p2pAmount, setP2pAmount] = useState('5');
+    const [p2pMessage, setP2pMessage] = useState('');
+    const [sendingP2P, setSendingP2P] = useState(false);
 
     // Mission states
     const [submittingMission, setSubmittingMission] = useState<string | null>(null);
@@ -65,7 +85,6 @@ export function EmployeeRewardsPortal({ balance: initialBalance, transactions: i
         if (result.success) {
             toast.success('Pedido de resgate enviado com sucesso! 🎉');
             setBalance(prev => prev - reward.cost);
-            // Simulate adding transaction to local state
             setTransactions(prev => [{
                 id: Math.random().toString(),
                 amount: -reward.cost,
@@ -80,6 +99,44 @@ export function EmployeeRewardsPortal({ balance: initialBalance, transactions: i
         setLoadingIds(prev => prev.filter(id => id !== reward.id));
     };
 
+    const handleSendP2P = async () => {
+        if (!selectedColleague) return;
+        const amount = parseInt(p2pAmount);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error('Informe um valor válido');
+            return;
+        }
+        if (amount > balance) {
+            toast.error('Saldo insuficiente');
+            return;
+        }
+        if (!p2pMessage.trim()) {
+            toast.error('Escreva uma mensagem de reconhecimento');
+            return;
+        }
+
+        setSendingP2P(true);
+        const result = await sendCoinsToColleague(selectedColleague.id, amount, p2pMessage);
+
+        if (result.success) {
+            toast.success('Reconhecimento enviado! ✨');
+            setBalance(prev => prev - amount);
+            setTransactions(prev => [{
+                id: Math.random().toString(),
+                amount: -amount,
+                type: 'P2P_SENT',
+                description: `Reco. enviado para ${selectedColleague.name}`,
+                createdAt: new Date()
+            }, ...prev]);
+            setSelectedColleague(null);
+            setP2pMessage('');
+            setActiveTab('HISTORICO');
+        } else {
+            toast.error(result.error || 'Erro ao enviar moedas');
+        }
+        setSendingP2P(false);
+    };
+
     const handleSubmitMission = async (missionId: string) => {
         const proof = proofTexts[missionId];
         if (!proof || !proof.trim()) {
@@ -88,191 +145,297 @@ export function EmployeeRewardsPortal({ balance: initialBalance, transactions: i
         }
 
         setSubmittingMission(missionId);
-
         const result = await submitMissionCompletion(missionId, proof.trim());
 
         if (result.success) {
-            toast.success('Comprovante enviado! O RH fará a análise em breve e as moedas cairão na sua conta.');
-            // Clear input
+            toast.success('Comprovante enviado! O RH fará a análise em breve.');
             setProofTexts(prev => ({ ...prev, [missionId]: '' }));
         } else {
             toast.error(result.error || 'Erro ao enviar a missão');
         }
-
         setSubmittingMission(null);
     };
+
+    const filteredColleagues = colleagues.filter(c =>
+        c.name.toLowerCase().includes(p2pSearch.toLowerCase())
+    );
 
     return (
         <div className="space-y-6">
             {/* Balance Card */}
-            <div className="bg-gradient-to-r from-amber-400 to-amber-600 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-white rounded-full blur-3xl opacity-20 -mr-10 -mt-20"></div>
+            <div className="bg-slate-950 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/20 rounded-full blur-[120px] -mr-20 -mt-20 group-hover:bg-orange-500/30 transition-all duration-700"></div>
                 <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                    <span className="text-sm font-semibold uppercase tracking-wider mb-2 text-amber-50">Seu Saldo</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-5xl">🪙</span>
-                        <span className="text-6xl font-black">{balance}</span>
+                    <div className="flex items-center gap-2 mb-6 bg-white/5 px-5 py-2 rounded-full border border-white/10 backdrop-blur-md">
+                        <Sparkles className="h-4 w-4 text-orange-400" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.3em] text-orange-100">Portal de Recompensas Elite</span>
                     </div>
-                    <span className="mt-2 text-sm text-amber-100 font-medium">Família Coins</span>
+                    <div className="flex items-center gap-6">
+                        <div className="h-24 w-24 bg-gradient-to-br from-amber-300 to-orange-600 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-10px_rgba(249,115,22,0.6)] rotate-6 group-hover:rotate-12 transition-transform duration-500">
+                            <span className="text-5xl">🪙</span>
+                        </div>
+                        <span className="text-8xl font-black tracking-tighter drop-shadow-2xl">{balance}</span>
+                    </div>
+                    <div className="mt-8 flex flex-col items-center">
+                        <span className="text-sm text-slate-400 font-bold uppercase tracking-widest">Saldo Disponível em Carteira</span>
+                        <div className="mt-3 h-1.5 w-48 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500 w-[75%] shadow-[0_0_15px_#f97316]"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                <button
-                    onClick={() => setActiveTab('LOJA')}
-                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'LOJA' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    🛍️ Lojinha
-                </button>
-                <button
-                    onClick={() => setActiveTab('MISSOES')}
-                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'MISSOES' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    🎯 Missões
-                </button>
-                <button
-                    onClick={() => setActiveTab('HISTORICO')}
-                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'HISTORICO' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    📜 Histórico
-                </button>
+            <div className="flex bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 p-2 rounded-[24px] overflow-x-auto no-scrollbar">
+                {[
+                    { id: 'LOJA', label: 'Lojinha', icon: Gift },
+                    { id: 'RECONHECIMENTO', label: 'Reconhecer', icon: Heart },
+                    { id: 'MISSOES', label: 'Missões', icon: Target },
+                    { id: 'HISTORICO', label: 'Extrato', icon: History }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex-1 min-w-[130px] py-4 text-xs font-black uppercase tracking-widest rounded-[18px] flex items-center justify-center gap-2.5 transition-all ${activeTab === tab.id ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xl scale-[1.02]' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    >
+                        <tab.icon className={`h-4 w-4 ${activeTab === 'RECONHECIMENTO' && tab.id === 'RECONHECIMENTO' ? 'fill-rose-500 text-rose-500' : ''}`} />
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {activeTab === 'LOJA' && (
-                <div className="space-y-4">
-                    <h2 className="font-bold text-slate-800 dark:text-white mb-2">Recompensas Disponíveis</h2>
-                    {catalog.length === 0 && (
-                        <div className="text-center py-10 bg-white rounded-xl border border-slate-200">
-                            <p className="text-slate-500">A loja está vazia no momento.</p>
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white flex items-center gap-3">
+                            Vitrine de Recompensas
+                            <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
+                        </h2>
+                    </div>
+                    {catalog.length === 0 ? (
+                        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-[40px] border-2 border-dashed border-slate-200 dark:border-white/5">
+                            <p className="text-slate-500 font-black uppercase text-xs tracking-[0.2em]">Repondo o estoque...</p>
                         </div>
-                    )}
-                    <div className="grid gap-4">
-                        {catalog.map(item => {
-                            const canAfford = balance >= item.cost;
-                            const isOutOfStock = item.stock !== null && item.stock <= 0;
-                            const isLoading = loadingIds.includes(item.id);
-
-                            return (
-                                <div key={item.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
-                                    <div className="h-32 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 flex items-center justify-center text-5xl relative">
-                                        {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" /> : '🎁'}
-                                        {isOutOfStock && (
-                                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                                                <span className="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-xs transform -rotate-12">ESGOTADO</span>
-                                            </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {catalog.map(item => (
+                                <div key={item.id} className="group relative bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 overflow-hidden flex flex-col">
+                                    <div className="aspect-[5/4] bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-white/5 relative">
+                                        {item.imageUrl ? (
+                                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-7xl opacity-20 group-hover:scale-125 transition-transform duration-700">🎁</div>
                                         )}
-                                    </div>
-                                    <div className="p-4 flex-1 flex flex-col">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{item.title}</h3>
-                                            <span className="bg-amber-100 text-amber-800 font-black text-xs px-2 py-1 rounded-full flex items-center shadow-sm shrink-0 ml-2">
-                                                🪙 {item.cost}
-                                            </span>
+                                        <div className="absolute top-6 right-6 bg-slate-950/80 backdrop-blur-xl border border-white/10 text-white font-black text-xs px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2">
+                                            <span className="text-orange-400">🪙</span> {item.cost}
                                         </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 flex-1">{item.description}</p>
-
+                                    </div>
+                                    <div className="p-8 flex-1 flex flex-col">
+                                        <h3 className="font-black text-xl text-slate-900 dark:text-white mb-3 leading-tight uppercase tracking-tight">{item.title}</h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 flex-1 line-clamp-3 font-medium leading-relaxed">{item.description}</p>
                                         <Button
                                             onClick={() => handleRedeem(item)}
-                                            disabled={!canAfford || isOutOfStock || isLoading}
-                                            className={`w-full font-bold shadow-sm ${!canAfford
-                                                ? 'bg-slate-100 text-slate-400'
-                                                : isOutOfStock
-                                                    ? 'bg-red-50 text-red-400'
-                                                    : 'bg-amber-500 hover:bg-amber-600 text-white'
-                                                }`}
+                                            disabled={balance < item.cost || (item.stock !== null && item.stock <= 0) || loadingIds.includes(item.id)}
+                                            className="w-full rounded-2xl h-14 font-black uppercase text-xs tracking-[0.2em] shadow-xl disabled:opacity-50 bg-slate-900 hover:bg-orange-500 text-white transition-all group/btn"
                                         >
-                                            {isLoading ? 'Resgatando...' : isOutOfStock ? 'Esgotado' : !canAfford ? `Falta ${item.cost - balance} 🪙` : 'Resgatar Recompensa'}
+                                            {loadingIds.includes(item.id) ? 'Sincronizando...' : balance >= item.cost ? 'Resgatar Agora' : `Falta ${item.cost - balance} Moedas`}
                                         </Button>
                                     </div>
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {activeTab === 'RECONHECIMENTO' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-white/5 p-10 shadow-2xl relative overflow-hidden">
+                        <div className="absolute -top-20 -left-20 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                        <div className="relative z-10 flex flex-col lg:flex-row gap-12">
+                            <div className="flex-1 space-y-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-6 w-1 bg-rose-500 rounded-full"></div>
+                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">1. Encontrar o Colega</label>
+                                    </div>
+                                    <div className="relative">
+                                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                        <Input
+                                            value={p2pSearch}
+                                            onChange={(e) => setP2pSearch(e.target.value)}
+                                            placeholder="Buscar pelo nome ou cargo..."
+                                            className="pl-14 h-16 rounded-3xl bg-slate-50 dark:bg-slate-950 border-none font-bold text-lg focus:ring-2 focus:ring-rose-500 transition-all shadow-inner"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3 max-h-[350px] overflow-y-auto pr-3 custom-scrollbar">
+                                        {filteredColleagues.map(c => (
+                                            <button
+                                                key={c.id}
+                                                onClick={() => setSelectedColleague(c)}
+                                                className={`p-4 rounded-3xl flex items-center gap-4 transition-all text-left group ${selectedColleague?.id === c.id ? 'bg-rose-500 text-white shadow-xl translate-x-1' : 'bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                                            >
+                                                <div className={`h-12 w-12 rounded-2xl overflow-hidden flex items-center justify-center font-black uppercase text-sm border-2 ${selectedColleague?.id === c.id ? 'border-white/20' : 'border-slate-200 dark:border-white/10'}`}>
+                                                    {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : c.name.substring(0, 2)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-black text-base truncate tracking-tight">{c.name}</p>
+                                                    <p className={`text-[10px] font-black uppercase tracking-widest ${selectedColleague?.id === c.id ? 'text-rose-100' : 'text-slate-400'}`}>{c.jobRole?.name || 'Membro da Família'}</p>
+                                                </div>
+                                                {selectedColleague?.id === c.id && <Sparkles className="h-5 w-5 text-rose-200" />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-px bg-slate-100 dark:bg-white/5 hidden lg:block self-stretch"></div>
+
+                            <div className="flex-1 space-y-8">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-6 w-1 bg-rose-500 rounded-full"></div>
+                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">2. Enviar Encorajamento</label>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {['5', '10', '25', '50'].map(val => (
+                                            <button
+                                                key={val}
+                                                onClick={() => setP2pAmount(val)}
+                                                className={`h-14 rounded-2xl font-black text-sm transition-all border-2 ${p2pAmount === val ? 'bg-slate-950 text-white border-slate-950 dark:bg-white dark:text-slate-950 dark:border-white shadow-xl' : 'bg-transparent border-slate-100 dark:border-white/5 text-slate-400 hover:border-rose-500/30 hover:text-rose-500'}`}
+                                            >
+                                                {val}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="relative">
+                                        <textarea
+                                            value={p2pMessage}
+                                            onChange={(e) => setP2pMessage(e.target.value)}
+                                            placeholder="Por que você está reconhecendo este colega? Escreva algo marcante..."
+                                            className="w-full min-h-[160px] p-6 rounded-[32px] bg-slate-50 dark:bg-slate-950 border-none font-bold text-sm resize-none focus:ring-2 focus:ring-rose-500 transition-all outline-none shadow-inner leading-relaxed"
+                                        />
+                                        <div className="absolute bottom-4 right-6 text-[10px] font-black text-slate-300 uppercase tracking-widest">Inspiracional</div>
+                                    </div>
+                                    <Button
+                                        onClick={handleSendP2P}
+                                        disabled={!selectedColleague || sendingP2P || balance < parseInt(p2pAmount)}
+                                        className="w-full h-16 rounded-[24px] bg-rose-500 hover:bg-rose-600 text-white font-black uppercase text-xs tracking-[0.4em] shadow-[0_15px_40px_-5px_rgba(244,63,94,0.4)] group active:scale-95 transition-all"
+                                    >
+                                        {sendingP2P ? 'Processando Reconhecimento...' : (
+                                            <>
+                                                Reconhecer Colega
+                                                <Send className="ml-3 h-4 w-4 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500" />
+                                            </>
+                                        )}
+                                    </Button>
+                                    {balance < parseInt(p2pAmount) && (
+                                        <div className="text-center p-3 bg-rose-50 dark:bg-rose-500/10 rounded-2xl">
+                                            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest flex items-center justify-center gap-2">
+                                                Saldo insuficiente para enviar {p2pAmount} moedas
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
 
             {activeTab === 'MISSOES' && (
-                <div className="space-y-4">
-                    <div className="mb-4">
-                        <h2 className="font-bold text-slate-800 dark:text-white">Tarefas Valendo Moedas</h2>
-                        <p className="text-xs text-slate-500 mt-1">Cumpra as missões cadastradas pelo RH, envie o comprovante e ganhe moedas extras na sua conta!</p>
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white flex items-center gap-3">
+                            Missões Disponíveis
+                            <div className="h-6 w-6 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
+                            </div>
+                        </h2>
                     </div>
-
-                    {missions.length === 0 && (
-                        <div className="text-center py-10 bg-white rounded-xl border border-slate-200">
-                            <p className="text-slate-500">Nenhuma missão ativa no momento. Fique de olho!</p>
+                    {missions.length === 0 ? (
+                        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-[40px] border-2 border-dashed border-slate-200 dark:border-white/5">
+                            <p className="text-slate-500 font-black uppercase text-xs tracking-[0.2em]">Sem missões ativas hoje.</p>
                         </div>
-                    )}
-
-                    <div className="grid gap-4">
-                        {missions.map(mission => (
-                            <div key={mission.id} className="bg-white dark:bg-slate-800 rounded-xl border-2 border-amber-200 dark:border-amber-800/50 shadow-sm p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-slate-800 dark:text-white leading-tight pr-2 flex items-center gap-2">
-                                        <span className="text-xl">🎯</span> {mission.title}
-                                    </h3>
-                                    <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-400 font-black text-xs px-2 py-1 rounded-full flex items-center shadow-sm shrink-0 outline outline-1 outline-amber-200">
-                                        + {mission.rewardAmount} 🪙
-                                    </span>
-                                </div>
-                                {mission.description && (
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800 leading-relaxed">
-                                        {mission.description}
-                                    </p>
-                                )}
-
-                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Como você cumpriu?</label>
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                        <Input
-                                            value={proofTexts[mission.id] || ''}
-                                            onChange={(e) => setProofTexts(prev => ({ ...prev, [mission.id]: e.target.value }))}
-                                            placeholder="Descreva ou cole o link/texto do comprovante..."
-                                            className="flex-1 text-sm bg-slate-50"
-                                        />
-                                        <Button
-                                            onClick={() => handleSubmitMission(mission.id)}
-                                            disabled={submittingMission === mission.id || !proofTexts[mission.id]?.trim()}
-                                            className="bg-amber-500 hover:bg-amber-600 text-white font-bold"
-                                        >
-                                            {submittingMission === mission.id ? 'Enviando...' : 'Enviar para o RH'}
-                                        </Button>
+                    ) : (
+                        <div className="grid gap-6">
+                            {missions.map(mission => (
+                                <div key={mission.id} className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden group hover:shadow-2xl transition-all duration-500">
+                                    <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-8">
+                                        <div className="h-24 w-24 rounded-[32px] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl shadow-2xl group-hover:rotate-6 transition-transform duration-500 group-hover:shadow-indigo-500/50">
+                                            🎯
+                                        </div>
+                                        <div className="flex-1 space-y-3">
+                                            <div className="flex flex-wrap items-center gap-4">
+                                                <h3 className="font-black text-xl text-slate-900 dark:text-white leading-tight uppercase tracking-tight">{mission.title}</h3>
+                                                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-black text-xs px-5 py-2 rounded-full uppercase tracking-[0.1em] border border-emerald-500/20">
+                                                    + {mission.rewardAmount} 🪙
+                                                </span>
+                                            </div>
+                                            <p className="text-base text-slate-500 dark:text-slate-400 max-w-2xl font-medium leading-relaxed">{mission.description}</p>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row gap-4 min-w-[320px]">
+                                            <Input
+                                                value={proofTexts[mission.id] || ''}
+                                                onChange={(e) => setProofTexts(prev => ({ ...prev, [mission.id]: e.target.value }))}
+                                                placeholder="Descreva a conclusão..."
+                                                className="h-14 rounded-2xl bg-slate-50 dark:bg-slate-950 border-none font-bold text-sm shadow-inner"
+                                            />
+                                            <Button
+                                                onClick={() => handleSubmitMission(mission.id)}
+                                                disabled={submittingMission === mission.id || !proofTexts[mission.id]?.trim()}
+                                                className="bg-indigo-600 hover:bg-slate-950 dark:hover:bg-white dark:hover:text-black text-white rounded-2xl h-14 font-black uppercase text-xs tracking-widest px-10 shadow-xl transition-all"
+                                            >
+                                                {submittingMission === mission.id ? '...' : 'Enviar'}
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
             {activeTab === 'HISTORICO' && (
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
-                        <h3 className="font-bold text-sm text-slate-800 dark:text-white">Extrato de Moedas</h3>
-                    </div>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {transactions.length === 0 && (
-                            <div className="p-8 text-center text-slate-500 text-sm">
-                                Nenhuma transação encontrada.
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-white/5 shadow-2xl overflow-hidden">
+                        <div className="px-10 py-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-950/50">
+                            <div className="flex items-center gap-4">
+                                <History className="h-5 w-5 text-orange-500" />
+                                <h3 className="font-black text-sm uppercase tracking-[0.4em] text-slate-900 dark:text-white">Extrato Consolidado</h3>
                             </div>
-                        )}
-                        {transactions.map(t => (
-                            <div key={t.id} className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${t.amount > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}`}>
-                                        {t.amount > 0 ? '+' : '-'}
+                            <Clock className="h-5 w-5 text-slate-400" />
+                        </div>
+                        <div className="divide-y divide-slate-100 dark:divide-white/5">
+                            {transactions.length === 0 ? (
+                                <div className="p-24 text-center text-slate-400 font-bold uppercase text-xs tracking-[0.3em]">Nenhuma atividade encontrada</div>
+                            ) : (
+                                transactions.map(t => (
+                                    <div key={t.id} className="p-8 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition-all group cursor-default">
+                                        <div className="flex items-center gap-6">
+                                            <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center font-black text-xl shadow-xl transition-all group-hover:scale-110 group-hover:rotate-3 ${t.amount > 0
+                                                    ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
+                                                    : 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'
+                                                }`}>
+                                                {t.amount > 0 ? <TrendingUp className="h-7 w-7" /> : <TrendingDown className="h-7 w-7" />}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-base font-black text-slate-900 dark:text-white truncate max-w-md tracking-tight">{t.description}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    {format(new Date(t.createdAt), 'dd MMMM yyyy')}
+                                                    <span className="h-1 w-1 rounded-full bg-slate-300"></span>
+                                                    {format(new Date(t.createdAt), 'HH:mm')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black tracking-tighter ${t.amount > 0 ? 'text-emerald-500' : 'text-slate-900 dark:text-white'} group-hover:scale-110 transition-transform`}>
+                                            {t.amount > 0 ? '+' : ''}{t.amount} 🪙
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{t.description}</p>
-                                        <p className="text-[10px] text-slate-500">{format(new Date(t.createdAt), 'dd/MM/yyyy • HH:mm')}</p>
-                                    </div>
-                                </div>
-                                <div className={`font-black tracking-tight ${t.amount > 0 ? 'text-emerald-500' : 'text-slate-800 dark:text-white'}`}>
-                                    {Math.abs(t.amount)} 🪙
-                                </div>
-                            </div>
-                        ))}
+                                )).reverse()
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

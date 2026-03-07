@@ -58,6 +58,7 @@ export const CreateEmployeeSchema = z.object({
     lastAsoDate: z.string().optional(),
     asoPeriodicity: z.coerce.number().optional(),
     asoObservations: z.string().optional(),
+    newRoleId: z.string().optional(),
 
     // Professional / Contract
     registrationCompany: z.string().min(2, "Empresa de registro é obrigatória"),

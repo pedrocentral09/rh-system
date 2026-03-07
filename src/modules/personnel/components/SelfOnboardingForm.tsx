@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { submitSelfOnboarding } from '../actions/employees';
 import { uploadEmployeeDocument, uploadEmployeePhoto } from '@/lib/firebase/storage-utils';
+import { processDocumentWithAI } from '../actions/document-ai';
 
 interface SelfOnboardingFormProps {
     employee: any;
@@ -219,6 +220,40 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     };
                 });
                 toast.success('Documento sincronizado!');
+
+                // AI MAGIC: Process with Gemini if it's Identity or Address
+                if (type === 'IDENTIDADE_FRENTE' || type === 'ENDERECO') {
+                    toast('✨ Inteligência Artificial analisando...', {
+                        description: 'Estamos extraindo dados do seu documento automaticamente.'
+                    });
+
+                    const aiResult = await processDocumentWithAI(doc.fileUrl, type as any);
+
+                    if (aiResult.success && aiResult.data) {
+                        const data = aiResult.data;
+                        toast.success('✨ Dados extraídos com sucesso!');
+
+                        setFormData(prev => {
+                            const updates: any = { ...prev };
+
+                            if (type === 'IDENTIDADE_FRENTE') {
+                                if (data.name && !prev.name) updates.name = data.name;
+                                if (data.rg && !prev.rg) updates.rg = data.rg;
+                                if (data.birthDate && !prev.dateOfBirth) updates.dateOfBirth = data.birthDate;
+                                if (data.cpf && !prev.cpf) updates.cpf = data.cpf;
+                            } else if (type === 'ENDERECO') {
+                                if (data.street) updates.street = data.street;
+                                if (data.number) updates.number = data.number;
+                                if (data.neighborhood) updates.neighborhood = data.neighborhood;
+                                if (data.city) updates.city = data.city;
+                                if (data.state) updates.state = data.state;
+                                if (data.zipCode) updates.zipCode = data.zipCode;
+                            }
+
+                            return updates;
+                        });
+                    }
+                }
             }
         } catch (err) {
             console.error('Upload Error:', err);
