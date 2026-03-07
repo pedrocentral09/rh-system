@@ -16,6 +16,11 @@ export function UserList() {
     const [editingUser, setEditingUser] = useState<any>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStore, setFilterStore] = useState('');
+    const [filterCompany, setFilterCompany] = useState('');
+
     const loadUsers = async () => {
         setLoading(true);
         const result = await getUsers();
@@ -48,6 +53,25 @@ export function UserList() {
         return <span className="bg-white/5 text-slate-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/5">Operacional</span>;
     };
 
+    const companies = Array.from(new Set(
+        users.flatMap(u => u.storeAccess?.map((sa: any) => sa.store.company?.name).filter(Boolean) || [])
+    ));
+    const stores = Array.from(new Set(
+        users.flatMap(u => u.storeAccess?.map((sa: any) => sa.store.name).filter(Boolean) || [])
+    ));
+
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const userCompanies = user.storeAccess?.map((sa: any) => sa.store.company?.name);
+        const matchesCompany = filterCompany ? userCompanies?.includes(filterCompany) : true;
+
+        const userStores = user.storeAccess?.map((sa: any) => sa.store.name);
+        const matchesStore = filterStore ? userStores?.includes(filterStore) : true;
+
+        return matchesSearch && matchesCompany && matchesStore;
+    });
+
     if (loading) return (
         <div className="space-y-6 mt-8">
             <div className="h-16 bg-white/5 rounded-3xl animate-pulse" />
@@ -74,7 +98,37 @@ export function UserList() {
             <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
-                <div className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-4 mb-8 relative z-10">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nome ou email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:border-brand-orange/50 transition-colors outline-none"
+                    />
+                    <select
+                        value={filterCompany}
+                        onChange={(e) => setFilterCompany(e.target.value)}
+                        className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-slate-300 focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
+                    >
+                        <option value="" className="bg-[#0A0F1C]">Todas as Empresas</option>
+                        {companies.map((company: any) => (
+                            <option key={company} value={company} className="bg-[#0A0F1C]">{company}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={filterStore}
+                        onChange={(e) => setFilterStore(e.target.value)}
+                        className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-slate-300 focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
+                    >
+                        <option value="" className="bg-[#0A0F1C]">Todas as Lojas</option>
+                        {stores.map((store: any) => (
+                            <option key={store} value={store} className="bg-[#0A0F1C]">{store}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="space-y-4 relative z-10">
                     <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
                         <div className="col-span-12 md:col-span-5 text-left">Usuário / Identificação</div>
                         <div className="hidden md:block md:col-span-4 text-left">Perfil & Vinclulo</div>
@@ -82,7 +136,7 @@ export function UserList() {
                     </div>
 
                     <div className="space-y-3">
-                        {users.map((user, i) => (
+                        {filteredUsers.map((user, i) => (
                             <motion.div
                                 key={user.id}
                                 initial={{ opacity: 0, y: 10 }}
@@ -141,9 +195,9 @@ export function UserList() {
                             </motion.div>
                         ))}
 
-                        {users.length === 0 && (
+                        {filteredUsers.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-slate-600 bg-white/5 rounded-[2rem] border border-white/5 border-dashed">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum operador localizado</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum operador localizado com os filtros selecionados</p>
                             </div>
                         )}
                     </div>

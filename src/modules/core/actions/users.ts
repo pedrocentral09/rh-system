@@ -28,7 +28,11 @@ export async function getUsers() {
                 employee: true,
                 roleDef: true,
                 storeAccess: {
-                    include: { store: true }
+                    include: {
+                        store: {
+                            include: { company: true }
+                        }
+                    }
                 }
             }
         });
