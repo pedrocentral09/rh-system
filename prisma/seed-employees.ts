@@ -71,7 +71,7 @@ async function main() {
                         admissionDate: new Date()
                     }
                 },
-                healthData: {
+                healthRecords: {
                     create: {
                         asoType: 'Admissional',
                         lastAsoDate: new Date(),
