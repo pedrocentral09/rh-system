@@ -52,16 +52,17 @@ export function SignatureModal({ isOpen, onClose, documentId, documentName }: Si
 
     return (
         <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent className="sm:max-w-[425px] border-none shadow-2xl bg-slate-900 text-white rounded-none">
-                <DialogHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-emerald-500/20 rounded-none border border-emerald-500/30">
-                            <ShieldCheck className="w-6 h-6 text-emerald-400" />
+            <DialogContent className="sm:max-w-[425px] border border-border shadow-2xl bg-surface/95 backdrop-blur-xl text-text-primary rounded-[2rem] overflow-hidden">
+                <DialogHeader className="p-2">
+                    <div className="flex items-center gap-4 mb-3">
+                        <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                            <ShieldCheck className="w-8 h-8 text-emerald-400" />
                         </div>
-                        <DialogTitle className="text-xl font-bold tracking-tight uppercase">Autenticar Assinatura</DialogTitle>
+                        <DialogTitle className="text-xl font-black tracking-tight uppercase">Autenticar Assinatura</DialogTitle>
                     </div>
-                    <DialogDescription className="text-slate-400">
-                        Confirmando validade jurídica para: <span className="text-emerald-400 font-medium underline">{documentName}</span>
+                    <DialogDescription className="text-text-secondary text-[11px] font-bold uppercase tracking-widest leading-relaxed opacity-80">
+                        Confirmando validade jurídica para:<br />
+                        <span className="text-emerald-500 underline decoration-2 underline-offset-4">{documentName}</span>
                     </DialogDescription>
                 </DialogHeader>
 
@@ -74,9 +75,9 @@ export function SignatureModal({ isOpen, onClose, documentId, documentName }: Si
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="space-y-6 pt-4"
                         >
-                            <div className="space-y-2">
-                                <Label htmlFor="code" className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                                    Código de Confirmação Interna
+                            <div className="space-y-4">
+                                <Label htmlFor="code" className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-1">
+                                    Código de Identidade Digital
                                 </Label>
                                 <Input
                                     id="code"
@@ -84,29 +85,28 @@ export function SignatureModal({ isOpen, onClose, documentId, documentName }: Si
                                     placeholder="••••••"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
-                                    className="bg-slate-800 border-slate-700 text-white rounded-none h-12 text-center text-2xl tracking-[0.5em] focus:ring-emerald-500/50"
+                                    className="bg-surface-secondary border border-border text-text-primary rounded-2xl h-20 text-center text-3xl tracking-[0.5em] focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
                                     autoFocus
                                 />
                             </div>
 
-                            <div className="p-4 bg-slate-800/50 border-l-2 border-emerald-500 text-xs text-slate-400 leading-relaxed italic">
-                                Ao assinar, você confirma a autoria deste ato com base nas normas de controle interno do RH Supermercado. Esta operação gera um hash de integridade SHA-256 único.
+                            <div className="p-6 bg-emerald-500/5 border-l-4 border-emerald-500 rounded-r-2xl text-[10px] text-text-secondary font-bold leading-relaxed uppercase tracking-widest italic opacity-80">
+                                Ao assinar, você confirma a autoria deste ato com base nas normas de controle interno. Esta operação gera um protocolo criptográfico de integridade único.
                             </div>
 
-                            <DialogFooter className="pt-2">
-                                <Button
-                                    variant="outline"
+                            <DialogFooter className="pt-6 flex flex-col-reverse sm:flex-row gap-4">
+                                <button
                                     onClick={resetAndClose}
-                                    className="bg-transparent border-slate-700 text-slate-400 hover:bg-slate-800 rounded-none"
+                                    className="text-[10px] font-black text-text-secondary uppercase tracking-widest hover:text-text-primary transition-colors h-12"
                                 >
-                                    Cancelar
-                                </Button>
+                                    Abortar Operação
+                                </button>
                                 <Button
                                     onClick={handleSign}
                                     disabled={isSigning || code.length < 4}
-                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 rounded-none shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 h-14 rounded-2xl shadow-xl transition-all active:scale-95 uppercase tracking-widest text-[10px]"
                                 >
-                                    {isSigning ? 'Processando...' : 'ASSINAR AGORA'}
+                                    {isSigning ? 'Processando Autenticação...' : 'Autenticar Documento'}
                                 </Button>
                             </DialogFooter>
                         </motion.div>
@@ -115,26 +115,26 @@ export function SignatureModal({ isOpen, onClose, documentId, documentName }: Si
                             key="success"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="py-12 flex flex-col items-center text-center space-y-4"
+                            className="py-12 flex flex-col items-center text-center space-y-8"
                         >
-                            <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
-                                <CheckCircle className="w-12 h-12 text-white" />
+                            <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                                <CheckCircle className="w-14 h-14 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white uppercase tracking-tighter">Documento Autenticado</h3>
-                                <p className="text-slate-400 text-sm mt-1">Integridade garantida digitalmente</p>
+                                <h3 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Documento Autenticado</h3>
+                                <p className="text-text-secondary text-[10px] font-bold uppercase tracking-[0.2em] mt-2 opacity-80">Protocolo de integridade gerado com sucesso</p>
                             </div>
-                            <div className="w-full mt-4 p-3 bg-slate-800 rounded-none border border-slate-700">
-                                <Label className="text-[10px] text-slate-500 uppercase block mb-1">HASH SHA-256</Label>
-                                <code className="text-[10px] break-all text-emerald-400 font-mono">
+                            <div className="w-full p-6 bg-surface-secondary rounded-2xl border border-border shadow-inner">
+                                <Label className="text-[10px] text-text-secondary font-black uppercase tracking-[0.3em] block mb-3 opacity-70">Assinatura Digital SHA-256</Label>
+                                <code className="text-[11px] break-all text-emerald-500 font-mono font-bold">
                                     {signedHash}
                                 </code>
                             </div>
                             <Button
                                 onClick={resetAndClose}
-                                className="mt-6 bg-white text-slate-900 font-bold w-full rounded-none hover:bg-slate-200"
+                                className="h-16 bg-text-primary text-background font-black w-full rounded-2xl hover:bg-brand-blue hover:text-white transition-all text-xs tracking-widest"
                             >
-                                FECHAR
+                                CONCLUIR PROTOCOLO
                             </Button>
                         </motion.div>
                     )}

@@ -80,40 +80,41 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
     }, 0);
 
     const vacationTabContent = (
-        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 overflow-hidden relative min-h-[600px]">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-500/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+        <div className="bg-surface/95 backdrop-blur-3xl rounded-[2.5rem] border border-border overflow-hidden relative min-h-[600px] shadow-2xl">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
 
             <div className="grid lg:grid-cols-12 gap-0 relative z-10">
 
                 {/* Lateral Pane: Period Selection */}
-                <div className="lg:col-span-5 border-r border-white/5 p-10 space-y-10">
+                <div className="lg:col-span-5 border-r border-border p-10 space-y-10">
                     <div className="space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
-                                <Palmtree className="h-6 w-6 text-sky-400" />
+                            <div className="w-12 h-12 rounded-[1.25rem] bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shadow-inner relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-brand-blue group-hover:bg-brand-blue/80 transition-colors" />
+                                <Palmtree className="h-6 w-6 text-white relative z-10" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none">{employeeName}</h3>
-                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1.5">Gestão de Ciclos Aquisitivos</p>
+                                <h3 className="text-lg font-black text-text-primary uppercase tracking-tight leading-none">{employeeName}</h3>
+                                <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest mt-1.5 opacity-80">Gestão de Ciclos Aquisitivos</p>
                             </div>
                         </div>
 
-                        <div className="bg-white/5 border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform">
-                                <Sun className="w-16 h-16 text-sky-400" />
+                        <div className="bg-surface-secondary border border-border rounded-[2rem] p-8 relative overflow-hidden group shadow-inner">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                                <Sun className="w-16 h-16 text-brand-blue" />
                             </div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Saldo Global Disponível</span>
+                            <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest block mb-1 opacity-80">Saldo Global Disponível</span>
                             <div className="flex items-baseline gap-3">
-                                <span className="text-5xl font-black text-sky-400 tracking-tighter">{totalBalance}</span>
-                                <span className="text-xs font-black text-slate-600 uppercase tracking-widest">DIAS ÚTEIS</span>
+                                <span className="text-5xl font-black text-brand-blue tracking-tighter italic">{totalBalance}</span>
+                                <span className="text-xs font-black text-text-secondary uppercase tracking-widest opacity-80">DIAS ÚTEIS</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-2">
-                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Histórico de Períodos</span>
-                            <span className="text-[9px] font-bold text-slate-700 uppercase">Períodos Totais: {periods.length}</span>
+                            <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Histórico de Períodos</span>
+                            <span className="text-[9px] font-bold text-text-secondary opacity-80 uppercase">Períodos Totais: {periods.length}</span>
                         </div>
 
                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -131,36 +132,36 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: i * 0.05 }}
                                         onClick={() => !isFullyTaken && setSelectedPeriod(period.id)}
-                                        className={`p-5 rounded-2xl border transition-all cursor-pointer relative group ${isSelected
-                                            ? 'bg-white/10 border-sky-500/50 shadow-2xl'
-                                            : 'bg-white/2 border-white/5 hover:border-white/10 hover:bg-white/5'
+                                        className={`p-6 rounded-3xl border transition-all cursor-pointer relative group ${isSelected
+                                            ? 'bg-surface border-brand-blue shadow-2xl shadow-brand-blue/10 scale-[1.02] z-10'
+                                            : 'bg-surface-secondary/40 border-border hover:border-brand-blue/30'
                                             } ${isFullyTaken ? 'opacity-40 grayscale pointer-events-none' : ''}`}
                                     >
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${period.status === 'EXPIRED' ? 'bg-red-500 animate-pulse' :
-                                                    isAccruing ? 'bg-amber-500' : 'bg-emerald-500'
+                                                    isAccruing ? 'bg-brand-orange' : 'bg-emerald-500'
                                                     }`} />
-                                                <span className="text-[9px] font-black text-white uppercase tracking-widest">
+                                                <span className="text-[9px] font-black text-text-primary uppercase tracking-widest">
                                                     {period.status === 'EXPIRED' ? 'VENCIDO' : isAccruing ? 'EM AQUISIÇÃO' : 'LIBERADO'}
                                                 </span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-sm font-black text-white">{isAccruing ? '---' : `${balance}d`}</span>
-                                                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">SALDO REMANESCENTE</p>
+                                                <span className={`text-sm font-black ${isSelected ? 'text-brand-blue' : 'text-text-primary'}`}>{isAccruing ? '---' : `${balance}d`}</span>
+                                                <p className="text-[8px] font-bold text-text-secondary uppercase tracking-tighter opacity-80">SALDO</p>
                                             </div>
                                         </div>
 
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                                        <div className="text-[10px] font-black text-text-secondary uppercase tracking-tighter opacity-80">
                                             {formatSafeDate(period.startDate, 'dd.MM.yy')} — {formatSafeDate(period.endDate, 'dd.MM.yy')}
                                         </div>
 
                                         {period.requests.length > 0 && (
-                                            <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                                            <div className="mt-4 pt-4 border-t border-border/60 space-y-2">
                                                 {period.requests.map((req: any) => (
-                                                    <div key={req.id} className="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500">
+                                                    <div key={req.id} className="flex justify-between items-center text-[9px] font-black uppercase text-text-secondary">
                                                         <span>{formatSafeDate(req.startDate, 'dd/MM')} - {formatSafeDate(req.endDate, 'dd/MM')}</span>
-                                                        <span className="text-sky-400 font-black">{req.daysCount} DIAS</span>
+                                                        <span className="text-brand-blue font-black">{req.daysCount} DIAS</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -188,8 +189,8 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
                                             <Calendar className="h-6 w-6 text-emerald-400" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-white uppercase tracking-tight">Agendar Lançamento</h3>
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Configuração de Período de Gozo</p>
+                                            <h3 className="text-xl font-black text-text-primary uppercase tracking-tight">Agendar Lançamento</h3>
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mt-1">Configuração de Período de Gozo</p>
                                         </div>
                                     </div>
                                 </div>
@@ -197,38 +198,38 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
                                 <form onSubmit={handleSubmit} className="space-y-10">
                                     <div className="grid grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-4">Data Inicial (Efetivo)</label>
+                                            <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-4">Data Inicial (Efetivo)</label>
                                             <input
                                                 type="date"
                                                 required
                                                 value={startDate}
                                                 onChange={e => setStartDate(e.target.value)}
-                                                className="w-full h-16 bg-[#0A0F1C] border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner"
+                                                className="w-full h-16 bg-surface-secondary border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner"
                                             />
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-4">Total de Dias</label>
+                                            <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-4">Total de Dias</label>
                                             <input
                                                 type="number"
                                                 min="5" max="30"
                                                 required
                                                 value={daysCount}
                                                 onChange={e => setDaysCount(Number(e.target.value))}
-                                                className="w-full h-16 bg-[#0A0F1C] border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner"
+                                                className="w-full h-16 bg-surface-secondary border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-4">Abono Pecuniário (Venda)</label>
+                                        <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-4">Abono Pecuniário (Venda)</label>
                                         <select
                                             value={soldDays}
                                             onChange={e => setSoldDays(Number(e.target.value))}
-                                            className="w-full h-16 bg-[#0A0F1C] border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner appearance-none cursor-pointer"
+                                            className="w-full h-16 bg-surface-secondary border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-sky-500/50 transition-all shadow-inner appearance-none cursor-pointer"
                                         >
-                                            <option value="0" className="bg-[#0A0F1C]">MANTER INTEGRALIDADE (GOZO TOTAL)</option>
-                                            <option value="10" className="bg-[#0A0F1C]">VENDER 10 DIAS (ABONO MÁXIMO)</option>
+                                            <option value="0" className="bg-surface">MANTER INTEGRALIDADE (GOZO TOTAL)</option>
+                                            <option value="10" className="bg-surface">VENDER 10 DIAS (ABONO MÁXIMO)</option>
                                         </select>
                                     </div>
 
@@ -239,15 +240,15 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
                                         </div>
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                             <div>
-                                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Início do Afastamento</p>
-                                                <p className="text-lg font-black text-white uppercase tracking-tighter">
+                                                <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Início do Afastamento</p>
+                                                <p className="text-lg font-black text-text-primary uppercase tracking-tighter">
                                                     {startDate ? formatSafeDate(startDate, 'dd MMMM yyyy') : '---'}
                                                 </p>
                                             </div>
-                                            <div className="w-px h-10 bg-white/5 hidden md:block" />
+                                            <div className="w-px h-10 bg-border hidden md:block" />
                                             <div>
-                                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Retorno Operacional</p>
-                                                <p className="text-lg font-black text-white uppercase tracking-tighter">
+                                                <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Retorno Operacional</p>
+                                                <p className="text-lg font-black text-text-primary uppercase tracking-tighter">
                                                     {startDate ? formatSafeDate(addDays(parseSafeDate(startDate)!, Number(daysCount)), 'dd MMMM yyyy') : '---'}
                                                 </p>
                                             </div>
@@ -256,21 +257,21 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
 
                                     <button
                                         type="submit"
-                                        className="w-full h-20 bg-white text-black rounded-3xl text-xs font-black uppercase tracking-[0.2em] hover:bg-sky-400 hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4 group active:scale-[0.98]"
+                                        className="w-full h-20 bg-brand-blue text-white rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:scale-[1.01] active:scale-[0.98] transition-all shadow-2xl shadow-brand-blue/20 flex items-center justify-center gap-4 group border-b-4 border-black/20"
                                     >
-                                        SALVAR LANÇAMENTO ESTRATÉGICO
+                                        SALVAR AGENDA ESTRATÉGICA 🚀
                                         <ArrowRightCircle className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
                                 </form>
                             </motion.div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-                                <div className="w-20 h-20 rounded-[2rem] bg-white/2 border border-white/5 flex items-center justify-center">
-                                    <History className="w-10 h-10 text-slate-800" />
+                                <div className="w-20 h-20 rounded-[2rem] bg-text-primary/2 border border-border flex items-center justify-center">
+                                    <History className="w-10 h-10 text-text-muted opacity-20" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-black text-slate-500 uppercase tracking-widest">Aguardando Seleção</h3>
-                                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed">
+                                    <h3 className="text-lg font-black text-text-secondary uppercase tracking-widest">Aguardando Seleção</h3>
+                                    <p className="text-[10px] font-bold text-text-secondary opacity-80 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed">
                                         Selecione um período aquisitivo no painel lateral para iniciar o agendamento de férias.
                                     </p>
                                 </div>
@@ -283,16 +284,17 @@ export function VacationModal({ isOpen, onClose, employeeId, employeeName, defau
     );
 
     const medicalTabContent = (
-        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 p-10 relative overflow-hidden min-h-[600px]">
+        <div className="bg-surface/95 backdrop-blur-3xl rounded-[2.5rem] border border-border p-10 relative overflow-hidden min-h-[600px] shadow-2xl">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
             <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-10">
-                    <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                        <BadgeCheck className="h-6 w-6 text-red-400" />
+                <div className="flex items-center gap-5 mb-12">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-inner relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-red-500 group-hover:bg-red-400 transition-colors" />
+                        <BadgeCheck className="h-8 w-8 text-white relative z-10" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none">{employeeName}</h3>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1.5">Lançamento de Atestados e Afastamentos Médicos</p>
+                        <h3 className="text-xl font-black text-text-primary uppercase tracking-tight italic leading-none">{employeeName}</h3>
+                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mt-2 opacity-80">Lançamento de Protocolos Médicos & Afastamentos</p>
                     </div>
                 </div>
                 <MedicalLeaveTab employeeId={employeeId} />

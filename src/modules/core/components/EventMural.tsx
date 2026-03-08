@@ -15,7 +15,7 @@ interface EventMuralProps {
 export function EventMural({ events }: EventMuralProps) {
     if (!events || events.length === 0) {
         return (
-            <div className="h-full flex flex-col p-8 bg-[#0A0F1C] border border-white/5 rounded-[2rem] items-center justify-center text-slate-600">
+            <div className="h-full flex flex-col p-8 bg-surface border border-border rounded-[2rem] items-center justify-center text-text-muted">
                 <Palmtree className="h-16 w-16 mb-4 opacity-10" />
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">Nenhum evento detectado <br /> para o próximo ciclo</p>
             </div>
@@ -23,17 +23,17 @@ export function EventMural({ events }: EventMuralProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 overflow-hidden relative group">
+        <div className="flex flex-col h-full bg-surface border border-border rounded-[2rem] p-8 overflow-hidden relative group">
             {/* Ambient Background Light */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
             <div className="flex justify-between items-center mb-8 relative z-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
-                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Cronograma Geral</h3>
+                        <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Cronograma Geral</h3>
                     </div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Mural de <span className="text-brand-orange">Eventos</span></h2>
+                    <h2 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Mural de <span className="text-brand-orange">Eventos</span></h2>
                 </div>
                 <div className="bg-brand-orange/10 text-brand-orange px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-brand-orange/20">
                     {events.length} Ativos
@@ -44,10 +44,10 @@ export function EventMural({ events }: EventMuralProps) {
                 {events.map((event, index) => {
                     const date = parseSafeDate(event.date)!;
 
-                    let bgClass = 'bg-white/5 border-white/5';
+                    let bgClass = 'bg-surface-secondary border-border/50';
                     let icon = <Calendar className="h-4 w-4" />;
-                    let accentColor = 'text-slate-400';
-                    let glowColor = 'hover:border-slate-500/30';
+                    let accentColor = 'text-text-secondary';
+                    let glowColor = 'hover:border-border/80';
 
                     if (event.type === 'holiday') {
                         bgClass = 'bg-emerald-500/5 border-emerald-500/10';
@@ -86,11 +86,11 @@ export function EventMural({ events }: EventMuralProps) {
 
                     const content = (
                         <div className={`group/item relative flex items-center gap-4 p-4 rounded-3xl border transition-all duration-300 hover:scale-[1.02] ${bgClass} ${glowColor}`}>
-                            <div className="flex flex-col items-center justify-center min-w-[45px] border-r border-white/5 pr-4">
+                            <div className="flex flex-col items-center justify-center min-w-[45px] border-r border-border/50 pr-4">
                                 <span className={`text-[9px] font-black uppercase tracking-tighter ${accentColor}`}>
                                     {format(date, 'MMM', { locale: ptBR })}
                                 </span>
-                                <span className="text-2xl font-black text-white leading-none tracking-tighter">
+                                <span className="text-2xl font-black text-text-primary leading-none tracking-tighter">
                                     {format(date, 'dd')}
                                 </span>
                             </div>
@@ -105,27 +105,27 @@ export function EventMural({ events }: EventMuralProps) {
 
                                 {event.employee ? (
                                     <div className="flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0 shadow-lg relative group-hover/item:border-brand-orange/50 transition-colors">
+                                        <div className="h-7 w-7 rounded-xl bg-surface border border-border overflow-hidden flex-shrink-0 shadow-sm relative group-hover/item:border-brand-orange/50 transition-colors">
                                             {event.photoUrl ? (
                                                 <img src={event.photoUrl} alt={event.employee} className="h-full w-full object-cover" />
                                             ) : (
-                                                <span className="text-[10px] font-black h-full w-full flex items-center justify-center uppercase text-slate-400 group-hover/item:text-brand-orange transition-colors">
+                                                <span className="text-[10px] font-black h-full w-full flex items-center justify-center uppercase text-text-muted group-hover/item:text-brand-orange transition-colors">
                                                     {event.employee.charAt(0)}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs font-black text-slate-200 truncate uppercase tracking-tight group-hover/item:text-white transition-colors">
+                                        <p className="text-xs font-black text-text-secondary truncate uppercase tracking-tight group-hover/item:text-text-primary transition-colors">
                                             {event.employee}
                                         </p>
                                     </div>
                                 ) : (
-                                    <p className="text-xs font-black text-slate-400 group-hover/item:text-white transition-colors uppercase tracking-tight">
+                                    <p className="text-xs font-black text-text-muted group-hover/item:text-text-primary transition-colors uppercase tracking-tight">
                                         Empresa Geral
                                     </p>
                                 )}
                             </div>
 
-                            <div className="text-white/10 group-hover/item:text-brand-orange transition-colors">
+                            <div className="text-border group-hover/item:text-brand-orange transition-colors">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
                             </div>
                         </div>

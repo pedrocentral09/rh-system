@@ -519,15 +519,15 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
                         {/* Avatar Column */}
                         <div className="lg:col-span-3 flex flex-col items-center space-y-4">
-                            <div className="relative w-40 h-52 bg-white/5 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden group cursor-pointer hover:border-indigo-500/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+                            <div className="relative w-40 h-52 bg-text-primary/5 backdrop-blur-md rounded-2xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden group cursor-pointer hover:border-brand-orange/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
                                 {isUploading ? (
-                                    <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+                                    <Loader2 className="h-8 w-8 animate-spin text-brand-orange/60" />
                                 ) : photoPreview ? (
                                     <img src={photoPreview} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
-                                    <div className="text-slate-500 text-center p-4">
+                                    <div className="text-text-muted text-center p-4">
                                         <span className="text-3xl block mb-2 opacity-50 group-hover:opacity-100 transition-opacity">📷</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">ADICIONAR<br />FOTOGRAFIA</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-muted group-hover:text-text-primary transition-colors">ADICIONAR<br />FOTOGRAFIA</span>
                                     </div>
                                 )}
                                 <input
@@ -565,25 +565,25 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 />
                             </div>
                             <input type="hidden" name="photoUrl" value={photoPreview || ''} />
-                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest text-center mt-2">Padrão 3x4 Recomendado</p>
+                            <p className="text-[9px] font-black text-text-muted uppercase tracking-widest text-center mt-2">Padrão 3x4 Recomendado</p>
                         </div>
 
                         {/* Fields Column */}
                         <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                             <div className="space-y-2 md:col-span-2 lg:col-span-3">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nome Completo do Ativo *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Nome Completos do Ativo *</label>
                                 <Input
                                     name="name"
                                     value={employeeName}
                                     onChange={(e) => setEmployeeName(e.target.value)}
                                     placeholder="NOME COMPLETO OFICIAL"
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-brand-orange/40"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo Fiscal (CPF) *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Protocolo Fiscal (CPF) *</label>
                                 <Input
                                     name="cpf"
                                     value={cpf}
@@ -591,75 +591,75 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="000.000.000-00"
                                     maxLength={14}
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-brand-orange/40"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade Civil (RG) *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identidade Civil (RG) *</label>
                                 <Input
                                     name="rg"
                                     defaultValue={initialData?.rg}
                                     placeholder="00.000.000-0"
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data de Nascimento *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Data de Nascimento *</label>
                                 <Input
                                     name="dateOfBirth"
                                     type="date"
                                     value={birthDate}
                                     onChange={handleDateChange}
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50 text-white fill-white calendar-light"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50 text-text-primary fill-white calendar-light"
                                 />
                             </div>
 
                             <div className="space-y-2 lg:col-span-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Sexo Biológico *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Sexo Biológico *</label>
                                 <select
                                     name="gender"
                                     defaultValue={initialData?.gender || ""}
-                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                    className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                     required
                                 >
-                                    <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
-                                    <option value="MALE" className="bg-[#0A0F1C]">Masculino</option>
-                                    <option value="FEMALE" className="bg-[#0A0F1C]">Feminino</option>
-                                    <option value="OTHER" className="bg-[#0A0F1C]">Outro</option>
+                                    <option value="" className="bg-surface">SELECIONAR...</option>
+                                    <option value="MALE" className="bg-surface">Masculino</option>
+                                    <option value="FEMALE" className="bg-surface">Feminino</option>
+                                    <option value="OTHER" className="bg-surface">Outro</option>
                                 </select>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Status Civil *</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Status Civil *</label>
                                     <select
                                         name="maritalStatus"
                                         value={maritalStatus}
                                         onChange={handleMaritalStatusChange}
-                                        className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                        className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                     >
-                                        <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
-                                        <option value="Solteiro" className="bg-[#0A0F1C]">Solteiro(a)</option>
-                                        <option value="Casado" className="bg-[#0A0F1C]">Casado(a)</option>
-                                        <option value="Divorciado" className="bg-[#0A0F1C]">Divorciado(a)</option>
-                                        <option value="Viuvo" className="bg-[#0A0F1C]">Viúvo(a)</option>
-                                        <option value="UniaoEstavel" className="bg-[#0A0F1C]">União Estável</option>
+                                        <option value="" className="bg-surface">SELECIONAR...</option>
+                                        <option value="Solteiro" className="bg-surface">Solteiro(a)</option>
+                                        <option value="Casado" className="bg-surface">Casado(a)</option>
+                                        <option value="Divorciado" className="bg-surface">Divorciado(a)</option>
+                                        <option value="Viuvo" className="bg-surface">Viúvo(a)</option>
+                                        <option value="UniaoEstavel" className="bg-surface">União Estável</option>
                                     </select>
                                 </div>
 
-                                <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14">
+                                <div className="flex items-center gap-4 bg-text-primary/5 px-6 rounded-2xl border border-border h-14">
                                     <input
                                         type="checkbox"
                                         id="hasDependents"
                                         checked={hasDependents}
                                         onChange={handleHasDependentsChange}
-                                        className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0"
+                                        className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-indigo-500 focus:ring-0"
                                     />
-                                    <label htmlFor="hasDependents" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                    <label htmlFor="hasDependents" className="text-[10px] font-black text-text-primary uppercase tracking-widest cursor-pointer">
                                         Declara Dependentes
                                     </label>
                                 </div>
@@ -668,25 +668,25 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Section 2: Contacts */}
-                    <div className="pt-8 mt-8 border-t border-white/5">
+                    <div className="pt-8 mt-8 border-t border-border">
                         <h4 className="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                             <span className="w-8 h-px bg-sky-500/30" />
                             Matriz de Comunicação
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Linha Fixa</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Linha Fixa</label>
                                 <Input
                                     name="landline"
                                     value={landline}
                                     onChange={(e) => setLandline(maskLandline(e.target.value))}
                                     placeholder="(00) 0000-0000"
                                     maxLength={14}
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal Móvel *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Terminal Móvel *</label>
                                 <Input
                                     name="phone"
                                     value={phone}
@@ -694,11 +694,11 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="(00) 00000-0000"
                                     maxLength={15}
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-sky-500/30"
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Endereço Eletrônico Primário</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Endereço Eletrônico Primário</label>
                                 <Input
                                     name="email"
                                     type="email"
@@ -708,7 +708,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         setAccessEmail(e.target.value);
                                     }}
                                     placeholder="NOME@DOMINIO.COM"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                                 />
                             </div>
                         </div>
@@ -725,7 +725,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             </div>
                             <button
                                 type="button"
-                                className="relative z-10 h-12 px-6 rounded-xl bg-indigo-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center gap-2"
+                                className="relative z-10 h-12 px-6 rounded-xl bg-indigo-500 text-text-primary text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center gap-2"
                                 onClick={() => window.open('https://docs.google.com/spreadsheets/d/1qSD136wZnuJ8-ZHUb20UwYOxTBxJ5Nw0/edit?gid=1946873591#gid=1946873591', '_blank')}
                             >
                                 ACESSAR PLATAFORMA
@@ -734,44 +734,44 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Section 3: Emergency Contact */}
-                    <div className="pt-8 mt-8 border-t border-white/5">
+                    <div className="pt-8 mt-8 border-t border-border">
                         <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                             <span className="w-8 h-px bg-rose-500/30" />
                             Protocolo de Segurança Crítica (Emergência)
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade do Guardião</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identidade do Guardião</label>
                                 <Input
                                     name="emergencyContactName"
                                     defaultValue={initialData?.emergencyContactName}
                                     placeholder="NOME DO PORTA-VOZ DE EMERGÊNCIA"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Urgência</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Terminal de Urgência</label>
                                 <Input
                                     name="emergencyContactPhone"
                                     defaultValue={initialData?.emergencyContactPhone}
                                     placeholder="(00) 00000-0000"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-rose-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-rose-500/30"
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nível de Vínculo</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Nível de Vínculo</label>
                                 <select
                                     name="emergencyContactRelationship"
                                     defaultValue={initialData?.emergencyContactRelationship || ""}
-                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/30"
+                                    className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/30"
                                 >
-                                    <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
-                                    <option value="Pai/Mãe" className="bg-[#0A0F1C]">Ascendente (Pai/Mãe)</option>
-                                    <option value="Cônjuge" className="bg-[#0A0F1C]">Parceiro(a) Oficial</option>
-                                    <option value="Filho(a)" className="bg-[#0A0F1C]">Descendente (Filho/a)</option>
-                                    <option value="Irmão(a)" className="bg-[#0A0F1C]">Colateral (Irmão/a)</option>
-                                    <option value="Amigo(a)" className="bg-[#0A0F1C]">Terceiro de Confiança</option>
-                                    <option value="Outro" className="bg-[#0A0F1C]">Registro Diverso</option>
+                                    <option value="" className="bg-surface">SELECIONAR...</option>
+                                    <option value="Pai/Mãe" className="bg-surface">Ascendente (Pai/Mãe)</option>
+                                    <option value="Cônjuge" className="bg-surface">Parceiro(a) Oficial</option>
+                                    <option value="Filho(a)" className="bg-surface">Descendente (Filho/a)</option>
+                                    <option value="Irmão(a)" className="bg-surface">Colateral (Irmão/a)</option>
+                                    <option value="Amigo(a)" className="bg-surface">Terceiro de Confiança</option>
+                                    <option value="Outro" className="bg-surface">Registro Diverso</option>
                                 </select>
                             </div>
                         </div>
@@ -797,53 +797,53 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Pessoa Física Tutelar</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Pessoa Física Tutelar</label>
                             <Input
                                 name="guardianName"
                                 defaultValue={initialData?.legalGuardian?.name}
                                 placeholder="NOME DO RESPONSÁVEL"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo Fiscal Tutelar (CPF)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Protocolo Fiscal Tutelar (CPF)</label>
                             <Input
                                 name="guardianCpf"
                                 defaultValue={initialData?.legalGuardian?.cpf}
                                 placeholder="000.000.000-00"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Civil Tutelar (RG)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Registro Civil Tutelar (RG)</label>
                             <Input
                                 name="guardianRg"
                                 defaultValue={initialData?.legalGuardian?.rg}
                                 placeholder="IDENTIDADE CIVIL"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Contato Tutelar</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Terminal de Contato Tutelar</label>
                             <Input
                                 name="guardianPhone"
                                 defaultValue={initialData?.legalGuardian?.phone}
                                 placeholder="(00) 00000-0000"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-amber-500/30"
                             />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Natureza Legal do Vínculo</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Natureza Legal do Vínculo</label>
                             <select
                                 name="guardianRelationship"
                                 defaultValue={initialData?.legalGuardian?.relationship || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-amber-500/30"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-amber-500/30"
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
-                                <option value="Mãe" className="bg-[#0A0F1C]">Tutoria Materna</option>
-                                <option value="Pai" className="bg-[#0A0F1C]">Tutoria Paterna</option>
-                                <option value="Tutor" className="bg-[#0A0F1C]">Nomeação Judicial</option>
-                                <option value="Outro" className="bg-[#0A0F1C]">Estrutura Diversa</option>
+                                <option value="" className="bg-surface">SELECIONAR...</option>
+                                <option value="Mãe" className="bg-surface">Tutoria Materna</option>
+                                <option value="Pai" className="bg-surface">Tutoria Paterna</option>
+                                <option value="Tutor" className="bg-surface">Nomeação Judicial</option>
+                                <option value="Outro" className="bg-surface">Estrutura Diversa</option>
                             </select>
                         </div>
                     </div>
@@ -865,48 +865,48 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identidade do Cônjuge</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identidade do Cônjuge</label>
                             <Input
                                 name="spouseName"
                                 defaultValue={initialData?.spouse?.name}
                                 placeholder="NOME DO PARCEIRO OFICIAL"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Fiscal (CPF)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Registro Fiscal (CPF)</label>
                             <Input
                                 name="spouseCpf"
                                 defaultValue={initialData?.spouse?.cpf}
                                 placeholder="000.000.000-00"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Civil (RG)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Registro Civil (RG)</label>
                             <Input
                                 name="spouseRg"
                                 defaultValue={initialData?.spouse?.rg}
                                 placeholder="IDENTIDADE CIVIL"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data de Nascimento Originária</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Data de Nascimento Originária</label>
                             <Input
                                 name="spouseBirthDate"
                                 type="date"
                                 defaultValue={safeDate(initialData?.spouse?.birthDate)}
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/30 calendar-light"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest text-text-primary fill-white focus:border-indigo-500/30 calendar-light"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Terminal de Comunicação</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Terminal de Comunicação</label>
                             <Input
                                 name="spousePhone"
                                 defaultValue={initialData?.spouse?.phone}
                                 placeholder="(00) 00000-0000"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/30"
                             />
                         </div>
                     </div>
@@ -918,15 +918,15 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
             label: '👨‍👩‍👧‍👦 Matriz de Dependentes',
             content: (
                 <div className="space-y-10">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.02] p-8 rounded-[2rem] border border-white/5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.02] p-8 rounded-[2rem] border border-border">
                         <div>
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest">Controle de Beneficiários</h3>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Acrescente instâncias dependentes habilitadas</p>
+                            <h3 className="text-sm font-black text-text-primary uppercase tracking-widest">Controle de Beneficiários</h3>
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Acrescente instâncias dependentes habilitadas</p>
                         </div>
                         <button
                             type="button"
                             onClick={addDependent}
-                            className="h-14 px-8 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(99,102,241,0.2)] shrink-0 group"
+                            className="h-14 px-8 rounded-2xl bg-indigo-500 text-text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(99,102,241,0.2)] shrink-0 group"
                         >
                             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
                             AUTORIZAR INSERÇÃO
@@ -941,56 +941,56 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="p-8 border border-white/5 rounded-[2rem] bg-white/[0.02] relative group hover:border-indigo-500/30 transition-all shadow-xl"
+                                    className="p-8 border border-border rounded-[2rem] bg-white/[0.02] relative group hover:border-indigo-500/30 transition-all shadow-xl"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => removeDependent(index)}
-                                        className="absolute top-8 right-8 w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all transform hover:rotate-90 z-10"
+                                        className="absolute top-8 right-8 w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-text-primary transition-all transform hover:rotate-90 z-10"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative mt-4 md:mt-0">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Plena</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identificação Plena</label>
                                             <Input
                                                 value={dep.name}
                                                 onChange={(e) => updateDependent(index, 'name', e.target.value)}
                                                 placeholder="NOME DO DEPENDENTE"
-                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
+                                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Elo Familiar</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Elo Familiar</label>
                                             <select
                                                 value={dep.relationship}
                                                 onChange={(e) => updateDependent(index, 'relationship', e.target.value)}
-                                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                             >
-                                                <option value="" className="bg-[#0A0F1C]">SELECIONAR...</option>
-                                                <option value="Filho(a)" className="bg-[#0A0F1C]">Criança/Adolescente (Filho)</option>
-                                                <option value="Enteado(a)" className="bg-[#0A0F1C]">Criança/Adolescente (Enteado)</option>
-                                                <option value="Pai/Mãe" className="bg-[#0A0F1C]">Progenitor(a)</option>
-                                                <option value="Outro" className="bg-[#0A0F1C]">Relação Excepcional</option>
+                                                <option value="" className="bg-surface">SELECIONAR...</option>
+                                                <option value="Filho(a)" className="bg-surface">Criança/Adolescente (Filho)</option>
+                                                <option value="Enteado(a)" className="bg-surface">Criança/Adolescente (Enteado)</option>
+                                                <option value="Pai/Mãe" className="bg-surface">Progenitor(a)</option>
+                                                <option value="Outro" className="bg-surface">Relação Excepcional</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Vitalício (Nascimento)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Registro Vitalício (Nascimento)</label>
                                             <Input
                                                 type="date"
                                                 value={dep.birthDate ? safeDate(dep.birthDate) : ''}
                                                 onChange={(e) => updateDependent(index, 'birthDate', e.target.value)}
-                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/50 calendar-light"
+                                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest text-text-primary fill-white focus:border-indigo-500/50 calendar-light"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Protocolo ID (Situação Legal)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Protocolo ID (Situação Legal)</label>
                                             <Input
                                                 value={dep.cpf}
                                                 onChange={(e) => updateDependent(index, 'cpf', e.target.value)}
                                                 placeholder="000.000.000-00 (OPCIONAL INFRA 12 ANOS)"
-                                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
+                                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-indigo-500/50"
                                             />
                                         </div>
                                     </div>
@@ -999,9 +999,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </AnimatePresence>
 
                         {dependents.length === 0 && (
-                            <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/[0.01]">
+                            <div className="py-24 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-white/[0.01]">
                                 <Users className="w-16 h-16 text-slate-800 mx-auto mb-6 opacity-30" />
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Nenhuma entidade vinculada registrada</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Nenhuma entidade vinculada registrada</p>
                                 <button type="button" onClick={addDependent} className="mt-8 text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:text-indigo-300 transition-colors bg-indigo-500/10 px-6 py-3 rounded-xl border border-indigo-500/20 hover:bg-indigo-500/20 shadow-xl">
                                     Iniciar Novo Vínculo Diferenciado →
                                 </button>
@@ -1026,7 +1026,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Código Postal (CEP) *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Código Postal (CEP) *</label>
                             <div className="relative">
                                 <Input
                                     name="zipCode"
@@ -1036,7 +1036,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="00000-000"
                                     maxLength={9}
                                     required
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-emerald-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest focus:border-emerald-500/30"
                                 />
                                 {isCepLoading && (
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -1046,7 +1046,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 flex items-center gap-2">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 flex items-center gap-2">
                                 Município e Estado *
                             </label>
                             <div className="grid grid-cols-12 gap-4">
@@ -1056,7 +1056,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     onChange={(e) => setAddressFields({ ...addressFields, city: e.target.value })}
                                     placeholder="CIDADE"
                                     required
-                                    className="col-span-9 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                    className="col-span-9 h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                                 <Input
                                     name="state"
@@ -1065,12 +1065,12 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     placeholder="UF"
                                     maxLength={2}
                                     required
-                                    className="col-span-3 h-14 bg-white/5 border-white/5 rounded-2xl px-0 text-center text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                    className="col-span-3 h-14 bg-text-primary/5 border-border rounded-2xl px-0 text-center text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Endereço Principal e Numeração *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Endereço Principal e Numeração *</label>
                             <div className="grid grid-cols-12 gap-4">
                                 <Input
                                     name="street"
@@ -1078,7 +1078,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     onChange={(e) => setAddressFields({ ...addressFields, street: e.target.value })}
                                     placeholder="NOME DO LOGRADOURO..."
                                     required
-                                    className="col-span-9 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                    className="col-span-9 h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                                 <Input
                                     name="number"
@@ -1086,29 +1086,29 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     onChange={(e) => setAddressFields({ ...addressFields, number: e.target.value })}
                                     placeholder="Nº"
                                     required
-                                    className="col-span-3 h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                    className="col-span-3 h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Informação Adicional (Complemento)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Informação Adicional (Complemento)</label>
                             <Input
                                 name="complement"
                                 value={addressFields.complement}
                                 onChange={(e) => setAddressFields({ ...addressFields, complement: e.target.value })}
                                 placeholder="BLOCO, APTO, QUADRA..."
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Setor/Bairro *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Setor/Bairro *</label>
                             <Input
                                 name="neighborhood"
                                 value={addressFields.neighborhood}
                                 onChange={(e) => setAddressFields({ ...addressFields, neighborhood: e.target.value })}
                                 placeholder="NOME DO BAIRRO"
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-emerald-500/30"
                             />
                         </div>
                     </div>
@@ -1131,90 +1131,90 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     {/* Professional Header Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-8">
                         <div className="space-y-2 md:col-span-2 lg:col-span-1">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade Contratante *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Unidade Contratante *</label>
                             <select
                                 name="companyId"
                                 defaultValue={initialData?.contract?.companyId || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE A EMPRESA...</option>
+                                <option value="" className="bg-surface">SELECIONE A EMPRESA...</option>
                                 {companiesList.map(c => (
-                                    <option key={c.id} value={c.id} className="bg-[#0A0F1C]">
+                                    <option key={c.id} value={c.id} className="bg-surface">
                                         {c.tradingName || c.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Interna (Matrícula)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identificação Interna (Matrícula)</label>
                             <Input
                                 name="registrationNumber"
                                 disabled
                                 placeholder="GERAÇÃO AUTOMÁTICA VIA SISTEMA"
-                                className="h-14 bg-white/[0.02] border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase cursor-not-allowed opacity-50"
+                                className="h-14 bg-white/[0.02] border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase cursor-not-allowed opacity-50"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Posição Hierárquica (Cargo) *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Posição Hierárquica (Cargo) *</label>
                             <select
                                 name="jobRoleId"
                                 defaultValue={initialData?.jobRoleId || initialData?.contract?.jobRoleId || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE O CARGO...</option>
+                                <option value="" className="bg-surface">SELECIONE O CARGO...</option>
                                 {jobRolesList.map(r => (
-                                    <option key={r.id} value={r.id} className="bg-[#0A0F1C]">{r.name}</option>
+                                    <option key={r.id} value={r.id} className="bg-surface">{r.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Departamento Alocado *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Departamento Alocado *</label>
                             <select
                                 name="sectorId"
                                 defaultValue={initialData?.contract?.sectorId || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE O SETOR...</option>
+                                <option value="" className="bg-surface">SELECIONE O SETOR...</option>
                                 {sectorsList.map(s => (
-                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">{s.name}</option>
+                                    <option key={s.id} value={s.id} className="bg-surface">{s.name}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Unidade de Lotação (Loja) *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Unidade de Lotação (Loja) *</label>
                             <select
                                 name="storeId"
                                 defaultValue={initialData?.contract?.storeId || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE A UNIDADE...</option>
+                                <option value="" className="bg-surface">SELECIONE A UNIDADE...</option>
                                 {storesList.map(s => (
-                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">
+                                    <option key={s.id} value={s.id} className="bg-surface">
                                         {s.tradingName || s.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data Oficial de Admissão *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Data Oficial de Admissão *</label>
                             <Input
                                 name="hireDate"
                                 type="date"
                                 value={hireDate}
                                 onChange={(e) => setHireDate(e.target.value)}
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-indigo-500/50 calendar-light"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest text-text-primary fill-white focus:border-indigo-500/50 calendar-light"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Remuneração Base (R$) *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Remuneração Base (R$) *</label>
                             <Input
                                 name="baseSalary"
                                 type="text"
@@ -1222,20 +1222,20 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
                                 placeholder="R$ 1.621,00"
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-indigo-500/50"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Escala de Trabalho *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Escala de Trabalho *</label>
                             <select
                                 name="workShiftId"
                                 defaultValue={initialData?.contract?.workShiftId || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE O TURNO...</option>
+                                <option value="" className="bg-surface">SELECIONE O TURNO...</option>
                                 {shiftsList.map((s: any) => (
-                                    <option key={s.id} value={s.id} className="bg-[#0A0F1C]">
+                                    <option key={s.id} value={s.id} className="bg-surface">
                                         {s.name} ({s.startTime} AS {s.endTime})
                                     </option>
                                 ))}
@@ -1244,50 +1244,50 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Experience Contract Section */}
-                    <div className="pt-8 mt-8 border-t border-white/5">
+                    <div className="pt-8 mt-8 border-t border-border">
                         <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                             <span className="w-8 h-px bg-amber-500/30" />
                             Regime de Experiência Probatória
                         </h4>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                            <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14 col-span-1 md:col-span-2 lg:col-span-1">
+                            <div className="flex items-center gap-4 bg-text-primary/5 px-6 rounded-2xl border border-border h-14 col-span-1 md:col-span-2 lg:col-span-1">
                                 <input
                                     type="checkbox"
                                     name="isExperienceContract"
                                     defaultChecked={initialData?.contract?.isExperienceContract}
                                     id="expContract"
-                                    className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0 cursor-pointer"
+                                    className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-indigo-500 focus:ring-0 cursor-pointer"
                                 />
-                                <label htmlFor="expContract" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                <label htmlFor="expContract" className="text-[10px] font-black text-text-primary uppercase tracking-widest cursor-pointer">
                                     Ativar Regime de Experiência
                                 </label>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Ciclo Primário (Dias)</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Ciclo Primário (Dias)</label>
                                 <select
                                     name="experienceDays"
                                     value={expDays}
                                     onChange={(e) => setExpDays(parseInt(e.target.value))}
-                                    className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
+                                    className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-indigo-500/50"
                                 >
-                                    <option value={30} className="bg-[#0A0F1C]">30 DIAS CORRIDOS</option>
-                                    <option value={45} className="bg-[#0A0F1C]">45 DIAS CORRIDOS</option>
-                                    <option value={90} className="bg-[#0A0F1C]">90 DIAS CORRIDOS</option>
+                                    <option value={30} className="bg-surface">30 DIAS CORRIDOS</option>
+                                    <option value={45} className="bg-surface">45 DIAS CORRIDOS</option>
+                                    <option value={90} className="bg-surface">90 DIAS CORRIDOS</option>
                                 </select>
                             </div>
 
-                            <div className="flex items-center gap-4 bg-white/5 px-6 rounded-2xl border border-white/5 h-14 col-span-1 md:col-span-2 lg:col-span-1">
+                            <div className="flex items-center gap-4 bg-text-primary/5 px-6 rounded-2xl border border-border h-14 col-span-1 md:col-span-2 lg:col-span-1">
                                 <input
                                     type="checkbox"
                                     name="isExperienceExtended"
                                     checked={isExtended}
                                     onChange={(e) => setIsExtended(e.target.checked)}
                                     id="expExtended"
-                                    className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-indigo-500 focus:ring-0 cursor-pointer"
+                                    className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-indigo-500 focus:ring-0 cursor-pointer"
                                 />
-                                <label htmlFor="expExtended" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                <label htmlFor="expExtended" className="text-[10px] font-black text-text-primary uppercase tracking-widest cursor-pointer">
                                     Prorrogar Vínculo (Extensão)
                                 </label>
                             </div>
@@ -1298,16 +1298,16 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     animate={{ opacity: 1, height: 'auto' }}
                                     className="space-y-2 overflow-hidden"
                                 >
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Prorrogação (Dias)</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Prorrogação (Dias)</label>
                                     <select
                                         name="experienceExtensionDays"
                                         value={extDays}
                                         onChange={(e) => setExtDays(parseInt(e.target.value))}
-                                        className={`w-full h-14 bg-white/5 border rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none ${contractEndData?.error ? 'border-red-500/50 focus:border-red-500' : 'border-white/5 focus:border-indigo-500/50'}`}
+                                        className={`w-full h-14 bg-text-primary/5 border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none ${contractEndData?.error ? 'border-red-500/50 focus:border-red-500' : 'border-border focus:border-indigo-500/50'}`}
                                     >
-                                        <option value={30} className="bg-[#0A0F1C]">+ 30 DIAS CORRIDOS</option>
-                                        <option value={45} className="bg-[#0A0F1C]">+ 45 DIAS CORRIDOS</option>
-                                        <option value={60} className="bg-[#0A0F1C]">+ 60 DIAS CORRIDOS</option>
+                                        <option value={30} className="bg-surface">+ 30 DIAS CORRIDOS</option>
+                                        <option value={45} className="bg-surface">+ 45 DIAS CORRIDOS</option>
+                                        <option value={60} className="bg-surface">+ 60 DIAS CORRIDOS</option>
                                     </select>
                                     {contractEndData?.error && (
                                         <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mt-2 ml-4 flex items-center gap-2">
@@ -1336,7 +1336,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     {/* Additional Benefits Section - Matching the Image List Style */}
                     <div className="border-t border-slate-800 pt-6 mt-6">
-                        <h4 className="text-white font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Adicionais e Benefícios</h4>
+                        <h4 className="text-text-primary font-bold mb-6 text-center border-b border-slate-800 pb-2 uppercase tracking-wider text-xs">Adicionais e Benefícios</h4>
 
                         <div className="space-y-3">
                             {/* Quebra de Caixa */}
@@ -1445,57 +1445,57 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Instituição Financeira *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Instituição Financeira *</label>
                             <Input
                                 name="bankName"
                                 defaultValue={initialData?.bankData?.bankName}
                                 placeholder="EX: NUBANK, ITAÚ..."
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Nomenclatura da Conta *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Nomenclatura da Conta *</label>
                             <select
                                 name="accountType"
                                 defaultValue={initialData?.bankData?.accountType || ""}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500/50"
                                 required
                             >
-                                <option value="" className="bg-[#0A0F1C]">SELECIONE A MODALIDADE...</option>
-                                <option value="Corrente" className="bg-[#0A0F1C]">CONTA CORRENTE</option>
-                                <option value="Poupanca" className="bg-[#0A0F1C]">CONTA POUPANÇA</option>
-                                <option value="Salario" className="bg-[#0A0F1C]">CONTA SALÁRIO</option>
+                                <option value="" className="bg-surface">SELECIONE A MODALIDADE...</option>
+                                <option value="Corrente" className="bg-surface">CONTA CORRENTE</option>
+                                <option value="Poupanca" className="bg-surface">CONTA POUPANÇA</option>
+                                <option value="Salario" className="bg-surface">CONTA SALÁRIO</option>
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Código da Agência *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Código da Agência *</label>
                             <Input
                                 name="agency"
                                 defaultValue={initialData?.bankData?.agency}
                                 placeholder="0000"
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação da Conta *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identificação da Conta *</label>
                             <Input
                                 name="accountNumber"
                                 defaultValue={initialData?.bankData?.accountNumber}
                                 placeholder="00000-0"
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
                             />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Credencial Transacional (Chave PIX) *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Credencial Transacional (Chave PIX) *</label>
                             <Input
                                 name="pixKey"
                                 defaultValue={initialData?.bankData?.pixKey}
                                 placeholder="CPF, EMAIL OU CHAVE ALEATÓRIA"
                                 required
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-rose-500/30"
                             />
                         </div>
                     </div>
@@ -1516,9 +1516,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-white/5 p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-border p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
                             <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🚌</div>
+                                <div className="w-12 h-12 rounded-xl bg-text-primary/5 flex items-center justify-center text-xl border border-border">🚌</div>
                                 <div>
                                     <div className="flex items-center gap-3">
                                         <input
@@ -1526,13 +1526,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                             name="hasTransportVoucher"
                                             defaultChecked={initialData?.contract?.hasTransportVoucher}
                                             id="vt-toggle"
-                                            className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
+                                            className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
                                         />
-                                        <label htmlFor="vt-toggle" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer">
+                                        <label htmlFor="vt-toggle" className="text-[11px] font-black text-text-primary uppercase tracking-widest cursor-pointer">
                                             Vale Transporte (Retenção 6%)
                                         </label>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-2">
                                         <a href="/portal/benefits/transport" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors ml-1">
                                             ATRIBUIÇÃO DE ROTA →
                                         </a>
@@ -1543,10 +1543,10 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
+                            <div className="bg-white/[0.02] border border-border p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🛒</div>
-                                    <label className="text-[11px] font-black text-white uppercase tracking-widest">Vale Alimentação (VA)</label>
+                                    <div className="w-12 h-12 rounded-xl bg-text-primary/5 flex items-center justify-center text-xl border border-border">🛒</div>
+                                    <label className="text-[11px] font-black text-text-primary uppercase tracking-widest">Vale Alimentação (VA)</label>
                                 </div>
                                 <Input
                                     name="mealVoucherValue"
@@ -1554,14 +1554,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     defaultValue={initialData?.contract?.mealVoucherValue ? maskCurrency(initialData.contract.mealVoucherValue) : ''}
                                     onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
                                     placeholder="R$ 0,00"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
                                 />
                             </div>
 
-                            <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
+                            <div className="bg-white/[0.02] border border-border p-6 rounded-2xl hover:border-fuchsia-500/30 transition-colors space-y-4">
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">🍽️</div>
-                                    <label className="text-[11px] font-black text-white uppercase tracking-widest">Vale Refeição (VR)</label>
+                                    <div className="w-12 h-12 rounded-xl bg-text-primary/5 flex items-center justify-center text-xl border border-border">🍽️</div>
+                                    <label className="text-[11px] font-black text-text-primary uppercase tracking-widest">Vale Refeição (VR)</label>
                                 </div>
                                 <Input
                                     name="foodVoucherValue"
@@ -1569,27 +1569,27 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     defaultValue={initialData?.contract?.foodVoucherValue ? maskCurrency(initialData.contract.foodVoucherValue) : ''}
                                     onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
                                     placeholder="R$ 0,00"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-fuchsia-500/30 w-full"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-white/5 p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between bg-white/[0.02] border border-border p-6 rounded-2xl gap-6 hover:border-fuchsia-500/30 transition-colors">
                             <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl border border-white/10">👨‍👩‍👧</div>
+                                <div className="w-12 h-12 rounded-xl bg-text-primary/5 flex items-center justify-center text-xl border border-border">👨‍👩‍👧</div>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
                                         name="hasFamilySalary"
                                         defaultChecked={initialData?.contract?.hasFamilySalary}
                                         id="familySalary"
-                                        className="w-5 h-5 rounded-lg border-white/20 bg-white/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
+                                        className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-fuchsia-500 focus:ring-0 cursor-pointer"
                                     />
-                                    <label htmlFor="familySalary" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer">Abono Familiar</label>
+                                    <label htmlFor="familySalary" className="text-[11px] font-black text-text-primary uppercase tracking-widest cursor-pointer">Abono Familiar</label>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-4 w-full lg:w-auto bg-white/5 p-2 rounded-2xl">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">Nº BENEFICIÁRIOS:</span>
+                            <div className="flex items-center space-x-4 w-full lg:w-auto bg-text-primary/5 p-2 rounded-2xl">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest px-4">Nº BENEFICIÁRIOS:</span>
                                 <Input
                                     name="familySalaryDependents"
                                     type="number"
@@ -1601,7 +1601,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
 
-                    <div className="pt-8 mt-8 border-t border-white/5">
+                    <div className="pt-8 mt-8 border-t border-border">
                         <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                             <span className="w-8 h-px bg-amber-500/30" />
                             Adicionais Remuneratórios
@@ -1609,22 +1609,22 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Atributos Extraordinários</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Atributos Extraordinários</label>
                                 <textarea
                                     name="otherBenefits"
                                     defaultValue={initialData?.contract?.otherBenefits}
-                                    className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-amber-500/50 min-h-[140px] resize-none"
+                                    className="w-full bg-text-primary/5 border border-border rounded-2xl p-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:border-amber-500/50 min-h-[140px] resize-none"
                                     placeholder="ESPECIFICAR PLANOS DE SAÚDE, SEGUROS OU SUBSÍDIOS ADICIONAIS..."></textarea>
                             </div>
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Gratificação Recorrente (R$)</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Gratificação Recorrente (R$)</label>
                                 <Input
                                     name="monthlyBonus"
                                     type="text"
                                     defaultValue={initialData?.contract?.monthlyBonus ? maskCurrency(initialData.contract.monthlyBonus) : ''}
                                     onChange={(e) => { e.target.value = maskCurrency(e.target.value); }}
                                     placeholder="R$ 0,00"
-                                    className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
+                                    className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-amber-500/30"
                                 />
                                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                                     <p className="text-[10px] font-black text-amber-400/80 uppercase tracking-widest leading-relaxed">
@@ -1652,18 +1652,18 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Classificação do Exame</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Classificação do Exame</label>
                             <select
                                 name="asoType"
                                 value={asoType}
                                 onChange={(e) => setAsoType(e.target.value)}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
                             >
-                                <option value="Admissional" className="bg-[#0A0F1C]">ADMISSIONAL</option>
-                                <option value="Periodico" className="bg-[#0A0F1C]">PERIÓDICO</option>
-                                <option value="Retorno" className="bg-[#0A0F1C]">RETORNO AO TRABALHO</option>
-                                <option value="MudancaFuncao" className="bg-[#0A0F1C]">MUDANÇA DE FUNÇÃO</option>
-                                <option value="Demissional" className="bg-[#0A0F1C]">DEMISSIONAL</option>
+                                <option value="Admissional" className="bg-surface">ADMISSIONAL</option>
+                                <option value="Periodico" className="bg-surface">PERIÓDICO</option>
+                                <option value="Retorno" className="bg-surface">RETORNO AO TRABALHO</option>
+                                <option value="MudancaFuncao" className="bg-surface">MUDANÇA DE FUNÇÃO</option>
+                                <option value="Demissional" className="bg-surface">DEMISSIONAL</option>
                             </select>
                         </div>
                         {asoType === 'MudancaFuncao' && (
@@ -1673,41 +1673,41 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     name="newRoleId"
                                     value={targetRoleId}
                                     onChange={(e) => setTargetRoleId(e.target.value)}
-                                    className="w-full h-14 bg-white/5 border border-rose-500/30 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500"
+                                    className="w-full h-14 bg-text-primary/5 border border-rose-500/30 rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-rose-500"
                                 >
-                                    <option value="" className="bg-[#0A0F1C]">SELECIONE A NOVA FUNÇÃO...</option>
+                                    <option value="" className="bg-surface">SELECIONE A NOVA FUNÇÃO...</option>
                                     {jobRolesList.map(role => (
-                                        <option key={role.id} value={role.id} className="bg-[#0A0F1C]">{role.name}</option>
+                                        <option key={role.id} value={role.id} className="bg-surface">{role.name}</option>
                                     ))}
                                 </select>
                             </div>
                         )}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Data do Exame *</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Data do Exame *</label>
                             <Input
                                 name="lastAsoDate"
                                 type="date"
                                 value={lastAso}
                                 onChange={(e) => setLastAso(e.target.value)}
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest text-white fill-white focus:border-teal-500/50 calendar-light"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest text-text-primary fill-white focus:border-teal-500/50 calendar-light"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Próximo Vencimento (Meses)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Próximo Vencimento (Meses)</label>
                             <select
                                 name="asoPeriodicity"
                                 value={asoPeriodicity}
                                 onChange={(e) => setAsoPeriodicity(e.target.value)}
-                                className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
+                                className="w-full h-14 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none focus:border-teal-500/50"
                             >
-                                <option value="6" className="bg-[#0A0F1C]">SEMESTRAL (06 MESES)</option>
-                                <option value="12" className="bg-[#0A0F1C]">ANUAL (12 MESES)</option>
-                                <option value="24" className="bg-[#0A0F1C]">BIENAL (24 MESES)</option>
+                                <option value="6" className="bg-surface">SEMESTRAL (06 MESES)</option>
+                                <option value="12" className="bg-surface">ANUAL (12 MESES)</option>
+                                <option value="24" className="bg-surface">BIENAL (24 MESES)</option>
                             </select>
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 block mb-2">Upload do Certificado (Opcional)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 block mb-2">Upload do Certificado (Opcional)</label>
                             <div className="relative group/aso">
                                 <input
                                     type="file"
@@ -1732,13 +1732,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 />
                                 <label
                                     htmlFor="aso-upload"
-                                    className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer group-hover/aso:border-teal-500/30 transition-all"
+                                    className="flex items-center justify-between p-4 bg-text-primary/5 border border-border rounded-2xl cursor-pointer group-hover/aso:border-teal-500/30 transition-all"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
                                             <CloudUpload className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[10px] font-black text-white tracking-widest uppercase">
+                                        <span className="text-[10px] font-black text-text-primary tracking-widest uppercase">
                                             {asoFileUrl ? "DOCUMENTO ANEXADO" : "CLIQUE PARA ANEXAR O PDF/FOTO"}
                                         </span>
                                     </div>
@@ -1758,7 +1758,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     <h5 className="text-[10px] font-black text-teal-500 uppercase tracking-widest">
                                         PROXIMA RENOVAÇÃO ESTIMADA
                                     </h5>
-                                    <p className="text-sm font-bold text-white mt-1">
+                                    <p className="text-sm font-bold text-text-primary mt-1">
                                         {nextAsoDate || "AGUARDANDO DEFINIÇÃO DE DATA BASE"}
                                     </p>
                                 </div>
@@ -1766,12 +1766,12 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </div>
 
                         <div className="space-y-4 md:col-span-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Parecer e Restrições Clínicas</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Parecer e Restrições Clínicas</label>
                             <textarea
                                 name="asoObservations"
                                 value={asoObservations}
                                 onChange={(e) => setAsoObservations(e.target.value)}
-                                className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-teal-500/50 min-h-[140px] resize-none"
+                                className="w-full bg-text-primary/5 border border-border rounded-2xl p-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:border-teal-500/50 min-h-[140px] resize-none"
                                 placeholder="DESCREVER AVALIAÇÃO DE APTIDÃO E POTENCIAIS LIMITAÇÕES FÍSICAS..."></textarea>
                         </div>
 
@@ -1812,7 +1812,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                             toast.error('Erro na comunicação com o servidor', { id: loadingToast });
                                         }
                                     }}
-                                    className="bg-teal-500 text-white rounded-xl px-8 h-12 text-[11px] font-black tracking-widest hover:bg-teal-400 transition-all uppercase"
+                                    className="bg-teal-500 text-text-primary rounded-xl px-8 h-12 text-[11px] font-black tracking-widest hover:bg-teal-400 transition-all uppercase"
                                 >
                                     {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
                                     Adicionar Registro (Múltiplos ASOs)
@@ -1823,31 +1823,31 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     {/* ASO HISTORY SECTION */}
                     {healthRecords?.length > 0 && (
-                        <div className="pt-10 border-t border-white/5">
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Histórico de Exames Ocupacionais</h4>
+                        <div className="pt-10 border-t border-border">
+                            <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mb-8">Histórico de Exames Ocupacionais</h4>
 
-                            <div className="overflow-x-auto rounded-3xl border border-white/5 bg-[#0A0F1C]/50 shadow-inner">
+                            <div className="overflow-x-auto rounded-3xl border border-border bg-surface/50 shadow-inner">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-white/5 bg-white/[0.02]">
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Tipo de Exame</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Data Realização</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Validade</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Atributos</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center">Doc.</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Ação</th>
+                                        <tr className="border-b border-border bg-white/[0.02]">
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Tipo de Exame</th>
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Data Realização</th>
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Validade</th>
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Atributos</th>
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Doc.</th>
+                                            <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Ação</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {healthRecords.map((record: any) => (
-                                            <tr key={record.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                                            <tr key={record.id} className="border-b border-border hover:bg-white/[0.02] transition-colors group">
                                                 <td className="p-5">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex flex-shrink-0 items-center justify-center text-lg shadow-inner ring-1 ring-teal-500/30">
                                                             {record.asoType === 'Admissional' ? '🆕' : record.asoType === 'MudancaFuncao' ? '🔄' : record.asoType === 'Demissional' ? '🚫' : '📅'}
                                                         </div>
                                                         <div className="flex flex-col">
-                                                            <p className="text-[11px] font-black text-white uppercase tracking-widest mb-1">{record.asoType.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                            <p className="text-[11px] font-black text-text-primary uppercase tracking-widest mb-1">{record.asoType.replace(/([A-Z])/g, ' $1').trim()}</p>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -1860,7 +1860,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                                 <td className="p-5 text-center max-w-[200px]">
                                                     {record.observations ? (
                                                         <p className="text-[9px] text-slate-400 font-medium truncate" title={record.observations}>{record.observations}</p>
-                                                    ) : <span className="text-slate-600">—</span>}
+                                                    ) : <span className="text-text-muted">—</span>}
                                                 </td>
                                                 <td className="p-5">
                                                     <div className="flex items-center justify-center">
@@ -1868,13 +1868,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                                             <button
                                                                 type="button"
                                                                 onClick={() => window.open(record.fileUrl, '_blank')}
-                                                                className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 hover:bg-teal-500 hover:text-white flex items-center justify-center transition-all shadow-lg border border-teal-500/20 scale-95 hover:scale-105"
+                                                                className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 hover:bg-teal-500 hover:text-text-primary flex items-center justify-center transition-all shadow-lg border border-teal-500/20 scale-95 hover:scale-105"
                                                                 title="Visualizar Anexo"
                                                             >
                                                                 📄
                                                             </button>
                                                         ) : (
-                                                            <span className="text-slate-600 text-[9px] uppercase font-bold tracking-widest opacity-50">S/ ANEXO</span>
+                                                            <span className="text-text-muted text-[9px] uppercase font-bold tracking-widest opacity-50">S/ ANEXO</span>
                                                         )}
                                                     </div>
                                                 </td>
@@ -1928,39 +1928,39 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Inscrição Social (PIS/PASEP)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Inscrição Social (PIS/PASEP)</label>
                             <Input
                                 name="pis"
                                 value={pis}
                                 onChange={(e) => setPis(maskPIS(e.target.value))}
                                 placeholder="000.00000.00-0"
                                 maxLength={14}
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Registro Trabalhista (CTPS)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Registro Trabalhista (CTPS)</label>
                             <Input
                                 name="ctps"
                                 value={ctps}
                                 onChange={(e) => setCtps(maskCTPS(e.target.value))}
                                 placeholder="1234567 000-0"
                                 maxLength={12}
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Identificação Eleitoral</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Identificação Eleitoral</label>
                             <Input
                                 name="voterTitle"
                                 defaultValue={initialData?.voterTitle}
                                 placeholder="0000 0000 0000"
-                                className="h-14 bg-white/5 border-white/5 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
+                                className="h-14 bg-text-primary/5 border-border rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:border-sky-500/30"
                             />
                         </div>
                     </div>
 
-                    <div className="pt-8 mt-8 border-t border-white/5">
+                    <div className="pt-8 mt-8 border-t border-border">
                         <h4 className="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                             <span className="w-8 h-px bg-sky-500/30" />
                             Anexos Digitais
@@ -1968,9 +1968,9 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {docCategories.map(cat => (
-                                <div key={cat.id} className="p-6 border border-white/5 rounded-[2rem] bg-white/[0.02] hover:border-sky-500/30 transition-all group">
+                                <div key={cat.id} className="p-6 border border-border rounded-[2rem] bg-white/[0.02] hover:border-sky-500/30 transition-all group">
                                     <div className="mt-8 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 pb-10">
-                                        <h5 className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-3">
+                                        <h5 className="text-[11px] font-black text-text-primary uppercase tracking-widest flex items-center gap-3">
                                             <span className="text-xl opacity-80">{cat.icon}</span> {cat.label}
                                         </h5>
                                         <span className="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-[9px] font-black">
@@ -1980,7 +1980,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
                                     <div className="space-y-3 mb-6">
                                         {uploadedFiles.filter(f => f.type === cat.label).map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between text-xs bg-white/5 border border-white/10 p-3 rounded-xl hover:border-sky-500/50 transition-colors">
+                                            <div key={idx} className="flex items-center justify-between text-xs bg-text-primary/5 border border-border p-3 rounded-xl hover:border-sky-500/50 transition-colors">
                                                 <span className="text-[10px] font-bold text-slate-300 truncate max-w-[150px] uppercase">{file.fileName}</span>
                                                 <div className="flex space-x-3">
                                                     <a href={file.fileUrl} target="_blank" className="text-sky-400 hover:text-sky-300 font-bold uppercase text-[9px] tracking-widest">VISUALIZAR</a>
@@ -1990,7 +1990,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         ))}
                                     </div>
 
-                                    <label className={`relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors block ${isUploading ? 'border-sky-500/30 bg-sky-500/5' : 'border-white/10 hover:border-white/30 hover:bg-white/5'}`}>
+                                    <label className={`relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors block ${isUploading ? 'border-sky-500/30 bg-sky-500/5' : 'border-border hover:border-white/30 hover:bg-text-primary/5'}`}>
                                         <input
                                             type="file"
                                             multiple
@@ -1999,7 +1999,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                             onChange={(e) => handleFileSelect(e, cat.label)}
                                             disabled={isUploading}
                                         />
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center justify-center gap-2 group-hover:text-slate-300 transition-colors">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center justify-center gap-2 group-hover:text-slate-300 transition-colors">
                                             <CloudUpload className="w-4 h-4" />
                                             {isUploading ? 'PROCESSANDO...' : 'INSERIR DOCUMENTO'}
                                         </p>
@@ -2024,14 +2024,14 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         </h4>
                     </div>
 
-                    <div className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-10">
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 pb-8 border-b border-white/5">
+                    <div className="bg-white/[0.02] border border-border rounded-[2rem] p-10">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 pb-8 border-b border-border">
                             <div className="bg-orange-500/20 border border-orange-500/30 p-4 rounded-2xl shrink-0">
                                 <Lock className="h-8 w-8 text-orange-400" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-black text-white uppercase tracking-widest">Protocolo Autenticação (CPF + PIN)</h4>
-                                <p className="text-[11px] font-bold text-slate-500 uppercase mt-2 leading-relaxed max-w-2xl">
+                                <h4 className="text-sm font-black text-text-primary uppercase tracking-widest">Protocolo Autenticação (CPF + PIN)</h4>
+                                <p className="text-[11px] font-bold text-text-muted uppercase mt-2 leading-relaxed max-w-2xl">
                                     O ACESSO AO PORTAL É RESTRITO E MONITORADO. UTILIZA-SE CRUZAMENTO DE DADOS ENTRE CPF OFICIAL E UMA CHAVE NUMÉRICA PESSOAL INTRANSFERÍVEL.
                                 </p>
                             </div>
@@ -2046,7 +2046,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                         ESTA CREDENCIAL SERÁ EXIBIDA UNICAMENTE NA TELA DE CONFIRMAÇÃO PARA REPASSE AO USUÁRIO FINAL.
                                     </p>
                                 </div>
-                                <p className="text-[10px] text-center font-black text-slate-600 uppercase tracking-[0.3em]">
+                                <p className="text-[10px] text-center font-black text-text-muted uppercase tracking-[0.3em]">
                                     EXIGÊNCIA DE RENOVAÇÃO DA CHAVE APÓS O PRIMEIRO LOGIN ESTABELECIDA.
                                 </p>
                             </div>
@@ -2061,7 +2061,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     <p className="text-[9px] text-orange-500/70 uppercase font-black tracking-[0.4em] mb-2">STATUS DA CREDENCIAL</p>
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-                                        <p className="text-sm font-black text-white tracking-widest">SISTEMA AUTORIZADO</p>
+                                        <p className="text-sm font-black text-text-primary tracking-widest">SISTEMA AUTORIZADO</p>
                                     </div>
                                 </div>
                             </div>
@@ -2080,74 +2080,71 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     });
 
     return (
-        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-full">
+        <div className="bg-surface/95 backdrop-blur-3xl rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden flex flex-col min-h-[85vh]">
             {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/10 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-blue/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
 
             <div className="relative z-10 flex flex-col flex-1 min-h-0">
                 {/* Premium Navigation Header */}
-                <div className="border-b border-white/5 bg-white/[0.02] px-4 md:px-8 pt-6 md:pt-8 min-h-0 flex flex-col overflow-hidden">
-                    <div className="flex items-center justify-between mb-6 md:mb-8 px-2">
-                        <div>
-                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                                {currentId ? 'Modificar Perfil' : 'Novo Recrutamento'}
-                                <span className="hidden sm:inline-block text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full tracking-[0.2em] ml-2 border border-indigo-500/20">
-                                    HUMAN CAPITAL • 2026
-                                </span>
+                <div className="border-b border-border/60 bg-surface/50 px-10 pt-10 min-h-0 flex flex-col overflow-hidden">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-4 mb-2">
+                                <span className="w-10 h-1 text-brand-orange bg-brand-orange rounded-full" />
+                                <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.4em] opacity-80">Dossiê Corporativo</span>
+                            </div>
+                            <h2 className="text-3xl font-black text-text-primary uppercase tracking-tighter italic mr-4 leading-none">
+                                {currentId ? 'Refinar' : 'Cadastrar'} <span className="text-brand-orange">Colaborador</span>
                             </h2>
-                            <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2 ml-1">Terminal de Controle de Ativos e Talentos</p>
+                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] mt-2 opacity-80">Sincronização de Capital Humano & Talento</p>
                         </div>
                         {currentId && (
-                            <div className="hidden lg:flex items-center gap-4 bg-white/5 border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-xl">
-                                <User className="w-5 h-5 text-indigo-400" />
+                            <div className="flex items-center gap-4 bg-surface-secondary border border-border px-8 py-5 rounded-[2rem] shadow-inner mb-2 group">
+                                <div className="w-12 h-12 rounded-2xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
+                                    <User className="w-6 h-6 text-brand-orange" />
+                                </div>
                                 <div>
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Matriz de Dados</p>
-                                    <p className="text-[11px] font-black text-white uppercase mt-1 truncate max-w-[200px]">{employeeName || 'CONFIGURANDO...'}</p>
+                                    <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest leading-none opacity-80">Matriz de Dados</p>
+                                    <p className="text-sm font-black text-text-primary uppercase mt-1.5 truncate max-w-[250px] group-hover:text-brand-orange transition-colors italic">{employeeName || 'CONFIGURANDO...'}</p>
                                 </div>
                             </div>
                         )}
                     </div>
 
                     <div
-                        className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-6 custom-scrollbar-horizontal no-scrollbar px-2 scroll-smooth touch-pan-x"
+                        className="flex items-center gap-3 overflow-x-auto pb-6 no-scrollbar px-2 relative z-10 cursor-grab active:cursor-grabbing"
                         ref={scrollRef}
                         onMouseMove={onMouseMove}
                         onMouseLeave={onMouseLeave}
                     >
                         {visibleTabs.map((tab) => {
                             const isTabActive = activeTab === tab.id;
+                            const Icon =
+                                tab.id === 'personal' ? User :
+                                    tab.id === 'legal_guardian' ? ShieldPlus :
+                                        tab.id === 'spouse' ? HeartPulse :
+                                            tab.id === 'dependents' ? Users :
+                                                tab.id === 'address' ? Home :
+                                                    tab.id === 'contract' ? Building2 :
+                                                        tab.id === 'bank' ? Banknote :
+                                                            tab.id === 'benefits' ? Star :
+                                                                tab.id === 'health' ? Activity :
+                                                                    tab.id === 'documents' ? FolderOpen :
+                                                                        tab.id === 'access' ? Key : User;
+
                             return (
                                 <button
                                     key={tab.id}
                                     type="button"
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`relative flex items-center gap-3 px-4 md:px-6 py-3 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap group ${isTabActive
-                                        ? 'text-black'
-                                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                    className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap flex items-center gap-3 border shadow-sm ${isTabActive
+                                        ? 'bg-brand-orange text-white border-brand-orange/20 shadow-lg shadow-brand-orange/20 scale-105 z-10'
+                                        : 'bg-surface border-border text-text-secondary hover:border-brand-orange/30 hover:text-text-primary'
                                         }`}
                                 >
-                                    <span className={`transition-transform duration-500 group-hover:scale-110 ${isTabActive ? 'scale-110 z-10' : 'opacity-50'}`}>
-                                        {tab.id === 'personal' && <User className="w-4 h-4" />}
-                                        {tab.id === 'legal_guardian' && <ShieldPlus className="w-4 h-4" />}
-                                        {tab.id === 'spouse' && <HeartPulse className="w-4 h-4" />}
-                                        {tab.id === 'dependents' && <Users className="w-4 h-4" />}
-                                        {tab.id === 'address' && <Home className="w-4 h-4" />}
-                                        {tab.id === 'contract' && <Building2 className="w-4 h-4" />}
-                                        {tab.id === 'bank' && <Banknote className="w-4 h-4" />}
-                                        {tab.id === 'benefits' && <Star className="w-4 h-4" />}
-                                        {tab.id === 'health' && <Activity className="w-4 h-4" />}
-                                        {tab.id === 'documents' && <FolderOpen className="w-4 h-4" />}
-                                        {tab.id === 'access' && <Key className="w-4 h-4" />}
-                                    </span>
-                                    <span className={isTabActive ? 'z-10' : ''}>{tab.label.split(' ').slice(1).join(' ')}</span>
-                                    {isTabActive && (
-                                        <motion.div
-                                            layoutId="activeTabBadge"
-                                            className="absolute inset-0 bg-white rounded-2xl"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                        />
-                                    )}
+                                    <Icon className={`w-3.5 h-3.5 ${isTabActive ? 'text-white' : 'opacity-40'}`} />
+                                    <span>{tab.label.split(' ').slice(1).join(' ')}</span>
                                 </button>
                             );
                         })}
@@ -2155,7 +2152,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 bg-transparent">
-                    <div className="flex-1 overflow-y-auto px-4 md:px-12 py-6 md:py-10 custom-scrollbar-vertical no-scrollbar scroll-smooth">
+                    <div className="flex-1 overflow-y-auto px-10 py-10 custom-scrollbar scroll-smooth">
                         <AnimatePresence mode="wait">
                             {refsLoading ? (
                                 <motion.div
@@ -2166,24 +2163,24 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     className="h-[400px] flex flex-col items-center justify-center space-y-8"
                                 >
                                     <div className="relative">
-                                        <div className="w-24 h-24 rounded-full border-4 border-white/5 border-t-indigo-500 animate-spin" />
+                                        <div className="w-24 h-24 rounded-full border-4 border-border border-t-brand-orange animate-spin" />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <Loader2 className="w-8 h-8 text-indigo-400 animate-pulse" />
+                                            <Loader2 className="w-8 h-8 text-brand-orange animate-pulse" />
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <h3 className="text-lg font-black text-white uppercase tracking-[0.3em]">Criptografando Túnel</h3>
-                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-2">Sincronizando registros da rede corporativa...</p>
+                                        <h3 className="text-lg font-black text-text-primary uppercase tracking-[0.3em]">Sincronizando Sistema</h3>
+                                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mt-2 opacity-80">Carregando matriz de dados corporativos...</p>
                                     </div>
                                 </motion.div>
                             ) : (
                                 <motion.div
                                     key={activeTab}
-                                    initial={{ opacity: 0, y: 10 }}
+                                    initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                                    className="min-h-0"
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                                    className="min-h-0 pb-20"
                                 >
                                     {visibleTabs.find(t => t.id === activeTab)?.content}
                                 </motion.div>
@@ -2192,54 +2189,56 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                     </div>
 
                     {/* Premium Footer Actions */}
-                    <div className="border-t border-white/5 bg-white/[0.01] p-10 backdrop-blur-3xl">
-                        <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-6 max-w-4xl mx-auto">
-                            {onCancel && (
-                                <button
-                                    type="button"
-                                    onClick={onCancel}
-                                    className="w-full sm:w-auto h-16 px-10 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-white hover:bg-white/5 transition-all"
-                                >
-                                    Cancelar Operação
-                                </button>
-                            )}
+                    <div className="shrink-0 border-t border-border/60 bg-surface-secondary/80 backdrop-blur-2xl p-10 relative z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.05)]">
+                        <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-8 max-w-6xl mx-auto">
+                            <div className="flex items-center gap-4">
+                                {onCancel && (
+                                    <button
+                                        type="button"
+                                        onClick={onCancel}
+                                        className="h-16 px-8 rounded-2xl text-[10px] font-black text-text-secondary uppercase tracking-widest hover:text-text-primary hover:bg-surface transition-all border border-transparent hover:border-border"
+                                    >
+                                        Cancelar Registro
+                                    </button>
+                                )}
 
-                            {activeTab !== 'personal' && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
-                                        if (currentIndex > 0) setActiveTab(visibleTabs[currentIndex - 1].id);
-                                    }}
-                                    className="w-full sm:w-auto h-16 px-10 rounded-2xl border border-white/10 text-[10px] font-black text-white uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center justify-center gap-3"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                    VOLTAR
-                                </button>
-                            )}
+                                {activeTab !== 'personal' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const currentIndex = visibleTabs.findIndex(t => t.id === activeTab);
+                                            if (currentIndex > 0) setActiveTab(visibleTabs[currentIndex - 1].id);
+                                        }}
+                                        className="h-16 px-10 rounded-2xl border border-border bg-surface text-[10px] font-black text-text-primary uppercase tracking-widest hover:bg-surface-secondary transition-all flex items-center justify-center gap-3 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                        VOLTAR
+                                    </button>
+                                )}
+                            </div>
 
                             <button
                                 type="button"
                                 disabled={loading}
                                 onClick={handleSaveStep}
-                                className="w-full sm:w-auto sm:min-w-[320px] h-14 md:h-16 px-8 md:px-12 rounded-2xl bg-white text-black text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-indigo-500 hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                                className="w-full sm:w-auto sm:min-w-[380px] h-20 px-12 rounded-[1.5rem] bg-brand-blue text-white text-[11px] font-black uppercase tracking-[0.25em] hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-brand-blue/20 flex items-center justify-center gap-5 group disabled:opacity-50 disabled:grayscale disabled:pointer-events-none border-b-4 border-black/20"
                             >
                                 {loading ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        SINCRONIZANDO...
+                                        SALVANDO DADOS...
                                     </>
                                 ) : (
                                     <>
-                                        {activeTab === visibleTabs[visibleTabs.length - 1].id ? 'FINALIZAR PROTOCOLO ADMISSIONAL' : 'AVANÇAR PARA PRÓXIMA ETAPA'}
+                                        {activeTab === visibleTabs[visibleTabs.length - 1].id ? 'FINALIZAR PROTOCOLO 🚀' : 'AVANÇAR PARA PRÓXIMA ETAPA'}
                                         <ArrowRightCircle className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-500" />
                                     </>
                                 )}
                             </button>
                         </div>
 
-                        <div className="mt-8 flex justify-center">
-                            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em]">Segurança nível militar • RH SYNC 2.0</p>
+                        <div className="mt-8 flex justify-center opacity-70">
+                            <p className="text-[8px] font-black text-text-secondary uppercase tracking-[0.5em]">Segurança nível militar • RH SYNC V2</p>
                         </div>
                     </div>
                 </form>
@@ -2252,7 +2251,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 50 }}
-                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(16,185,129,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
+                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-text-primary px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(16,185,129,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
                     >
                         <CheckCircle2 className="w-4 h-4" />
                         Ação Executada com Sucesso
@@ -2263,7 +2262,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 50 }}
-                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-rose-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(244,63,94,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
+                        className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[100] bg-rose-500 text-text-primary px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_20px_40px_rgba(244,63,94,0.3)] flex items-center gap-3 backdrop-blur-xl border border-white/20"
                     >
                         <span className="text-lg">⚠️</span>
                         Falha no Protocolo: {error}

@@ -89,9 +89,9 @@ export function UserEditModal({ isOpen, onClose, user, onSuccess }: UserEditModa
         <Modal isOpen={isOpen} onClose={onClose} title={`Editar Permissões: ${user.name || user.email}`} width="sm">
             <div className="space-y-6">
                 <div>
-                    <label className="text-[13px] font-bold text-slate-800 dark:text-slate-200 block mb-2 uppercase tracking-wide">Nível de Acesso / Perfil</label>
+                    <label className="text-[13px] font-bold text-text-primary block mb-2 uppercase tracking-wide">Nível de Acesso / Perfil</label>
                     <select
-                        className="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2.5 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                        className="w-full border border-border rounded-md p-2.5 text-sm bg-surface text-text-primary focus:ring-2 focus:ring-brand-blue/30 transition-shadow"
                         value={role.length > 20 ? 'CUSTOM' : role}
                         onChange={(e) => setRole(e.target.value)}
                     >
@@ -109,41 +109,41 @@ export function UserEditModal({ isOpen, onClose, user, onSuccess }: UserEditModa
                     </p>
                 </div>
 
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                <div className="border-t border-border pt-4">
                     <div className="flex justify-between items-center mb-2">
-                        <label className="text-[13px] font-bold text-slate-800 dark:text-slate-200 block uppercase tracking-wide">Acesso a Lojas</label>
+                        <label className="text-[13px] font-bold text-text-primary block uppercase tracking-wide">Acesso a Lojas</label>
                         <Button
                             type="button"
                             size="sm"
                             onClick={selectAllStores}
-                            className="bg-brand-blue hover:bg-blue-800 text-white text-[10px] h-7 px-3 font-bold uppercase"
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white text-[10px] h-7 px-3 font-bold uppercase"
                         >
                             Selecionar Todas
                         </Button>
                     </div>
-                    <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded-md bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700">
+                    <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded-md bg-text-primary/5 border-border">
                         {availableStores.map(store => (
-                            <label key={store.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded transition-colors group">
+                            <label key={store.id} className="flex items-center gap-2 cursor-pointer hover:bg-text-primary/5 p-2 rounded transition-colors group">
                                 <input
                                     type="checkbox"
                                     checked={userStores.includes(store.id)}
                                     onChange={() => toggleStore(store.id)}
-                                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    className="w-4 h-4 rounded border-border text-brand-blue focus:ring-brand-blue"
                                 />
-                                <span className="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-white">{store.tradingName || store.name}</span>
+                                <span className="text-sm text-text-primary font-medium">{store.tradingName || store.name}</span>
                             </label>
                         ))}
                     </div>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 font-medium">
+                    <p className="text-[11px] text-text-muted mt-2 font-medium">
                         * Se vazio, o usuário terá acesso total a todas as lojas.
                     </p>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-end space-x-2 pt-4 border-t border-border">
                     <Button variant="ghost" onClick={onClose} disabled={loading}>
                         Cancelar
                     </Button>
-                    <Button onClick={handleSave} disabled={loading} className="bg-brand-blue text-white hover:bg-blue-800">
+                    <Button onClick={handleSave} disabled={loading} className="bg-brand-blue text-white hover:bg-brand-blue/90">
                         {loading ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
                 </div>

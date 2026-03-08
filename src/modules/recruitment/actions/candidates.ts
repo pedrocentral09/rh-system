@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { requireAuth } from '@/modules/core/actions/auth';
 import { logAction } from '@/modules/core/actions/audit';
+import { serializePrisma } from '@/shared/utils/prisma-utils';
 
 /**
  * Internal candidate registration (used by HR/Admin in dashboard)
@@ -150,7 +151,7 @@ export async function getJobDetails(jobId: string) {
             } : undefined
         });
 
-        return { success: true, data: job };
+        return { success: true, data: serializePrisma(job) };
     } catch (error) {
         console.error('Error fetching job details:', error);
         return { success: false, error: 'Failed to fetch job details' };

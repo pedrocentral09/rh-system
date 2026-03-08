@@ -34,7 +34,7 @@ export function PayrollFinancialCharts({ periodId }: { periodId?: string }) {
     const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumSignificantDigits: 3 }).format(val);
 
     if (!mounted) return null;
-    if (loading) return <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>;
+    if (loading) return <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-text-muted" /></div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -47,10 +47,13 @@ export function PayrollFinancialCharts({ periodId }: { periodId?: string }) {
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={trend}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" fontSize={12} />
-                            <YAxis fontSize={12} tickFormatter={(val) => `R$${val / 1000}k`} />
-                            <Tooltip formatter={(value: any) => [formatCurrency(value), 'Custo'] as any} />
-                            <Bar dataKey="cost" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                            <XAxis dataKey="name" fontSize={12} stroke="var(--text-muted)" />
+                            <YAxis fontSize={12} tickFormatter={(val) => `R$${val / 1000}k`} stroke="var(--text-muted)" />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                formatter={(value: any) => [formatCurrency(value), 'Custo'] as any}
+                            />
+                            <Bar dataKey="cost" fill="var(--brand-blue)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -79,10 +82,13 @@ export function PayrollFinancialCharts({ periodId }: { periodId?: string }) {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: any) => [formatCurrency(value), 'Custo'] as any} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                    formatter={(value: any) => [formatCurrency(value), 'Custo'] as any}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="flex flex-wrap gap-2 justify-center mt-2 text-xs text-slate-500">
+                        <div className="flex flex-wrap gap-2 justify-center mt-2 text-xs text-text-muted">
                             {deptDistro.map((entry, index) => (
                                 <div key={entry.name} className="flex items-center">
                                     <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>

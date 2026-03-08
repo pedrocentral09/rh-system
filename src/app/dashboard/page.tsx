@@ -46,20 +46,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
 
     return (
         <div className="space-y-10">
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-white/5">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="h-0.5 w-8 bg-brand-orange" />
                         <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.3em]">Ambiente de Gestão</span>
                     </div>
-                    <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">
+                    <h1 className="text-5xl font-black text-text-primary tracking-tighter uppercase leading-none">
                         Performance <span className="text-brand-orange">Corporativa</span>
                     </h1>
-                    <p className="text-slate-500 font-bold tracking-tight text-sm mt-2 font-mono">
+                    <p className="text-text-muted font-bold tracking-tight text-sm mt-2 font-mono">
                         [ SYSTEM_VERSION: 1.2.0-PREMIUM ] — ANALYTICS & OPS
                     </p>
                 </div>
-                <div className="bg-white/5 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
+                <div className="bg-surface-secondary p-2 rounded-2xl border border-border backdrop-blur-md">
                     <DashboardFilters companies={companies} stores={stores} />
                 </div>
             </div>
@@ -67,7 +67,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Attendance Widget - Takes 2 cols */}
                 <div className="lg:col-span-2">
-                    <div className="bg-[#0A0F1C] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl p-1">
+                    <div className="bg-surface border border-border rounded-[2.5rem] overflow-hidden shadow-2xl p-1">
                         <AttendanceWidget overview={dailyOverview} />
                     </div>
                 </div>
@@ -108,8 +108,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* Department Distribution */}
-                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 relative overflow-hidden group">
-                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                <div className="bg-surface border border-border rounded-[2rem] p-8 relative overflow-hidden group shadow-xl">
+                    <h4 className="text-[10px] font-black text-text-muted dark:text-text-secondary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
                         Distribuição por Setor
                     </h4>
@@ -118,7 +118,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                 </div>
 
                 {/* Probation Alerts */}
-                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8">
+                <div className="bg-surface border border-border rounded-[2rem] p-8 shadow-xl">
                     <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
                         Alertas de Experiência
@@ -128,14 +128,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                         <div className="space-y-3">
                             {stats.probationAlerts.map((emp: any) => (
                                 <Link key={emp.id} href={`/dashboard/personnel?id=${emp.id}&tab=contract&mode=edit`} className="block group">
-                                    <div className="flex justify-between items-center bg-white/5 hover:bg-white/10 p-3 rounded-2xl border border-white/5 transition-all duration-300">
+                                    <div className="flex justify-between items-center bg-surface-secondary hover:bg-surface-hover p-3 rounded-2xl border border-border transition-all duration-300">
                                         <div className="flex items-center space-x-3">
                                             <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-brand-orange/20 flex items-center justify-center text-brand-orange font-black text-xs overflow-hidden">
                                                 {emp.photoUrl ? <img src={emp.photoUrl} alt={emp.name} className="w-full h-full object-cover" /> : emp.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <p className="text-xs font-black text-white uppercase tracking-tighter">{emp.name}</p>
-                                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{emp.period}</p>
+                                                <p className="text-xs font-black text-text-primary uppercase tracking-tighter">{emp.name}</p>
+                                                <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">{emp.period}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -146,7 +146,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                             ))}
                         </div>
                     ) : (
-                        <div className="h-40 flex flex-col items-center justify-center text-slate-600">
+                        <div className="h-40 flex flex-col items-center justify-center text-text-muted">
                             <span className="text-3xl mb-2">🛡️</span>
                             <p className="text-xs font-black uppercase tracking-widest">Tudo regularizado</p>
                         </div>
@@ -154,14 +154,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                 </div>
 
                 {/* Event Mural */}
-                <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-1 overflow-hidden">
+                <div className="bg-surface border border-border rounded-[2rem] p-1 overflow-hidden shadow-xl">
                     <EventMural events={stats.eventMural || []} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <div className="bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 shadow-2xl h-full">
+                    <div className="bg-surface border border-border rounded-[2rem] p-8 shadow-xl h-full">
                         <HiringEvolutionChart data={hiringData} />
                     </div>
                 </div>
@@ -171,9 +171,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
 
             <div className="pt-10">
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="h-px flex-1 bg-white/5" />
-                    <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Atalhos Estratégicos</h2>
-                    <div className="h-px flex-1 bg-white/5" />
+                    <div className="h-px flex-1 bg-border" />
+                    <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.4em]">Atalhos Estratégicos</h2>
+                    <div className="h-px flex-1 bg-border" />
                 </div>
                 <QuickAccessGrid />
             </div>

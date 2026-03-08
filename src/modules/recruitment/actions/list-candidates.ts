@@ -3,6 +3,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/modules/core/actions/auth';
+import { serializePrisma } from '@/shared/utils/prisma-utils';
 
 export async function getCandidates(query?: string) {
     await requireAuth();
@@ -24,5 +25,5 @@ export async function getCandidates(query?: string) {
         orderBy: { createdAt: 'desc' }
     });
 
-    return { success: true, data: candidates };
+    return { success: true, data: serializePrisma(candidates) };
 }

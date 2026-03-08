@@ -68,7 +68,7 @@ export function MedicalDashboard() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <Loader2 className="animate-spin h-10 w-10 text-brand-orange" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sincronizando Registros Médicos...</span>
+            <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest opacity-80">Sincronizando Registros Médicos...</span>
         </div>
     );
 
@@ -77,27 +77,27 @@ export function MedicalDashboard() {
             {/* Health Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {[
-                    { label: 'Ocorrências Totais', value: leaves.length, sub: 'Atestados & Licenças', color: 'text-white', bg: 'bg-white/5', icon: '📋' },
-                    { label: 'Dias de Ausência', value: totalDays, sub: 'Acumulado Geral', color: 'text-red-400', bg: 'bg-red-500/5', icon: '⏳' },
-                    { label: 'CID Predominante', value: sortedCids[0] ? String(sortedCids[0][0]) : 'N/A', sub: `${sortedCids[0] ? String(sortedCids[0][1]) : '0'} incidências`, color: 'text-amber-400', bg: 'bg-amber-500/5', icon: '🧠' },
-                    { label: 'Frequência Máxima', value: sortedEmployees[0] ? String(sortedEmployees[0][0]) : 'N/A', sub: `${sortedEmployees[0] ? String(sortedEmployees[0][1]) : '0'} registros`, color: 'text-indigo-400', bg: 'bg-indigo-500/5', icon: '👤' }
+                    { label: 'Ocorrências Totais', value: leaves.length, sub: 'Atestados & Licenças', color: 'text-text-primary', bg: 'bg-surface', icon: '📋' },
+                    { label: 'Dias de Ausência', value: totalDays, sub: 'Acumulado Geral', color: 'text-red-500', bg: 'bg-surface', icon: '⏳' },
+                    { label: 'CID Predominante', value: sortedCids[0] ? String(sortedCids[0][0]) : 'N/A', sub: `${sortedCids[0] ? String(sortedCids[0][1]) : '0'} incidências`, color: 'text-amber-500', bg: 'bg-surface', icon: '🧠' },
+                    { label: 'Frequência Máxima', value: sortedEmployees[0] ? String(sortedEmployees[0][0]) : 'N/A', sub: `${sortedEmployees[0] ? String(sortedEmployees[0][1]) : '0'} registros`, color: 'text-brand-blue', bg: 'bg-surface', icon: '👤' }
                 ].map((stat, i) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className={`${stat.bg} backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group`}
+                        className={`${stat.bg} backdrop-blur-xl border border-border p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group`}
                     >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-text-primary/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-text-primary/10 transition-colors" />
                         <div className="flex items-center gap-3 mb-4">
                             <span className="text-xl">{stat.icon}</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</span>
+                            <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] opacity-80">{stat.label}</span>
                         </div>
                         <div className={`text-2xl font-black tracking-tighter truncate ${stat.color}`}>
                             {stat.value}
                         </div>
-                        <p className="text-[8px] font-black uppercase text-slate-600 mt-2 tracking-widest">{stat.sub}</p>
+                        <p className="text-[8px] font-black uppercase text-text-secondary/60 mt-2 tracking-widest">{stat.sub}</p>
                     </motion.div>
                 ))}
             </div>
@@ -106,12 +106,12 @@ export function MedicalDashboard() {
                 {/* Main Content Area */}
                 <div className="lg:col-span-8 space-y-8">
                     {/* Premium Control Bar */}
-                    <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-6 shadow-2xl flex flex-col md:flex-row items-center gap-6">
+                    <div className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-6 shadow-2xl flex flex-col md:flex-row items-center gap-6">
                         <div className="relative flex-1 group w-full">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-brand-orange transition-colors" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary group-focus-within:text-brand-orange transition-colors" />
                             <input
                                 placeholder="PESQUISAR POR COLABORADOR OU CID..."
-                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-brand-orange/30 transition-all shadow-inner"
+                                className="w-full bg-text-primary/5 border border-border rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-text-primary uppercase tracking-widest placeholder:text-text-secondary/40 focus:outline-none focus:border-brand-orange/30 transition-all shadow-inner"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -133,7 +133,7 @@ export function MedicalDashboard() {
 
                     {/* Premium List Table */}
                     <div className="space-y-4">
-                        <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                        <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] opacity-80">
                             <div className="col-span-5 text-left text-brand-orange/60">Colaborador / Identidade</div>
                             <div className="col-span-3 text-center">Referência / CID</div>
                             <div className="col-span-2 text-center">Dias</div>
@@ -147,21 +147,21 @@ export function MedicalDashboard() {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.02 }}
-                                    className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-red-500/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                                    className="bg-surface/80 border border-border rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-red-500/30 hover:bg-text-primary/[0.02] transition-all duration-300 group"
                                 >
                                     <div className="col-span-5 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-red-500/30 transition-colors overflow-hidden">
+                                        <div className="w-12 h-12 rounded-2xl bg-text-primary/5 border border-border flex items-center justify-center text-xl shadow-inner group-hover:border-red-500/30 transition-colors overflow-hidden">
                                             {leave.employee.photoUrl ? (
                                                 <img src={leave.employee.photoUrl} className="w-full h-full object-cover" />
                                             ) : (
-                                                <span className="text-slate-500 font-black">{leave.employee.name.charAt(0)}</span>
+                                                <span className="text-text-secondary font-black">{leave.employee.name.charAt(0)}</span>
                                             )}
                                         </div>
                                         <div className="min-w-0">
-                                            <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-red-400 transition-colors truncate">{leave.employee.name}</h4>
+                                            <h4 className="text-[13px] font-black text-text-primary uppercase tracking-tight group-hover:text-red-400 transition-colors truncate">{leave.employee.name}</h4>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <Calendar className="h-3 w-3 text-slate-600" />
-                                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <Calendar className="h-3 w-3 text-text-secondary/60" />
+                                                <span className="text-[9px] font-bold text-text-secondary/60 uppercase tracking-widest">
                                                     {formatSafeDate(leave.startDate, 'dd.MM')} → {formatSafeDate(leave.endDate, 'dd.MM.yy')}
                                                 </span>
                                             </div>
@@ -170,7 +170,7 @@ export function MedicalDashboard() {
 
                                     <div className="col-span-3 text-center">
                                         <div className="flex flex-col gap-1 items-center">
-                                            <span className="bg-white/5 text-slate-500 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter border border-white/5">{leave.type.replace('_', ' ')}</span>
+                                            <span className="bg-text-primary/5 text-text-secondary px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter border border-border opacity-80">{leave.type.replace('_', ' ')}</span>
                                             {leave.cid && <span className="text-xs font-black text-red-500/80 tracking-tighter">CID {leave.cid}</span>}
                                         </div>
                                     </div>
@@ -184,7 +184,7 @@ export function MedicalDashboard() {
                                     <div className="col-span-2 flex justify-end gap-2">
                                         <button
                                             onClick={() => window.open(leave.documentUrl, '_blank')}
-                                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
+                                            className="w-10 h-10 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-text-primary/10 transition-all shadow-lg active:scale-95"
                                             title="Baixar Comprovante"
                                         >
                                             <Download className="h-5 w-5" />
@@ -194,9 +194,9 @@ export function MedicalDashboard() {
                             ))}
 
                             {filteredLeaves.length === 0 && (
-                                <div className="flex flex-col items-center justify-center py-24 text-slate-700 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
+                                <div className="flex flex-col items-center justify-center py-24 text-text-secondary bg-text-primary/5 rounded-[2.5rem] border border-border border-dashed">
                                     <Activity className="h-12 w-12 mb-6 opacity-10" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] italic">Nenhum evento médico localizado</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] italic opacity-80">Nenhum evento médico localizado</p>
                                 </div>
                             )}
                         </div>
@@ -208,24 +208,24 @@ export function MedicalDashboard() {
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl space-y-8"
+                        className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 shadow-2xl space-y-8"
                     >
                         <div className="space-y-1">
-                            <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                            <h3 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
                                 <Activity className="h-4 w-4 text-red-500" />
                                 Top CIDs / Impacto
                             </h3>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase">Maiores incidências clínicas</p>
+                            <p className="text-[10px] text-text-secondary font-bold uppercase opacity-80">Maiores incidências clínicas</p>
                         </div>
 
                         <div className="space-y-4">
                             {sortedCids.map(([cid, count], i) => (
                                 <div key={String(cid)} className="group relative">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">CID: {String(cid)}</span>
+                                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-tighter opacity-80">CID: {String(cid)}</span>
                                         <span className="text-[10px] font-black text-red-400 uppercase tracking-tighter">{String(count)} ocorrências</span>
                                     </div>
-                                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-text-primary/5 rounded-full overflow-hidden">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${(Number(count) / (leaves.length || 1)) * 100}%` }}
@@ -235,22 +235,22 @@ export function MedicalDashboard() {
                                     </div>
                                 </div>
                             ))}
-                            {sortedCids.length === 0 && <div className="text-center py-8 text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] italic">Nenhum dado disponível</div>}
+                            {sortedCids.length === 0 && <div className="text-center py-8 text-text-secondary text-[10px] font-black uppercase tracking-[0.2em] italic opacity-60">Nenhum dado disponível</div>}
                         </div>
 
-                        <div className="pt-8 border-t border-white/5 space-y-6">
+                        <div className="pt-8 border-t border-border space-y-6">
                             <div className="space-y-1">
-                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-indigo-500" />
+                                <h3 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-brand-blue" />
                                     Recorrência Colaborador
                                 </h3>
                             </div>
 
                             <div className="space-y-3">
                                 {sortedEmployees.map(([name, count]) => (
-                                    <div key={String(name)} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors cursor-default">
-                                        <span className="text-[11px] font-black text-slate-300 uppercase tracking-tight truncate max-w-[180px]">{String(name)}</span>
-                                        <div className="bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 text-[9px] font-black text-indigo-400">
+                                    <div key={String(name)} className="flex items-center justify-between p-4 rounded-2xl bg-text-primary/5 border border-border hover:bg-text-primary/[0.08] transition-colors cursor-default">
+                                        <span className="text-[11px] font-black text-text-secondary uppercase tracking-tight truncate max-w-[180px]">{String(name)}</span>
+                                        <div className="bg-brand-blue/10 px-2 py-1 rounded-lg border border-brand-blue/20 text-[9px] font-black text-brand-blue">
                                             {String(count)} atestados
                                         </div>
                                     </div>

@@ -75,7 +75,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
         <Modal isOpen={isOpen} onClose={onClose} title="Adicionar Novo Usuário" width="md">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1.5 uppercase tracking-wide">Nome Completo</label>
+                    <label className="text-sm font-bold text-text-primary block mb-1.5 uppercase tracking-wide">Nome Completo</label>
                     <Input
                         name="name"
                         value={formData.name}
@@ -87,7 +87,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                 </div>
 
                 <div>
-                    <label className="text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1.5 uppercase tracking-wide">Email de Acesso</label>
+                    <label className="text-sm font-bold text-text-primary block mb-1.5 uppercase tracking-wide">Email de Acesso</label>
                     <Input
                         name="email"
                         type="email"
@@ -100,7 +100,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                 </div>
 
                 <div>
-                    <label className="text-sm font-medium text-slate-700 block mb-1">Senha Provisória</label>
+                    <label className="text-sm font-medium text-text-primary block mb-1">Senha Provisória</label>
                     <Input
                         name="password"
                         type="password"
@@ -110,14 +110,14 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                         minLength={6}
                         required
                     />
-                    <p className="text-xs text-slate-500 mt-1">O usuário poderá alterar depois.</p>
+                    <p className="text-xs text-text-muted mt-1">O usuário poderá alterar depois.</p>
                 </div>
 
                 <div>
-                    <label className="text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1.5 uppercase tracking-wide">Perfil de Acesso</label>
+                    <label className="text-sm font-bold text-text-primary block mb-1.5 uppercase tracking-wide">Perfil de Acesso</label>
                     <select
                         name="role"
-                        className="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2.5 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-border rounded-md p-2.5 text-sm bg-surface text-text-primary focus:ring-2 focus:ring-brand-blue/30"
                         value={formData.role}
                         onChange={handleChange}
                     >
@@ -132,32 +132,32 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                     </select>
                 </div>
 
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                <div className="border-t border-border pt-4">
                     <div className="flex justify-between items-center mb-2">
-                        <label className="text-sm font-bold text-slate-800 dark:text-slate-200 block uppercase tracking-wide">Acesso a Lojas</label>
+                        <label className="text-sm font-bold text-text-primary block uppercase tracking-wide">Acesso a Lojas</label>
                         <Button
                             type="button"
                             size="sm"
                             onClick={() => setFormData(prev => ({ ...prev, storeIds: availableStores.map(s => s.id) }))}
-                            className="bg-brand-blue hover:bg-blue-800 text-white text-[10px] h-7 px-3 font-bold uppercase"
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white text-[10px] h-7 px-3 font-bold uppercase"
                         >
                             Selecionar Todas
                         </Button>
                     </div>
-                    <div className="space-y-2 max-h-32 overflow-y-auto p-2 border rounded-md bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700">
+                    <div className="space-y-2 max-h-32 overflow-y-auto p-2 border rounded-md bg-text-primary/5 border-border">
                         {availableStores.map(store => (
-                            <label key={store.id} className="flex items-center gap-2 cursor-pointer hover:bg-white dark:hover:bg-slate-800 p-1.5 rounded transition-colors group">
+                            <label key={store.id} className="flex items-center gap-2 cursor-pointer hover:bg-text-primary/10 p-1.5 rounded transition-colors group">
                                 <input
                                     type="checkbox"
                                     checked={formData.storeIds.includes(store.id)}
                                     onChange={() => toggleStore(store.id)}
-                                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    className="w-4 h-4 rounded border-border text-brand-blue focus:ring-brand-blue"
                                 />
-                                <span className="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-white">{store.tradingName || store.name}</span>
+                                <span className="text-sm text-text-primary font-medium">{store.tradingName || store.name}</span>
                             </label>
                         ))}
                     </div>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 font-medium">
+                    <p className="text-[11px] text-text-muted mt-2 font-medium">
                         * Opcional. Se vazio, o usuário terá acesso a todas as lojas.
                     </p>
                 </div>

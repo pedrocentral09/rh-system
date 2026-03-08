@@ -55,14 +55,14 @@ export function MinimumWageUpdateButton() {
             <DialogTrigger asChild>
                 <button
                     onClick={handleOpen}
-                    className="h-14 px-8 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 hover:bg-amber-500 hover:text-black transition-all flex items-center gap-3 active:scale-95 shadow-xl"
+                    className="h-14 px-8 rounded-2xl bg-brand-orange/5 border border-brand-orange/20 text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange hover:bg-brand-orange hover:text-white transition-all flex items-center gap-3 active:scale-95 shadow-sm group"
                 >
-                    <TrendingUp className="w-4 h-4" /> REAJUSTE MÍNIMO VIGENTE
+                    <TrendingUp className="w-4 h-4 group-hover:scale-125 transition-transform" /> REAJUSTE MÍNIMO VIGENTE
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="bg-[#0A0F1C]/95 backdrop-blur-2xl border border-white/10 text-white rounded-[2.5rem] p-0 overflow-hidden shadow-2xl max-w-lg">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+            <DialogContent className="bg-surface/95 backdrop-blur-2xl border border-border text-text-primary rounded-[2.5rem] p-0 overflow-hidden shadow-2xl max-w-lg">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="p-10 relative z-10">
                     <AnimatePresence mode="wait">
@@ -73,50 +73,50 @@ export function MinimumWageUpdateButton() {
                                 className="space-y-10"
                             >
                                 <div className="space-y-4">
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                                        <TrendingUp className="h-8 w-8 text-amber-500" />
+                                    <div className="w-16 h-16 rounded-[1.5rem] bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
+                                        <TrendingUp className="h-8 w-8 text-brand-orange" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-white uppercase tracking-tight">Consolidação Salarial</h3>
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Sincronização de Piso Nacional em Lote</p>
+                                        <h3 className="text-xl font-black text-text-primary uppercase tracking-tight">Consolidação Salarial</h3>
+                                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mt-1 opacity-80">Sincronização de Piso Nacional em Lote</p>
                                     </div>
                                 </div>
 
-                                <div className="p-6 bg-white/5 border border-white/5 rounded-3xl flex gap-5 items-start">
-                                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                <div className="p-6 bg-surface-secondary border border-border rounded-3xl flex gap-5 items-start shadow-inner">
+                                    <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0">
+                                        <AlertTriangle className="w-5 h-5 text-brand-orange" />
                                     </div>
-                                    <div className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">
-                                        Esta ação identificará colaboradores que recebem <span className="text-white">R$ {currentWage.toLocaleString('pt-BR')}</span> e atualizará para o novo montante estratégico.
+                                    <div className="text-[11px] font-bold text-text-secondary leading-relaxed uppercase tracking-tighter opacity-80">
+                                        Esta ação identificará colaboradores que recebem <span className="text-text-primary font-black">R$ {currentWage.toLocaleString('pt-BR')}</span> e atualizará para o novo montante estratégico.
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Novo Salário Mínimo (VIGENTE)</label>
-                                    <div className="relative">
-                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-black text-amber-500">R$</span>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">Novo Salário Mínimo (VIGENTE)</label>
+                                    <div className="relative group">
+                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-black text-brand-orange group-focus-within:scale-125 transition-transform">R$</span>
                                         <input
                                             type="number"
                                             step="0.01"
                                             value={newWage}
                                             onChange={(e) => setNewWage(Number(e.target.value))}
-                                            className="w-full h-20 bg-white/5 border border-white/10 rounded-[1.5rem] pl-16 pr-8 text-3xl font-black text-white focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
+                                            className="w-full h-20 bg-surface-secondary border border-border rounded-[1.5rem] pl-16 pr-8 text-3xl font-black text-text-primary focus:outline-none focus:border-brand-orange/50 transition-all shadow-inner"
                                             autoFocus
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-4">
+                                <div className="flex gap-6 pt-4">
                                     <button
                                         onClick={() => setOpen(false)}
-                                        className="h-16 flex-1 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                                        className="h-16 flex-1 rounded-2xl text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text-primary transition-colors"
                                     >
-                                        Cancelar Operação
+                                        Cancelar
                                     </button>
                                     <button
                                         onClick={handleUpdate}
                                         disabled={loading || newWage <= currentWage}
-                                        className="h-16 flex-[2] bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-white transition-all shadow-2xl active:scale-95 disabled:bg-slate-800 disabled:text-slate-600 flex items-center justify-center gap-3"
+                                        className="h-16 flex-[2] bg-text-primary text-background rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand-orange hover:text-white transition-all shadow-2xl active:scale-95 disabled:bg-surface-secondary disabled:text-text-muted flex items-center justify-center gap-3"
                                     >
                                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRightCircle className="w-4 h-4" />}
                                         EXECUTAR REAJUSTE
@@ -132,16 +132,18 @@ export function MinimumWageUpdateButton() {
                                 <div className="w-24 h-24 bg-emerald-500/10 rounded-[2.5rem] flex items-center justify-center border border-emerald-500/20">
                                     <CheckCircle2 className="w-12 h-12 text-emerald-400" />
                                 </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight">Ciclo Concluído</h3>
-                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
-                                        <span className="text-white text-lg font-black">{updatedCount}</span> CONTRATOS ATUALIZADOS PARA<br />
-                                        <span className="text-emerald-400 text-lg font-black font-mono">R$ {newWage.toLocaleString('pt-BR')}</span>
-                                    </p>
+                                <div className="space-y-4 text-center">
+                                    <h3 className="text-2xl font-black text-text-primary uppercase tracking-tight leading-none">Ciclo Concluído</h3>
+                                    <div className="p-6 bg-surface-secondary border border-border rounded-3xl shadow-inner">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] leading-relaxed">
+                                            <span className="text-text-primary text-xl font-black block mb-2">{updatedCount} CONTRATOS ATUALIZADOS</span>
+                                            PARA <span className="text-emerald-500 text-lg font-black font-mono">R$ {newWage.toLocaleString('pt-BR')}</span>
+                                        </p>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => setOpen(false)}
-                                    className="h-16 px-12 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest hover:bg-white/10 transition-all"
+                                    className="h-16 px-12 bg-text-primary text-background border border-border rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all w-full shadow-2xl"
                                 >
                                     ENCERRAR PROTOCOLO
                                 </button>

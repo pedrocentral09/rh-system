@@ -78,19 +78,19 @@ export function TimeAdjustmentModal({
         >
             <div className="space-y-8 p-2">
                 {/* Employee Info Header */}
-                <div className="bg-white/5 border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
+                <div className="bg-text-primary/5 border border-border rounded-2xl p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-brand-orange/10 transition-colors" />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Colaborador em Ajuste</span>
-                    <p className="text-lg font-black text-white uppercase tracking-tight">{employeeName}</p>
+                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Colaborador em Ajuste</span>
+                    <p className="text-lg font-black text-text-primary uppercase tracking-tight">{employeeName}</p>
                 </div>
 
                 {/* Punches Logic */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center px-2">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Registros de Intervalo</span>
+                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Registros de Intervalo</span>
                         <button
                             onClick={handleAddPunch}
-                            className="text-[10px] font-black text-brand-orange uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2"
+                            className="text-[10px] font-black text-brand-orange uppercase tracking-widest hover:text-text-primary transition-colors flex items-center gap-2"
                         >
                             <Plus className="h-4 w-4" /> Adicionar Batida
                         </button>
@@ -111,12 +111,12 @@ export function TimeAdjustmentModal({
                                             type="time"
                                             value={p}
                                             onChange={(e) => handlePunchChange(i, e.target.value)}
-                                            className="h-12 bg-[#0A0F1C] border-white/10 rounded-xl px-6 text-sm text-white font-mono font-black focus:border-brand-orange/50 transition-all shadow-inner"
+                                            className="h-12 bg-surface border-border rounded-xl px-6 text-sm text-text-primary font-mono font-black focus:border-brand-orange/50 transition-all shadow-inner"
                                         />
                                     </div>
                                     <button
                                         onClick={() => handleRemovePunch(i)}
-                                        className="w-12 h-12 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                        className="w-12 h-12 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
@@ -125,8 +125,8 @@ export function TimeAdjustmentModal({
                         </AnimatePresence>
 
                         {punches.length === 0 && (
-                            <div className="py-12 text-center bg-white/2 rounded-2xl border border-white/5 border-dashed">
-                                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Nenhuma batida registrada</p>
+                            <div className="py-12 text-center bg-text-primary/2 rounded-2xl border border-border border-dashed">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Nenhuma batida registrada</p>
                             </div>
                         )}
                     </div>
@@ -134,9 +134,9 @@ export function TimeAdjustmentModal({
 
                 {/* Justification */}
                 <div className="space-y-2 px-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Justificativa Operacional</label>
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">Justificativa Operacional</label>
                     <textarea
-                        className="w-full h-24 bg-[#0A0F1C] border border-white/10 rounded-2xl p-4 text-[11px] font-black text-white placeholder:text-slate-700 focus:outline-none focus:border-brand-orange/50 transition-all shadow-inner resize-none"
+                        className="w-full h-24 bg-surface border border-border rounded-2xl p-4 text-[11px] font-black text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:border-brand-orange/50 transition-all shadow-inner resize-none"
                         placeholder="Descreva o motivo desta correção..."
                         value={justification}
                         onChange={(e) => setJustification(e.target.value)}
@@ -144,18 +144,18 @@ export function TimeAdjustmentModal({
                 </div>
 
                 {/* Actions */}
-                <div className="pt-2 flex justify-end gap-4 border-t border-white/5 pt-6">
+                <div className="pt-2 flex justify-end gap-4 border-t border-border pt-6">
                     <button
                         onClick={onClose}
                         disabled={loading}
-                        className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                        className="px-6 py-3 text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text-primary transition-colors"
                     >
                         Descartar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="px-10 h-14 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 transition-all flex items-center justify-center gap-3 disabled:bg-slate-800 disabled:text-slate-500 shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+                        className="px-10 h-14 rounded-2xl bg-text-primary text-surface text-[11px] font-black uppercase tracking-[0.2em] hover:brightness-110 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg"
                     >
                         {loading ? <Loader2 className="animate-spin h-4 w-4" /> : null}
                         Consolidar Ajuste

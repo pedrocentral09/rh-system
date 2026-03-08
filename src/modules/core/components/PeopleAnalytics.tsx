@@ -23,8 +23,8 @@ export function PeopleAnalytics() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
-                <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Processando People Analytics...</p>
+                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                <p className="text-text-muted font-bold uppercase text-xs tracking-widest">Processando People Analytics...</p>
             </div>
         );
     }
@@ -36,55 +36,55 @@ export function PeopleAnalytics() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Turnover Trend */}
-                <Card className="border-none shadow-xl bg-slate-900 text-white rounded-[32px] overflow-hidden">
+                <Card className="bg-surface border border-border shadow-xl rounded-[32px] overflow-hidden">
                     <CardHeader>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-rose-500/20 rounded-xl text-rose-500">
+                            <div className="p-2 bg-rose-500/10 rounded-xl text-rose-500">
                                 <TrendingUp className="h-5 w-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg font-black uppercase tracking-tight">Tendência de Turnover</CardTitle>
-                                <CardDescription className="text-slate-400">Taxa de desligamento nos últimos 6 meses</CardDescription>
+                                <CardTitle className="text-lg font-black uppercase tracking-tight text-text-primary">Tendência de Turnover</CardTitle>
+                                <CardDescription className="text-text-muted">Taxa de desligamento nos últimos 6 meses</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="h-[250px] pt-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={data.turnoverTrend}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                                <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} fontWeight="bold" />
-                                <YAxis stroke="#94a3b8" fontSize={10} fontWeight="bold" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={10} fontWeight="bold" />
+                                <YAxis stroke="var(--text-muted)" fontSize={10} fontWeight="bold" />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
-                                    itemStyle={{ color: '#fb923c' }}
+                                    contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}
+                                    itemStyle={{ color: 'var(--brand-orange)' }}
                                 />
-                                <Line type="monotone" dataKey="turnover" stroke="#f43f5e" strokeWidth={4} dot={{ fill: '#f43f5e', r: 6 }} activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }} />
+                                <Line type="monotone" dataKey="turnover" stroke="#f43f5e" strokeWidth={4} dot={{ fill: '#f43f5e', r: 6 }} activeDot={{ r: 8, stroke: 'var(--surface)', strokeWidth: 2 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
                 {/* Overtime Costs */}
-                <Card className="border-none shadow-xl bg-slate-900 text-white rounded-[32px] overflow-hidden">
+                <Card className="bg-surface border border-border shadow-xl rounded-[32px] overflow-hidden">
                     <CardHeader>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500">
+                            <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
                                 <DollarSign className="h-5 w-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg font-black uppercase tracking-tight">Custos de Extra (Lojas)</CardTitle>
-                                <CardDescription className="text-slate-400">Impacto financeiro por unidade (Mês Atual)</CardDescription>
+                                <CardTitle className="text-lg font-black uppercase tracking-tight text-text-primary">Custos de Extra (Lojas)</CardTitle>
+                                <CardDescription className="text-text-muted">Impacto financeiro por unidade (Mês Atual)</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="h-[250px] pt-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data.storeOvertime}>
-                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} fontWeight="bold" />
-                                <YAxis stroke="#94a3b8" fontSize={10} fontWeight="bold" />
+                                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} fontWeight="bold" />
+                                <YAxis stroke="var(--text-muted)" fontSize={10} fontWeight="bold" />
                                 <Tooltip
-                                    cursor={{ fill: '#ffffff05' }}
-                                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                                    cursor={{ fill: 'var(--text-primary)', opacity: 0.05 }}
+                                    contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}
                                 />
                                 <Bar dataKey="cost" radius={[6, 6, 0, 0]}>
                                     {data.storeOvertime.map((entry: any, index: number) => (
@@ -98,15 +98,15 @@ export function PeopleAnalytics() {
             </div>
 
             {/* Nine-Box Matrix */}
-            <Card className="border-none shadow-xl bg-slate-900 text-white rounded-[32px] overflow-hidden">
+            <Card className="bg-surface border border-border shadow-xl rounded-[32px] overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-orange/20 rounded-xl text-brand-orange">
+                        <div className="p-2 bg-brand-orange/10 rounded-xl text-brand-orange">
                             <Target className="h-5 w-5" />
                         </div>
                         <div>
-                            <CardTitle className="text-lg font-black uppercase tracking-tight">Matriz Nine-Box (Talentos)</CardTitle>
-                            <CardDescription className="text-slate-400">Cruzamento de Desempenho vs. Potencial de Crescimento</CardDescription>
+                            <CardTitle className="text-lg font-black uppercase tracking-tight text-text-primary">Matriz Nine-Box (Talentos)</CardTitle>
+                            <CardDescription className="text-text-muted">Cruzamento de Desempenho vs. Potencial de Crescimento</CardDescription>
                         </div>
                     </div>
                     <div className="bg-brand-orange/10 border border-brand-orange/20 px-4 py-2 rounded-2xl flex items-center gap-2">
@@ -116,23 +116,23 @@ export function PeopleAnalytics() {
                 </CardHeader>
                 <CardContent className="h-[400px] pt-8 relative">
                     {/* Background Labels */}
-                    <div className="absolute inset-x-12 inset-y-12 border-l border-b border-white/10 flex flex-col justify-between pointer-events-none">
+                    <div className="absolute inset-x-12 inset-y-12 border-l border-b border-border flex flex-col justify-between pointer-events-none">
                         <div className="flex justify-between w-full h-full">
-                            <div className="flex-1 border-r border-white/5 flex flex-col items-center justify-center font-black text-[10px] text-slate-700 uppercase tracking-widest">Baixo Potencial</div>
-                            <div className="flex-1 border-r border-white/5 flex flex-col items-center justify-center font-black text-[10px] text-brand-orange/30 uppercase tracking-widest bg-brand-orange/5">High Potential</div>
-                            <div className="flex-1 flex flex-col items-center justify-center font-black text-[10px] text-emerald-400/40 uppercase tracking-widest bg-emerald-400/5">Top Talents</div>
+                            <div className="flex-1 border-r border-border flex flex-col items-center justify-center font-black text-[10px] text-text-muted/40 uppercase tracking-widest">Baixo Potencial</div>
+                            <div className="flex-1 border-r border-border flex flex-col items-center justify-center font-black text-[10px] text-brand-orange/30 uppercase tracking-widest bg-brand-orange/5">High Potential</div>
+                            <div className="flex-1 flex flex-col items-center justify-center font-black text-[10px] text-emerald-500/40 uppercase tracking-widest bg-emerald-500/5">Top Talents</div>
                         </div>
                     </div>
 
                     <ResponsiveContainer width="100%" height="100%">
                         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" />
-                            <XAxis type="number" dataKey="x" name="Desempenho" domain={[0, 5]} stroke="#94a3b8" label={{ value: 'Desempenho (Avaliações)', position: 'bottom', fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} />
-                            <YAxis type="number" dataKey="y" name="Potencial" domain={[0, 5]} stroke="#94a3b8" label={{ value: 'Potencial', angle: -90, position: 'left', fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+                            <XAxis type="number" dataKey="x" name="Desempenho" domain={[0, 5]} stroke="var(--text-muted)" label={{ value: 'Desempenho (Avaliações)', position: 'bottom', fill: 'var(--text-muted)', fontSize: 10, fontWeight: 'bold' }} />
+                            <YAxis type="number" dataKey="y" name="Potencial" domain={[0, 5]} stroke="var(--text-muted)" label={{ value: 'Potencial', angle: -90, position: 'left', fill: 'var(--text-muted)', fontSize: 10, fontWeight: 'bold' }} />
                             <ZAxis type="number" range={[100, 400]} />
                             <Tooltip
                                 cursor={{ strokeDasharray: '3 3' }}
-                                contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}
+                                contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}
                             />
                             <Scatter name="Colaboradores" data={data.nineBox} fill="#fb923c">
                                 {data.nineBox.map((entry: any, index: number) => (

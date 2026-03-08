@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { requireAuth } from '@/modules/core/actions/auth';
 import { logAction } from '@/modules/core/actions/audit';
+import { serializePrisma } from '@/shared/utils/prisma-utils';
 
 export async function createJob(data: any) {
     const user = await requireAuth(['ADMIN', 'HR', 'MANAGER']);
@@ -42,7 +43,7 @@ export async function getJobs() {
         }
     });
 
-    return { success: true, data: jobs };
+    return { success: true, data: serializePrisma(jobs) };
 }
 
 /**
@@ -131,7 +132,7 @@ export async function getJobById(id: string) {
                 }
             }
         });
-        return { success: true, data: job };
+        return { success: true, data: serializePrisma(job) };
     } catch (error) {
         return { success: false, error: 'Failed to fetch job' };
     }

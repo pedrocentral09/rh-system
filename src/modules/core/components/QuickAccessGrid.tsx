@@ -24,24 +24,24 @@ export function QuickAccessGrid() {
                     transition={{ delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 >
                     <Link href={link.href} className="block group h-full">
-                        <div className={`relative h-full overflow-hidden bg-[#0A0F1C] border border-white/5 rounded-[2.5rem] p-10 transition-all duration-700 hover:border-brand-orange/30 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]`}>
+                        <div className={`relative h-full overflow-hidden bg-surface border border-border rounded-[2.5rem] p-10 transition-all duration-700 hover:border-brand-orange/30 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] shadow-2xl`}>
                             {/* Premium Background Effects */}
                             <div className={`absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br ${link.from} to-transparent rounded-full blur-[80px] group-hover:scale-125 transition-transform duration-1000`} />
 
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="w-16 h-16 bg-white/5 border border-white/5 rounded-[1.5rem] flex items-center justify-center mb-8 group-hover:bg-brand-orange group-hover:border-transparent group-hover:shadow-[0_0_30px_rgba(255,120,0,0.3)] transition-all duration-500">
+                                <div className="w-16 h-16 bg-surface-secondary border border-border rounded-[1.5rem] flex items-center justify-center mb-8 group-hover:bg-brand-orange group-hover:border-transparent group-hover:shadow-[0_0_30px_rgba(255,120,0,0.2)] transition-all duration-500">
                                     <span className="text-4xl group-hover:scale-110 transition-transform">{link.icon}</span>
                                 </div>
 
-                                <h3 className="text-base font-black text-white uppercase tracking-[0.1em] mb-4 group-hover:text-brand-orange transition-colors">
+                                <h3 className="text-base font-black text-text-primary uppercase tracking-[0.1em] mb-4 group-hover:text-brand-orange transition-colors">
                                     {link.label}
                                 </h3>
 
-                                <p className="text-[13px] text-slate-500 leading-relaxed font-bold group-hover:text-slate-400 transition-colors">
+                                <p className="text-[13px] text-text-secondary leading-relaxed font-bold group-hover:text-text-primary transition-colors">
                                     {link.desc}
                                 </p>
 
-                                <div className="mt-auto pt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-brand-orange transition-colors">
+                                <div className="mt-auto pt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted group-hover:text-brand-orange transition-colors">
                                     <span>Acessar Módulo</span>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="transform group-hover:translate-x-1 transition-transform"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
                                 </div>

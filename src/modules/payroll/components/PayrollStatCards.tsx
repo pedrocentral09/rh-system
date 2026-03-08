@@ -24,69 +24,69 @@ export function PayrollStatCards({ periods, activeEmployeeCount }: PayrollStatCa
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200">
+            <Card className="bg-surface shadow-sm border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">
+                    <CardTitle className="text-sm font-medium text-text-muted">
                         Competência Aberta
                     </CardTitle>
-                    <CalendarDays className="h-4 w-4 text-emerald-600" />
+                    <CalendarDays className="h-4 w-4 text-emerald-500" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                    <div className="text-2xl font-bold text-text-primary">
                         {openPeriod ? `${openPeriod.month.toString().padStart(2, '0')}/${openPeriod.year}` : 'Nenhuma'}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                         {openPeriod ? `${openPeriod._count.payslips} holerites em aberto` : 'Todas finalizadas'}
                     </p>
                 </CardContent>
             </Card>
 
-            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200">
+            <Card className="bg-surface shadow-sm border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">
+                    <CardTitle className="text-sm font-medium text-text-muted">
                         Colaboradores Ativos
                     </CardTitle>
-                    <Users className="h-4 w-4 text-blue-600" />
+                    <Users className="h-4 w-4 text-brand-blue" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                    <div className="text-2xl font-bold text-text-primary">
                         {activeEmployeeCount}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                         Elegíveis para folha
                     </p>
                 </CardContent>
             </Card>
 
-            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200">
+            <Card className="bg-surface shadow-sm border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">
+                    <CardTitle className="text-sm font-medium text-text-muted">
                         Total Folha (Última)
                     </CardTitle>
-                    <DollarSign className="h-4 w-4 text-slate-600" />
+                    <DollarSign className="h-4 w-4 text-text-muted" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                    <div className="text-2xl font-bold text-text-primary">
                         R$ 0,00
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                         {lastClosed ? `Ref: ${lastClosed.month}/${lastClosed.year}` : 'Sem histórico'}
                     </p>
                 </CardContent>
             </Card>
 
-            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200">
+            <Card className="bg-surface shadow-sm border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">
+                    <CardTitle className="text-sm font-medium text-text-muted">
                         Pendências
                     </CardTitle>
-                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                    <AlertCircle className="h-4 w-4 text-brand-orange" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                    <div className="text-2xl font-bold text-text-primary">
                         0
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                         Cadastros incompletos
                     </p>
                 </CardContent>

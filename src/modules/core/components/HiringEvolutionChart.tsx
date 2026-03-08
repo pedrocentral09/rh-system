@@ -33,9 +33,9 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
-                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Fluxo de Talentos</h3>
+                        <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Fluxo de Talentos</h3>
                     </div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Evolução do <span className="text-emerald-400">Capital</span></h2>
+                    <h2 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Evolução do <span className="text-emerald-400">Capital</span></h2>
                 </div>
             </div>
 
@@ -53,9 +53,9 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
                     </defs>
 
                     {/* Grid Lines */}
-                    <line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} className="stroke-white/5" strokeWidth="1" />
+                    <line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} className="stroke-border/20" strokeWidth="1" />
                     {[0.25, 0.5, 0.75, 1].map(p => (
-                        <line key={p} x1="0" y1={chartHeight * (1 - p)} x2={chartWidth} y2={chartHeight * (1 - p)} className="stroke-white/5" strokeWidth="1" strokeDasharray="4 4" />
+                        <line key={p} x1="0" y1={chartHeight * (1 - p)} x2={chartWidth} y2={chartHeight * (1 - p)} className="stroke-border/10" strokeWidth="1" strokeDasharray="4 4" />
                     ))}
 
                     {/* Area Hired */}
@@ -107,9 +107,9 @@ export function HiringEvolutionChart({ data }: HiringEvolutionChartProps) {
                 </svg>
             </div>
 
-            <div className="flex items-center gap-6 mt-8 pt-6 border-t border-white/5 font-black text-[10px] uppercase tracking-widest uppercase">
+            <div className="flex items-center gap-6 mt-8 pt-6 border-t border-border/10 font-black text-[10px] uppercase tracking-widest uppercase">
                 <div className="flex items-center gap-2 text-emerald-400">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
                     Contratações
                 </div>
                 <div className="flex items-center gap-2 text-rose-400 opacity-60">

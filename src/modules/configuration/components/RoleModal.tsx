@@ -99,7 +99,7 @@ export function RoleModal({ isOpen, onClose, role, onSuccess }: RoleModalProps) 
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Nome do Perfil *</label>
+                        <label className="text-xs font-bold text-text-primary uppercase tracking-wide">Nome do Perfil *</label>
                         <Input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -108,7 +108,7 @@ export function RoleModal({ isOpen, onClose, role, onSuccess }: RoleModalProps) 
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Descrição (Opcional)</label>
+                        <label className="text-xs font-bold text-text-primary uppercase tracking-wide">Descrição (Opcional)</label>
                         <Input
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -118,25 +118,25 @@ export function RoleModal({ isOpen, onClose, role, onSuccess }: RoleModalProps) 
                     </div>
                 </div>
 
-                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="border border-border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead className="bg-slate-100/80 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold uppercase tracking-wider">
+                        <thead className="bg-text-primary/5 border-b border-border text-[11px] font-bold uppercase tracking-wider">
                             <tr>
-                                <th className="px-4 py-3 text-left text-slate-800 dark:text-slate-200">Módulo</th>
+                                <th className="px-4 py-3 text-left text-text-primary">Módulo</th>
                                 {PERMISSIONS.map(p => (
-                                    <th key={p.id} className="px-4 py-3 text-center text-slate-800 dark:text-slate-200">{p.label}</th>
+                                    <th key={p.id} className="px-4 py-3 text-center text-text-primary">{p.label}</th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-border">
                             {MODULES.map(module => (
-                                <tr key={module.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{module.label}</td>
+                                <tr key={module.id} className="hover:bg-text-primary/[0.02]">
+                                    <td className="px-4 py-3 font-medium text-text-primary">{module.label}</td>
                                     {PERMISSIONS.map(perm => (
                                         <td key={perm.id} className="px-4 py-3 text-center">
                                             <input
                                                 type="checkbox"
-                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                className="w-4 h-4 rounded border-border text-brand-blue focus:ring-brand-blue"
                                                 checked={(permissions[module.id] || []).includes(perm.id)}
                                                 onChange={() => togglePermission(module.id, perm.id)}
                                             />
@@ -148,17 +148,17 @@ export function RoleModal({ isOpen, onClose, role, onSuccess }: RoleModalProps) 
                     </table>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center pt-4 border-t border-border">
                     <Button
                         size="sm"
                         onClick={selectAllPermissions}
-                        className="bg-brand-blue hover:bg-blue-800 text-white text-[11px] font-bold uppercase tracking-tight shadow-sm"
+                        className="bg-brand-blue hover:bg-brand-blue/90 text-white text-[11px] font-bold uppercase tracking-tight shadow-sm"
                     >
                         ✨ Selecionar Tudo
                     </Button>
                     <div className="flex gap-2">
                         <Button variant="ghost" onClick={onClose} disabled={loading}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={loading} className="bg-brand-blue text-white hover:bg-blue-800">
+                        <Button onClick={handleSave} disabled={loading} className="bg-brand-blue text-white hover:bg-brand-blue/90">
                             {loading ? 'Salvando...' : 'Salvar Perfil'}
                         </Button>
                     </div>

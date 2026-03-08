@@ -18,10 +18,10 @@ export function SectorDistribution({ stats }: SectorDistributionProps) {
             {(stats || []).slice(0, 5).map((dept) => (
                 <div key={dept.name} className="space-y-2">
                     <div className="flex justify-between text-[11px] font-black uppercase tracking-wider">
-                        <span className="text-slate-300">{dept.name}</span>
+                        <span className="text-text-secondary">{dept.name}</span>
                         <span className="text-brand-orange">{dept.percentage}%</span>
                     </div>
-                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-1 bg-surface-secondary border border-border/10 rounded-full overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             whileInView={{ width: `${dept.percentage}%` }}

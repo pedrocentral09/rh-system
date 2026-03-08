@@ -54,23 +54,23 @@ export function EmployeeEditModal({ isOpen, onClose, onSuccess, employee, defaul
                 {/* Close Button UI */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 md:top-8 md:right-8 z-[110] w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all group backdrop-blur-xl"
+                    className="absolute top-4 right-4 md:top-8 md:right-8 z-[110] w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-text-primary/10 transition-all group backdrop-blur-xl"
                 >
                     <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                 </button>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar no-scrollbar rounded-[2.5rem]">
                     {loading ? (
-                        <div className="bg-[#0A0F1C]/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 p-32 flex flex-col items-center justify-center space-y-8">
+                        <div className="bg-surface/95 backdrop-blur-3xl rounded-[2.5rem] border border-border p-32 flex flex-col items-center justify-center space-y-8 shadow-2xl">
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-full border-4 border-white/5 border-t-indigo-500 animate-spin" />
+                                <div className="w-24 h-24 rounded-full border-4 border-text-primary/5 border-t-brand-orange animate-spin" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <User className="w-8 h-8 text-indigo-400 animate-pulse" />
+                                    <User className="w-8 h-8 text-brand-orange animate-pulse" />
                                 </div>
                             </div>
                             <div className="text-center">
-                                <h3 className="text-lg font-black text-white uppercase tracking-[0.3em]">Recuperando Registro</h3>
-                                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-2">Acessando banco de dados seguro...</p>
+                                <h3 className="text-lg font-black text-text-primary uppercase tracking-[0.3em]">Recuperando Dossiê</h3>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-3 opacity-60">Sincronizando registros biométricos e contratuais...</p>
                             </div>
                         </div>
                     ) : (

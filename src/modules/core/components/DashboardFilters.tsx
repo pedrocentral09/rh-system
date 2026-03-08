@@ -32,22 +32,22 @@ export function DashboardFilters({ companies, stores }: FiltersProps) {
                 </Label>
                 <div className="relative">
                     <select
-                        className="appearance-none bg-transparent text-xs font-black text-white uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
+                        className="appearance-none bg-transparent text-xs font-black text-text-primary uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
                         onChange={(e) => handleFilterChange('companyId', e.target.value)}
                         value={searchParams.get('companyId') || 'all'}
                     >
-                        <option value="all" className="bg-[#0A0F1C] text-white">Todas as Unidades</option>
+                        <option value="all" className="bg-surface text-text-primary">Todas as Unidades</option>
                         {companies.map(c => (
-                            <option key={c.id} value={c.id} className="bg-[#0A0F1C] text-white">{c.name}</option>
+                            <option key={c.id} value={c.id} className="bg-surface text-text-primary">{c.name}</option>
                         ))}
                     </select>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
                         <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </div>
                 </div>
             </div>
 
-            <div className="w-[1px] h-8 bg-white/5 self-center" />
+            <div className="w-[1px] h-8 bg-border/20 self-center" />
 
             {/* Store/Branch Selector */}
             <div className="flex flex-col gap-1.5 transition-all duration-300 group">
@@ -57,16 +57,16 @@ export function DashboardFilters({ companies, stores }: FiltersProps) {
                 </Label>
                 <div className="relative">
                     <select
-                        className="appearance-none bg-transparent text-xs font-black text-white uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
+                        className="appearance-none bg-transparent text-xs font-black text-text-primary uppercase tracking-wider outline-none cursor-pointer pr-8 py-1 hover:text-brand-orange transition-colors"
                         onChange={(e) => handleFilterChange('storeId', e.target.value)}
                         value={searchParams.get('storeId') || 'all'}
                     >
-                        <option value="all" className="bg-[#0A0F1C] text-white">Unidade Geral</option>
+                        <option value="all" className="bg-surface text-text-primary">Unidade Geral</option>
                         {stores.map(s => (
-                            <option key={s.id} value={s.id} className="bg-[#0A0F1C] text-white">{s.name}</option>
+                            <option key={s.id} value={s.id} className="bg-surface text-text-primary">{s.name}</option>
                         ))}
                     </select>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
                         <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </div>
                 </div>

@@ -55,25 +55,25 @@ export function DailyOverview() {
     return (
         <div className="space-y-10 animate-in fade-in duration-700">
             {/* Premium Header/Filter Control */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#0A0F1C]/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-surface/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row items-center gap-8 z-10 w-full md:w-auto">
                     <div className="space-y-2 group w-full md:w-auto">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Período de Referência</label>
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Período de Referência</label>
                         <div className="relative">
                             <input
                                 type="date"
                                 value={date}
                                 onChange={e => setDate(e.target.value)}
-                                className="h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all shadow-inner w-full md:w-48 appearance-none"
+                                className="h-14 bg-surface-secondary border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:border-brand-orange/30 transition-all shadow-inner w-full md:w-48 appearance-none"
                             />
                         </div>
                     </div>
                     <button
                         onClick={loadData}
                         disabled={loading}
-                        className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-brand-orange hover:bg-white/10 transition-all shadow-lg active:scale-95 disabled:opacity-50 mt-auto md:mt-6"
+                        className="h-14 w-14 rounded-2xl bg-surface-secondary border border-border flex items-center justify-center text-text-muted hover:text-brand-orange hover:bg-surface-hover transition-all shadow-lg active:scale-95 disabled:opacity-50 mt-auto md:mt-6"
                     >
                         {loading ? <Loader2 className="animate-spin h-5 w-5 text-brand-orange" /> : <RefreshCw className="h-5 w-5" />}
                     </button>
@@ -81,11 +81,11 @@ export function DailyOverview() {
 
                 <div className="flex flex-wrap items-center gap-3 z-10">
                     {[
-                        { label: 'OK', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-                        { label: 'Atraso', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-                        { label: 'Falta', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
-                        { label: 'Extra', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
-                        { label: 'Ímpar', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' }
+                        { label: 'OK', color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' },
+                        { label: 'Atraso', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+                        { label: 'Falta', color: 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20' },
+                        { label: 'Extra', color: 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20' },
+                        { label: 'Ímpar', color: 'bg-surface-secondary text-text-muted border-border' }
                     ].map(st => (
                         <span key={st.label} className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${st.color}`}>
                             {st.label}
@@ -96,7 +96,7 @@ export function DailyOverview() {
 
             {/* Premium Data List */}
             <div className="space-y-4">
-                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                     <div className="col-span-3 text-left">Colaborador / Departamento</div>
                     <div className="col-span-2 text-center">Jornada</div>
                     <div className="col-span-3 text-center">Registros de Ponto</div>
@@ -119,23 +119,23 @@ export function DailyOverview() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.02 }}
-                            className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-brand-orange/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                            className="bg-surface border border-border rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-brand-orange/30 hover:bg-surface-hover transition-all duration-300 group"
                         >
                             <div className="col-span-3 flex flex-col gap-0.5">
-                                <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{item.employee.name}</h4>
-                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{item.employee.department}</span>
+                                <h4 className="text-[13px] font-black text-text-primary uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{item.employee.name}</h4>
+                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{item.employee.department}</span>
                             </div>
 
                             <div className="col-span-2 text-center">
-                                <span className="bg-white/5 text-slate-500 px-2 py-1 rounded text-[8px] font-black uppercase tracking-tighter border border-white/5">{item.shiftName || 'FOLGA'}</span>
+                                <span className="bg-surface-secondary text-text-muted px-2 py-1 rounded text-[8px] font-black uppercase tracking-tighter border border-border">{item.shiftName || 'FOLGA'}</span>
                             </div>
 
                             <div className="col-span-3">
                                 <div className="flex items-center justify-center gap-3">
                                     {item.punches.slice(0, 4).map((p: string, idx: number) => (
                                         <div key={idx} className="flex flex-col items-center gap-1">
-                                            <span className="text-[8px] font-black text-slate-600 uppercase tracking-tighter">{['ENT', 'ALM', 'VOL', 'SAI'][idx]}</span>
-                                            <span className={`text-[11px] font-mono font-black ${p ? 'text-white' : 'text-slate-700'}`}>
+                                            <span className="text-[8px] font-black text-text-muted uppercase tracking-tighter">{['ENT', 'ALM', 'VOL', 'SAI'][idx]}</span>
+                                            <span className={`text-[11px] font-mono font-black ${p ? 'text-text-primary' : 'text-text-muted/30 dark:text-slate-700'}`}>
                                                 {p || '--:--'}
                                             </span>
                                         </div>

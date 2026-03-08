@@ -40,7 +40,7 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
     const rotAbsent = ((pPresent + pLate) / 100) * 360;
 
     return (
-        <div className="relative group overflow-hidden bg-[#0A0F1C] border border-white/5 rounded-[2rem] p-8 shadow-2xl h-full">
+        <div className="relative group overflow-hidden bg-surface border border-border rounded-[2rem] p-8 shadow-2xl h-full">
             {/* Background Decorative Element */}
             <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-emerald-500/5 blur-3xl rounded-full" />
 
@@ -52,13 +52,13 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                             </span>
-                            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Monitor de Presença</h3>
+                            <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Monitor de Presença</h3>
                         </div>
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Fluxo <span className="text-brand-orange">Operacional</span></h2>
+                        <h2 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Fluxo <span className="text-brand-orange">Operacional</span></h2>
                     </div>
 
                     <div className="text-right">
-                        <div className="text-4xl font-black text-white tracking-tighter leading-none mb-1">
+                        <div className="text-4xl font-black text-text-primary tracking-tighter leading-none mb-1">
                             {time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                         <div className="text-[9px] font-black text-brand-orange uppercase tracking-[0.2em]">Live Analytics</div>
@@ -68,9 +68,9 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
                 <div className="flex flex-col xl:flex-row items-center gap-12 flex-1">
                     {/* Donut Chart with Effects */}
                     <div className="relative w-48 h-48 flex-shrink-0">
-                        <div className="absolute inset-0 bg-white/5 rounded-full blur-xl scale-90" />
+                        <div className="absolute inset-0 bg-surface-secondary rounded-full blur-xl scale-90" />
                         <svg className="w-full h-full transform -rotate-90 relative z-10" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="40" className="stroke-white/5" strokeWidth="8" fill="none" />
+                            <circle cx="50" cy="50" r="40" className="stroke-border" strokeWidth="8" fill="none" />
 
                             {stats.present > 0 && (
                                 <circle
@@ -100,28 +100,28 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
                             )}
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center flex-col z-20">
-                            <span className="text-5xl font-black text-white tracking-tighter leading-none">{Math.round(pPresent || 0)}</span>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">% EFETIVO</span>
+                            <span className="text-5xl font-black text-text-primary tracking-tighter leading-none">{Math.round(pPresent || 0)}</span>
+                            <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">% EFETIVO</span>
                         </div>
                     </div>
 
                     {/* Elite Stats Grid */}
                     <div className="flex-1 w-full grid grid-cols-2 gap-4">
-                        <StatusCard label="Presentes" value={stats.present} color="text-emerald-400" bg="bg-emerald-500/10" dot="bg-emerald-500" />
-                        <StatusCard label="Incidências" value={stats.late} color="text-amber-400" bg="bg-amber-500/10" dot="bg-amber-500" />
-                        <StatusCard label="Ausências" value={stats.absent} color="text-rose-400" bg="bg-rose-500/10" dot="bg-rose-500" />
-                        <StatusCard label="Descansos" value={stats.dayOff} color="text-slate-400" bg="bg-white/5" dot="bg-slate-500" />
+                        <StatusCard label="Presentes" value={stats.present} color="text-emerald-500" bg="bg-emerald-500/5 dark:bg-emerald-500/10" dot="bg-emerald-500" />
+                        <StatusCard label="Incidências" value={stats.late} color="text-amber-500" bg="bg-amber-500/5 dark:bg-amber-500/10" dot="bg-amber-500" />
+                        <StatusCard label="Ausências" value={stats.absent} color="text-rose-500" bg="bg-rose-500/5 dark:bg-rose-500/10" dot="bg-rose-500" />
+                        <StatusCard label="Descansos" value={stats.dayOff} color="text-text-secondary" bg="bg-surface-secondary" dot="bg-text-muted" />
                     </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <div className="mt-8 pt-6 border-t border-border flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
                     <div className="flex items-center gap-2">
-                        <div className="h-1 w-8 bg-brand-orange/20 rounded-full overflow-hidden">
+                        <div className="h-1 w-8 bg-surface-secondary rounded-full overflow-hidden">
                             <div className="h-full bg-brand-orange w-1/3 animate-shimmer" />
                         </div>
                         <span>Processamento Geral: {stats.total} IDs</span>
                     </div>
-                    <span className="text-slate-400 italic">Atualizado agora</span>
+                    <span className="text-text-muted italic">Atualizado agora</span>
                 </div>
             </div>
         </div>
@@ -130,10 +130,10 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
 
 function StatusCard({ label, value, color, bg, dot }: { label: string, value: number, color: string, bg: string, dot: string }) {
     return (
-        <div className={`${bg} border border-white/5 p-4 rounded-3xl transition-all duration-300 hover:border-white/20 group/card`}>
+        <div className={`${bg} border border-border p-4 rounded-3xl transition-all duration-300 hover:border-surface-hover group/card`}>
             <div className="flex items-center gap-2 mb-2">
                 <div className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest group-hover/card:text-slate-300">{label}</p>
+                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest group-hover/card:text-text-secondary transition-colors">{label}</p>
             </div>
             <p className={`text-2xl font-black ${color} tracking-tighter`}>{value}</p>
         </div>

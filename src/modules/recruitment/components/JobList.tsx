@@ -15,7 +15,7 @@ export function JobList({ jobs }: { jobs: any[] }) {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`bg-[#0A0F1C]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-brand-orange/30 transition-all duration-500 group relative overflow-hidden ${job.title === 'Banco de Talentos' ? 'ring-1 ring-indigo-500/30' : ''
+                    className={`bg-surface/80 backdrop-blur-xl border border-border rounded-3xl p-6 hover:border-brand-orange/30 transition-all duration-500 group relative overflow-hidden ${job.title === 'Banco de Talentos' ? 'ring-1 ring-indigo-500/30' : ''
                         }`}
                 >
                     {/* Background Accent for Banco de Talentos */}
@@ -26,39 +26,39 @@ export function JobList({ jobs }: { jobs: any[] }) {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                         <div className="space-y-2">
                             <div className="flex items-center gap-3">
-                                <h3 className={`text-lg font-black uppercase tracking-tighter transition-colors ${job.title === 'Banco de Talentos' ? 'text-indigo-400 group-hover:text-white' : 'text-white group-hover:text-brand-orange'
+                                <h3 className={`text-lg font-black uppercase tracking-tighter transition-colors ${job.title === 'Banco de Talentos' ? 'text-indigo-600 dark:text-indigo-400 group-hover:text-text-primary' : 'text-text-primary group-hover:text-brand-orange'
                                     }`}>
                                     {job.title === 'Banco de Talentos' ? `✨ ${job.title}` : job.title}
                                 </h3>
-                                <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${job.status === 'OPEN' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                    job.status === 'DRAFT' ? 'bg-slate-500/10 text-slate-400 border-white/5' :
-                                        'bg-red-500/10 text-red-400 border-red-500/20'
+                                <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${job.status === 'OPEN' ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' :
+                                    job.status === 'DRAFT' ? 'bg-surface-secondary text-text-muted border-border' :
+                                        'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20'
                                     }`}>
                                     {job.status}
                                 </div>
                             </div>
-                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em]">
-                                {job.department} <span className="mx-2 text-slate-700">•</span> {job.type} <span className="mx-2 text-slate-700">•</span> Criada em {new Date(job.createdAt).toLocaleDateString('pt-BR')}
+                            <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">
+                                {job.department} <span className="mx-2 text-text-muted/30">•</span> {job.type} <span className="mx-2 text-text-muted/30">•</span> Criada em {new Date(job.createdAt).toLocaleDateString('pt-BR')}
                             </p>
                         </div>
 
                         <div className="flex items-center justify-between md:justify-end gap-6">
                             <div className="text-right">
-                                <span className={`text-xl font-black block leading-none ${job.title === 'Banco de Talentos' ? 'text-indigo-400' : 'text-white'
+                                <span className={`text-xl font-black block leading-none ${job.title === 'Banco de Talentos' ? 'text-indigo-600 dark:text-indigo-400' : 'text-text-primary'
                                     }`}>
                                     {job._count.applications}
                                 </span>
-                                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Candidatos</span>
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">Candidatos</span>
                             </div>
 
                             <div className="flex gap-2">
                                 <Link href={`/dashboard/recruitment/${job.id}`}>
-                                    <button className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-brand-orange hover:text-white transition-all shadow-lg">
+                                    <button className="h-10 px-6 rounded-xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-brand-orange hover:text-white transition-all shadow-lg">
                                         Gerenciar
                                     </button>
                                 </Link>
                                 <Link href={`/dashboard/recruitment/${job.id}/edit`}>
-                                    <button className="h-10 w-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+                                    <button className="h-10 w-10 rounded-xl bg-surface-secondary border border-border flex items-center justify-center hover:bg-surface-hover transition-all">
                                         ✏️
                                     </button>
                                 </Link>

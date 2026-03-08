@@ -64,17 +64,17 @@ export function TimeJustificationModal({
             title=""
             width="md"
         >
-            <div className="bg-[#0A0F1C] p-8 space-y-8 relative overflow-hidden">
+            <div className="bg-surface p-8 space-y-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-brand-orange/5 blur-[80px] rounded-full -mr-24 -mt-24 pointer-events-none" />
 
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center">
                             <Camera className="h-5 w-5 text-brand-orange" />
                         </div>
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight">Justificativa de Jornada</h2>
+                        <h2 className="text-xl font-black text-text-primary uppercase tracking-tight">Justificativa de Jornada</h2>
                     </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-14">Referência: {new Date(date).toLocaleDateString('pt-BR')}</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-14">Referência: {new Date(date).toLocaleDateString('pt-BR')}</p>
                 </div>
 
                 <div className="bg-brand-orange/5 border border-brand-orange/10 p-5 rounded-2xl flex gap-4 text-brand-orange relative group overflow-hidden">
@@ -86,9 +86,9 @@ export function TimeJustificationModal({
                 </div>
 
                 <div className="space-y-3 group">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Manifestação do Colaborador</label>
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Manifestação do Colaborador</label>
                     <textarea
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[12px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all min-h-[140px] shadow-inner placeholder:text-slate-800 outline-none block"
+                        className="w-full bg-text-primary/5 border border-border rounded-2xl p-6 text-[12px] font-black text-text-primary uppercase tracking-widest focus:border-brand-orange/30 transition-all min-h-[140px] shadow-inner placeholder:text-text-muted/40 outline-none block"
                         placeholder="DESCREVA O MOTIVO (EX: ESQUECIMENTO, CONSULTA, FALHA TÉCNICA)..."
                         value={justification}
                         onChange={(e) => setJustification(e.target.value)}
@@ -96,7 +96,7 @@ export function TimeJustificationModal({
                 </div>
 
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4">Evidência Digital (Opcional)</label>
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-4">Evidência Digital (Opcional)</label>
 
                     {!previewUrl ? (
                         <div className="relative group/upload h-32">
@@ -107,13 +107,13 @@ export function TimeJustificationModal({
                                 className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                 onChange={handlePhotoChange}
                             />
-                            <div className="h-full border-2 border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover/upload:bg-white/[0.03] group-hover/upload:border-brand-orange/20 transition-all">
-                                <div className="h-10 w-10 bg-white/5 text-slate-500 rounded-xl flex items-center justify-center group-hover/upload:scale-110 group-hover/upload:text-brand-orange transition-all">
+                            <div className="h-full border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 group-hover/upload:bg-text-primary/[0.03] group-hover/upload:border-brand-orange/20 transition-all">
+                                <div className="h-10 w-10 bg-text-primary/5 text-text-muted rounded-xl flex items-center justify-center group-hover/upload:scale-110 group-hover/upload:text-brand-orange transition-all">
                                     <Camera className="h-5 w-5" />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Disparar Câmera ou Selecionar</p>
-                                    <p className="text-[8px] text-slate-700 uppercase font-black tracking-tighter">IMAGENS ATÉ 5MB</p>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Disparar Câmera ou Selecionar</p>
+                                    <p className="text-[8px] text-text-muted/60 uppercase font-black tracking-tighter">IMAGENS ATÉ 5MB</p>
                                 </div>
                             </div>
                         </div>
@@ -135,14 +135,14 @@ export function TimeJustificationModal({
                 <div className="pt-4 flex gap-4">
                     <button
                         onClick={handleClose}
-                        className="flex-1 h-14 rounded-2xl bg-white/5 border border-white/5 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                        className="flex-1 h-14 rounded-2xl bg-text-primary/5 border border-border text-text-muted text-[10px] font-black uppercase tracking-[0.2em] hover:bg-text-primary/10 hover:text-text-primary transition-all active:scale-95"
                     >
                         ABORTAR
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="flex-[2] h-14 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                        className="flex-[2] h-14 bg-text-primary text-surface rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 transition-all shadow-xl active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                     >
                         {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                         TRANSMITIR PARA O RH

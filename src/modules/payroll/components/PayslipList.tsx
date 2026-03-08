@@ -82,21 +82,21 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
             {/* Resumo Financeiro Premium */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
-                    { label: 'Proventos Totais', value: periodTotals.gross, color: 'text-white', bg: 'bg-white/5', icon: '💰' },
-                    { label: 'Retenções & Descontos', value: periodTotals.deductions, color: 'text-red-400', bg: 'bg-red-500/5', icon: '📉' },
-                    { label: 'Disponibilidade Líquida', value: periodTotals.net, color: 'text-emerald-400', bg: 'bg-emerald-500/5', icon: '🛡️' }
+                    { label: 'Proventos Totais', value: periodTotals.gross, color: 'text-text-primary', bg: 'bg-surface', icon: '💰' },
+                    { label: 'Retenções & Descontos', value: periodTotals.deductions, color: 'text-red-500', bg: 'bg-surface', icon: '📉' },
+                    { label: 'Disponibilidade Líquida', value: periodTotals.net, color: 'text-emerald-500', bg: 'bg-surface', icon: '🛡️' }
                 ].map((stat, i) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className={`${stat.bg} backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group`}
+                        className={`${stat.bg} backdrop-blur-xl border border-border p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group`}
                     >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-text-primary/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-text-primary/10 transition-colors" />
                         <div className="flex items-center gap-3 mb-4">
                             <span className="text-xl">{stat.icon}</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</span>
+                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.label}</span>
                         </div>
                         <div className={`text-3xl font-black tracking-tighter ${stat.color}`}>
                             {formatCurrency(stat.value)}
@@ -106,14 +106,14 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
             </div>
 
             {/* Controle de Fluxo & Filtros */}
-            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl space-y-8">
+            <div className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 shadow-2xl space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                     <div className="md:col-span-4 relative group">
-                        <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-brand-orange transition-colors" />
+                        <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted group-focus-within:text-brand-orange transition-colors" />
                         <input
                             type="text"
                             placeholder="PESQUISAR COLABORADOR..."
-                            className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-brand-orange/30 transition-all shadow-inner"
+                            className="w-full bg-text-primary/5 border border-border rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-text-primary uppercase tracking-widest placeholder:text-text-muted/40 focus:outline-none focus:border-brand-orange/30 transition-all shadow-inner"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -121,23 +121,23 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
 
                     <div className="md:col-span-3">
                         <select
-                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 transition-all"
+                            className="w-full appearance-none bg-text-primary/5 border border-border rounded-2xl py-4 px-6 text-[10px] font-black text-text-muted uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 transition-all"
                             value={selectedCompany}
                             onChange={(e) => setSelectedCompany(e.target.value)}
                         >
-                            <option value="all" className="bg-[#0A0F1C]">Todas as Empresas</option>
-                            {companies.map(c => <option key={c as string} value={c as string} className="bg-[#0A0F1C]">{c as string}</option>)}
+                            <option value="all" className="bg-surface">Todas as Empresas</option>
+                            {companies.map(c => <option key={c as string} value={c as string} className="bg-surface">{c as string}</option>)}
                         </select>
                     </div>
 
                     <div className="md:col-span-3">
                         <select
-                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 transition-all"
+                            className="w-full appearance-none bg-text-primary/5 border border-border rounded-2xl py-4 px-6 text-[10px] font-black text-text-muted uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 transition-all"
                             value={selectedStore}
                             onChange={(e) => setSelectedStore(e.target.value)}
                         >
-                            <option value="all" className="bg-[#0A0F1C]">Todas as Lojas</option>
-                            {stores.map(s => <option key={s as string} value={s as string} className="bg-[#0A0F1C]">{s as string}</option>)}
+                            <option value="all" className="bg-surface">Todas as Lojas</option>
+                            {stores.map(s => <option key={s as string} value={s as string} className="bg-surface">{s as string}</option>)}
                         </select>
                     </div>
 
@@ -151,7 +151,7 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                                 else toast.error(res.error);
                             }}
                             disabled={loading || status === 'CLOSED' || filteredPayslips.length === 0}
-                            className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all shadow-lg disabled:opacity-30"
+                            className="w-12 h-12 rounded-2xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-text-primary/10 transition-all shadow-lg disabled:opacity-30"
                             title="Enviar E-mails em Massa"
                         >
                             <Mail className="h-5 w-5" />
@@ -159,7 +159,7 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                         <button
                             onClick={handleCalculateAll}
                             disabled={loading || status === 'CLOSED'}
-                            className="h-12 px-6 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg flex items-center gap-2 group disabled:opacity-50"
+                            className="h-12 px-6 rounded-2xl bg-brand-blue text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg flex items-center gap-2 group disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Calculator className="h-4 w-4 group-hover:rotate-12 transition-transform" />}
                             Processar Tudo
@@ -167,16 +167,16 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">
-                        Registros Processados: <span className="text-slate-400 font-black">{filteredPayslips.length} / {payslips.length}</span>
+                <div className="pt-4 border-t border-border flex items-center justify-between">
+                    <span className="text-[9px] font-black text-text-muted/60 uppercase tracking-[0.2em]">
+                        Registros Processados: <span className="text-text-muted font-black">{filteredPayslips.length} / {payslips.length}</span>
                     </span>
                 </div>
             </div>
 
             {/* Listagem Premium */}
             <div className="space-y-4">
-                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                     <div className="col-span-12 md:col-span-4 text-left">Colaborador / Identidade</div>
                     <div className="hidden md:block md:col-span-2 text-center">Bruto</div>
                     <div className="hidden md:block md:col-span-2 text-center">Descontos</div>
@@ -191,16 +191,16 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.02 }}
-                            className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 flex flex-col md:grid md:grid-cols-12 items-center gap-4 hover:border-indigo-500/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                            className="bg-surface/80 border border-border rounded-[1.5rem] px-8 py-5 flex flex-col md:grid md:grid-cols-12 items-center gap-4 hover:border-brand-blue/30 hover:bg-text-primary/[0.02] transition-all duration-300 group"
                         >
                             <div className="col-span-4 flex items-center gap-4 w-full">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-indigo-500/30 transition-colors">
+                                <div className="w-12 h-12 rounded-2xl bg-text-primary/5 border border-border flex items-center justify-center text-xl shadow-inner group-hover:border-brand-blue/30 transition-colors">
                                     👤
                                 </div>
                                 <div className="min-w-0">
-                                    <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-indigo-400 transition-colors truncate">{payslip.employee.name}</h4>
+                                    <h4 className="text-[13px] font-black text-text-primary uppercase tracking-tight group-hover:text-brand-blue transition-colors truncate">{payslip.employee.name}</h4>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{payslip.employee.jobTitle}</span>
+                                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{payslip.employee.jobTitle}</span>
                                         {payslip.items.some((i: any) => i.source === 'SYNC') && (
                                             <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter">Sync Ponto</span>
                                         )}
@@ -209,7 +209,7 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                             </div>
 
                             <div className="col-span-2 text-center w-full md:w-auto">
-                                <div className="text-[11px] font-black text-slate-400 mt-0.5">{formatCurrency(payslip.grossSalary)}</div>
+                                <div className="text-[11px] font-black text-text-muted mt-0.5">{formatCurrency(payslip.grossSalary)}</div>
                             </div>
 
                             <div className="col-span-2 text-center w-full md:w-auto text-red-500/70 font-bold text-[11px]">
@@ -223,9 +223,9 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                             </div>
 
                             <div className="col-span-2 flex justify-end gap-2 w-full md:w-auto">
-                                <button onClick={() => setViewPayslip(payslip)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all shadow-lg active:scale-95" title="Visualizar">👁️</button>
-                                <button disabled={status === 'CLOSED'} onClick={() => setEditingPayslip(payslip)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-indigo-400 transition-all shadow-lg active:scale-95 disabled:opacity-20" title="Editar">✏️</button>
-                                <Link href={`/dashboard/payroll/print/${payslip.id}`} target="_blank" className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all shadow-lg active:scale-95">🖨️</Link>
+                                <button onClick={() => setViewPayslip(payslip)} className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-text-primary transition-all shadow-lg active:scale-95" title="Visualizar">👁️</button>
+                                <button disabled={status === 'CLOSED'} onClick={() => setEditingPayslip(payslip)} className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-brand-blue transition-all shadow-lg active:scale-95 disabled:opacity-20" title="Editar">✏️</button>
+                                <Link href={`/dashboard/payroll/print/${payslip.id}`} target="_blank" className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-text-primary transition-all shadow-lg active:scale-95">🖨️</Link>
                                 <button
                                     onClick={async () => {
                                         if (!confirm(`Enviar por e-mail para ${payslip.employee.name}?`)) return;
@@ -233,7 +233,7 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                                         if (res.success) toast.success(res.message);
                                         else toast.error(res.error);
                                     }}
-                                    className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-orange-400 transition-all shadow-lg active:scale-95"
+                                    className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-brand-orange transition-all shadow-lg active:scale-95"
                                     title="E-mail"
                                 >
                                     📧
@@ -241,17 +241,17 @@ export function PayslipList({ periodId, status, payslips }: PayslipListProps) {
                                 <button
                                     disabled={calculatingId === payslip.employeeId || status === 'CLOSED'}
                                     onClick={() => handleCalculateSingle(payslip.employeeId)}
-                                    className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-indigo-400 transition-all shadow-lg active:scale-95 disabled:opacity-20"
+                                    className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-brand-blue transition-all shadow-lg active:scale-95 disabled:opacity-20"
                                     title="Recalcular"
                                 >
-                                    {calculatingId === payslip.employeeId ? <Loader2 className="h-4 w-4 animate-spin text-indigo-400" /> : '⚡'}
+                                    {calculatingId === payslip.employeeId ? <Loader2 className="h-4 w-4 animate-spin text-brand-blue" /> : '⚡'}
                                 </button>
                             </div>
                         </motion.div>
                     ))}
 
                     {filteredPayslips.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-24 text-slate-700 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
+                        <div className="flex flex-col items-center justify-center py-24 text-text-muted/40 bg-text-primary/5 rounded-[2.5rem] border border-border border-dashed">
                             <span className="text-4xl mb-6 opacity-20">📂</span>
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] italic">{search ? 'Nenhum resultado filtrado' : 'Folha de pagamento vazia'}</p>
                         </div>

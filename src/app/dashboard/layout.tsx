@@ -19,7 +19,7 @@ export default async function DashboardLayout({
     await requireAuth(['ADMIN', 'HR', 'MANAGER']);
 
     return (
-        <div className="min-h-screen bg-[#020617] flex font-sans selection:bg-brand-orange selection:text-white overflow-x-hidden">
+        <div className="min-h-screen bg-background flex font-sans selection:bg-brand-orange selection:text-white overflow-x-hidden">
             {/* Sidebar */}
             <AppSidebar />
 

@@ -283,17 +283,17 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
 
     if (isCompleted) {
         return (
-            <div className="text-center space-y-6 pt-12 animate-in fade-in zoom-in duration-500">
-                <div className="h-24 w-24 bg-[#FF7800]/20 rounded-full flex items-center justify-center mx-auto mb-8 ring-8 ring-[#FF7800]/10">
-                    <CheckCircle2 className="h-12 w-12 text-[#FF7800]" />
+            <div className="text-center space-y-8 pt-12 animate-in fade-in zoom-in duration-700">
+                <div className="h-28 w-28 bg-brand-orange/10 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(255,120,0,0.2)] border border-brand-orange/20">
+                    <CheckCircle2 className="h-14 w-14 text-brand-orange" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-white tracking-tight">Tudo pronto!</h1>
-                <p className="text-slate-400 max-w-sm mx-auto leading-relaxed">
-                    Seus dados foram enviados com sucesso. Nossa equipe de RH irá analisar os documentos e entraremos em contato em breve.
+                <h1 className="text-4xl font-black text-text-primary tracking-tighter uppercase italic">Tudo pronto! 🚀</h1>
+                <p className="text-text-muted max-w-sm mx-auto leading-relaxed font-bold uppercase text-[11px] tracking-widest opacity-80">
+                    Seus dados foram sincronizados com sucesso. Nossa inteligência de RH irá analisar os protocolos e notificaremos você em breve.
                 </p>
-                <div className="pt-8">
-                    <Button variant="outline" className="border-slate-800 text-slate-400 hover:text-white" onClick={() => window.close()}>
-                        Fechar Janela
+                <div className="pt-10">
+                    <Button variant="outline" className="h-14 px-10 border-border text-text-muted hover:text-text-primary rounded-2xl font-black uppercase tracking-widest text-[10px]" onClick={() => window.close()}>
+                        Encerrar Protocolo
                     </Button>
                 </div>
             </div>
@@ -304,13 +304,16 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         <div className="space-y-8">
             {/* Progress Bar */}
             <div className="relative">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF7800]">PASSO {step + 1} DE {steps.length}</span>
-                    <span className="text-sm font-medium text-slate-400">{steps[step].title}</span>
+                <div className="flex justify-between items-end mb-4 px-2">
+                    <div className="space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-orange block">Status do Protocolo</span>
+                        <span className="text-sm font-black text-text-primary uppercase tracking-tighter">{steps[step].title}</span>
+                    </div>
+                    <span className="text-[14px] font-black text-brand-orange tabular-nums">{step + 1}<span className="text-text-muted opacity-30 mx-1">/</span>{steps.length}</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5">
+                <div className="h-2 w-full bg-surface-secondary rounded-full overflow-hidden border border-border shadow-inner">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-[#FF7800] to-orange-400"
+                        className="h-full bg-gradient-to-r from-brand-orange to-orange-400 shadow-[0_0_15px_rgba(255,120,0,0.5)]"
                         initial={{ width: '0%' }}
                         animate={{ width: `${((step + 1) / steps.length) * 100}%` }}
                         transition={{ duration: 0.5, ease: "circOut" }}
@@ -334,9 +337,9 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 transition={{ duration: 0.8, ease: "easeOut" }}
                                 className="relative"
                             >
-                                <div className="absolute inset-0 bg-[#FF7800]/20 blur-[60px] rounded-full" />
-                                <div className="relative h-24 w-24 bg-gradient-to-tr from-[#FF7800] to-orange-400 rounded-[2rem] flex items-center justify-center shadow-2xl rotate-12">
-                                    <Sparkles className="h-12 w-12 text-white animate-pulse" />
+                                <div className="absolute inset-0 bg-brand-orange/20 blur-[60px] rounded-full" />
+                                <div className="relative h-28 w-28 bg-gradient-to-tr from-brand-orange to-orange-500 rounded-[2.5rem] flex items-center justify-center shadow-2xl rotate-12 border-2 border-white/20">
+                                    <Sparkles className="h-14 w-14 text-white animate-pulse" />
                                 </div>
                             </motion.div>
 
@@ -345,18 +348,18 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.2 }}
-                                    className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none"
+                                    className="text-4xl md:text-5xl font-black text-text-primary tracking-tighter leading-none uppercase italic"
                                 >
                                     BEM-VINDO À SUA <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7800] to-orange-400">NOVA JORNADA.</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-400">NOVA JORNADA.</span>
                                 </motion.h1>
                                 <motion.p
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.3 }}
-                                    className="text-lg text-slate-400 font-medium px-4"
+                                    className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] px-4 opacity-80 italic"
                                 >
-                                    Ficamos honrados em ter você no time. Vamos configurar seu acesso e documentos de forma rápida e segura.
+                                    Ficamos honrados em ter você no time. Vamos configurar seu acesso e documentos de forma rápida, segura e 100% digital.
                                 </motion.p>
                             </div>
 
@@ -364,21 +367,21 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full"
+                                className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full"
                             >
                                 {[
                                     { title: '100% Digital', desc: 'Sem papelada', icon: <Camera className="h-4 w-4" /> },
                                     { title: 'Segurança', desc: 'Dados protegidos', icon: <CheckCircle2 className="h-4 w-4" /> },
                                     { title: 'Rápido', desc: 'Em 5 minutos', icon: <Sparkles className="h-4 w-4" /> }
                                 ].map((box, i) => (
-                                    <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="h-8 w-8 bg-[#FF7800]/10 rounded-lg flex items-center justify-center text-[#FF7800]">
+                                    <div key={i} className="bg-surface-secondary border border-border rounded-2xl p-6 shadow-lg group hover:border-brand-orange/30 transition-all">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-10 w-10 bg-brand-orange/10 rounded-xl flex items-center justify-center text-brand-orange group-hover:scale-110 transition-transform">
                                                 {box.icon}
                                             </div>
-                                            <div className="space-y-0.5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">{box.title}</p>
-                                                <p className="text-xs text-slate-500 font-medium">{box.desc}</p>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-text-primary">{box.title}</p>
+                                                <p className="text-[9px] text-text-secondary font-black uppercase tracking-tighter opacity-70">{box.desc}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -394,13 +397,13 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 <Button
                                     size="lg"
                                     onClick={handleNext}
-                                    className="w-full py-8 text-xl font-black uppercase tracking-tighter bg-[#FF7800] hover:bg-orange-600 text-white rounded-2xl shadow-[0_0_40px_rgba(255,120,0,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full py-10 text-xl font-black uppercase tracking-widest bg-brand-orange hover:bg-orange-600 text-white rounded-2xl shadow-[0_20px_40px_rgba(255,120,0,0.2)] transition-all hover:scale-[1.02] active:scale-[0.98] border-b-4 border-black/20"
                                 >
                                     Iniciar Minha Jornada
                                     <ChevronRight className="ml-2 h-6 w-6" />
                                 </Button>
-                                <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-6">
-                                    Conectado via Protocolo Seguro SSL
+                                <p className="text-[9px] text-text-secondary font-black uppercase tracking-[0.3em] mt-8 opacity-70">
+                                    Protocolo de Segurança Ativo • 256-bit SSL
                                 </p>
                             </motion.div>
                         </div>
@@ -409,52 +412,57 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     {step === 1 && (
                         <div className="space-y-8 py-4">
                             <div className="space-y-2">
-                                <h2 className="text-3xl font-black text-white tracking-tight uppercase italic">Quem é você?</h2>
-                                <p className="text-slate-400 font-medium">Precisamos do seu nome completo para registro oficial.</p>
+                                <h2 className="text-3xl font-black text-text-primary tracking-tighter uppercase italic">Quem é você?</h2>
+                                <p className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] opacity-80">Precisamos do seu nome completo para registro oficial em sistema.</p>
                             </div>
 
-                            <Card className="bg-white/[0.03] border-white/10 backdrop-blur-3xl overflow-hidden rounded-[2rem]">
-                                <CardContent className="pt-10 pb-10 space-y-6">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-[#FF7800] ml-1">NOME COMPLETO *</Label>
+                            <Card className="bg-surface-secondary border-border rounded-[2.5rem] shadow-xl overflow-hidden">
+                                <CardContent className="pt-12 pb-12 space-y-8">
+                                    <div className="space-y-4">
+                                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NOME COMPLETO *</Label>
                                         <Input
                                             id="name"
                                             value={formData.name}
-                                            onChange={(e) => updateField('name', e.target.value)}
-                                            placeholder="Ex: João da Silva Santos"
-                                            className="bg-black/40 border-white/5 text-xl py-8 rounded-2xl focus:ring-[#FF7800] placeholder:text-slate-700"
+                                            onChange={(e) => updateField('name', e.target.value.toUpperCase())}
+                                            placeholder="Ex: JOÃO DA SILVA SANTOS"
+                                            className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
                                             autoFocus
                                         />
                                     </div>
-                                    <div className="space-y-3 pt-4 border-t border-white/5">
-                                        <Label htmlFor="rg" className="text-[10px] font-black uppercase tracking-widest text-[#FF7800] ml-1">RG *</Label>
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label htmlFor="rg" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">REGISTRO GERAL (RG) *</Label>
                                         <Input
                                             id="rg"
                                             value={formData.rg}
-                                            onChange={(e) => updateField('rg', e.target.value)}
-                                            placeholder="Apenas números e letras"
-                                            className="bg-black/40 border-white/5 text-xl py-8 rounded-2xl focus:ring-[#FF7800] placeholder:text-slate-700"
+                                            onChange={(e) => updateField('rg', e.target.value.toUpperCase())}
+                                            placeholder="APENAS NÚMEROS E LETRAS"
+                                            className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
                                         />
                                     </div>
-                                    <div className="space-y-3 pt-4 border-t border-white/5">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">CPF CONFIRMADO</Label>
-                                        <div className="bg-black/20 border border-white/5 p-6 rounded-2xl flex items-center gap-4 group">
-                                            <div className="h-10 w-10 bg-[#FF7800]/10 rounded-full flex items-center justify-center border border-[#FF7800]/20">
-                                                <CheckCircle2 className="h-5 w-5 text-[#FF7800]" />
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2 opacity-70">CPF CONFIRMADO PELO PROTOCOLO</Label>
+                                        <div className="bg-surface border border-border p-8 rounded-2xl flex items-center justify-between group shadow-inner">
+                                            <div className="flex items-center gap-6">
+                                                <div className="h-14 w-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20 shadow-sm">
+                                                    <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-mono text-2xl font-black text-text-primary tracking-[0.1em]">{maskCPF(employee.cpf)}</span>
+                                                    <p className="text-[9px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-1 italic">Verificação Concluída ✓</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span className="font-mono text-xl text-slate-300 tracking-wider disabled:opacity-50">{maskCPF(employee.cpf)}</span>
-                                                <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.1em] mt-0.5 italic">Documento verificado digitalmente</p>
+                                            <div className="px-5 py-2 bg-surface-secondary border border-border rounded-lg text-[9px] font-black text-text-secondary uppercase tracking-widest opacity-80">
+                                                BLOQUEADO PARA EDIÇÃO
                                             </div>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-6 flex gap-4">
-                                <InfoIcon className="h-6 w-6 text-blue-400 shrink-0" />
-                                <p className="text-sm text-blue-400/80 font-medium leading-relaxed italic">
-                                    Dica: Use seu nome exatamente como está no RG ou CNH para evitar atrasos na aprovação do seu contrato.
+                            <div className="bg-brand-blue/5 border border-brand-blue/10 rounded-2xl p-6 flex gap-5 shadow-sm">
+                                <InfoIcon className="h-6 w-6 text-brand-blue shrink-0 mt-1" />
+                                <p className="text-[11px] text-brand-blue font-black uppercase tracking-widest leading-relaxed italic opacity-80">
+                                    ATENÇÃO: Use seu nome exatamente como consta em sua documentação oficial (RG ou CNH) para validação sistêmica imediata.
                                 </p>
                             </div>
                         </div>
@@ -463,17 +471,17 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     {step === 2 && (
                         <div className="space-y-8 py-4">
                             <div className="space-y-2">
-                                <h2 className="text-3xl font-black text-white tracking-tight uppercase italic">Contatos Pessoais</h2>
-                                <p className="text-slate-400 font-medium">Como podemos falar com você?</p>
+                                <h2 className="text-3xl font-black text-text-primary tracking-tighter uppercase italic">Dados de Contato</h2>
+                                <p className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] opacity-80">Como podemos sincronizar nossas comunicações com você?</p>
                             </div>
                             <div className="grid grid-cols-1 gap-4">
-                                <Card className="bg-white/[0.02] border-white/10 rounded-3xl">
-                                    <CardContent className="p-6 space-y-6">
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Nascimento</Label>
+                                <Card className="bg-surface-secondary border-border rounded-[2.5rem] shadow-xl overflow-hidden">
+                                    <CardContent className="p-10 space-y-8">
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">DATA DE NASCIMENTO *</Label>
                                             <Input
                                                 type="date"
-                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner"
                                                 value={formData.dateOfBirth}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
@@ -483,29 +491,29 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 }}
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Celular (WhatsApp)</Label>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">CELULAR (PARA WHATSAPP) *</Label>
                                             <Input
-                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner"
                                                 placeholder="(00) 00000-0000"
                                                 value={formData.phone}
                                                 onChange={(e) => updateField('phone', maskPhone(e.target.value))}
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">E-mail</Label>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">E-MAIL INSTITUCIONAL/PESSOAL *</Label>
                                             <Input
                                                 type="email"
-                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
-                                                placeholder="seu@email.com"
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner lowercase"
+                                                placeholder="seu@exemplo.com"
                                                 value={formData.email}
                                                 onChange={(e) => updateField('email', e.target.value)}
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Estado Civil</Label>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">ESTADO CIVIL / CONDIÇÃO *</Label>
                                             <select
-                                                className="w-full h-16 bg-black/40 border border-white/5 rounded-xl px-4 text-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#FF7800] appearance-none shadow-inner"
+                                                className="w-full h-16 bg-surface border border-border rounded-2xl px-6 text-lg font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 appearance-none shadow-inner uppercase tracking-widest"
                                                 value={formData.maritalStatus}
                                                 onChange={(e) => {
                                                     updateField('maritalStatus', e.target.value);
@@ -520,20 +528,20 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <option value="Viuvo">Viúvo(a)</option>
                                             </select>
                                         </div>
-                                        <hr className="border-white/5 my-4" />
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-orange-400">Nome do Contato de Emergência *</Label>
+                                        <div className="py-2"><hr className="border-border opacity-50" /></div>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NOME DO CONTATO DE EMERGÊNCIA *</Label>
                                             <Input
-                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
-                                                placeholder="Ex: Maria (Mãe)"
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-orange/20 shadow-inner uppercase"
+                                                placeholder="Ex: MARIA (MÃE)"
                                                 value={formData.emergencyContactName}
-                                                onChange={(e) => updateField('emergencyContactName', e.target.value)}
+                                                onChange={(e) => updateField('emergencyContactName', e.target.value.toUpperCase())}
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-orange-400">Telefone de Emergência *</Label>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">TELEFONE DE EMERGÊNCIA *</Label>
                                             <Input
-                                                className="bg-black/40 border-white/5 py-8 rounded-xl text-lg"
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-orange/20 shadow-inner"
                                                 placeholder="(00) 00000-0000"
                                                 value={formData.emergencyContactPhone}
                                                 onChange={(e) => updateField('emergencyContactPhone', maskPhone(e.target.value))}
@@ -548,42 +556,42 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     {step === 3 && (
                         <div className="space-y-8 py-4">
                             <div className="space-y-2">
-                                <h2 className="text-3xl font-black text-white tracking-tight uppercase italic text-center">Residência</h2>
-                                <p className="text-slate-400 font-medium text-center">Informe seu endereço atual completo.</p>
+                                <h2 className="text-3xl font-black text-text-primary tracking-tighter uppercase italic text-center">Local de Residência</h2>
+                                <p className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] opacity-80 text-center">Informe seu endereço atual para composição logística do contrato.</p>
                             </div>
 
-                            <Card className="bg-white/[0.02] border-white/10 rounded-[2.5rem] p-4">
-                                <CardContent className="space-y-6 pt-6 uppercase font-bold">
-                                    <div className="grid grid-cols-3 gap-6">
-                                        <div className="col-span-3 space-y-3">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">CEP</Label>
+                            <Card className="bg-surface-secondary border-border rounded-[2.5rem] shadow-xl overflow-hidden p-4">
+                                <CardContent className="space-y-8 pt-8 uppercase font-black">
+                                    <div className="grid grid-cols-3 gap-8">
+                                        <div className="col-span-3 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">CÓDIGO POSTAL (CEP) *</Label>
                                             <Input
-                                                className="bg-black/40 border-white/5 py-8 rounded-2xl text-xl placeholder:text-slate-800"
+                                                className="bg-surface border-border h-20 rounded-2xl text-2xl font-black text-text-primary focus:ring-brand-blue/20 shadow-inner placeholder:text-text-muted/20"
                                                 placeholder="00000-000"
                                                 value={formData.zipCode}
                                                 onChange={(e) => handleCEP(maskCEP(e.target.value))}
                                                 disabled={loading}
                                             />
                                         </div>
-                                        <div className="col-span-2 space-y-3">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">Rua/AV</Label>
-                                            <Input className="bg-black/40 border-white/5 py-8 rounded-2xl" value={formData.street} onChange={e => updateField('street', e.target.value)} />
+                                        <div className="col-span-2 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">LOGRADOURO (RUA/AV)</Label>
+                                            <Input className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary" value={formData.street} onChange={e => updateField('street', e.target.value.toUpperCase())} />
                                         </div>
-                                        <div className="col-span-1 space-y-3">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">Nº</Label>
-                                            <Input className="bg-black/40 border-white/5 py-8 rounded-2xl" value={formData.number} onChange={e => updateField('number', e.target.value)} />
+                                        <div className="col-span-1 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">NÚMERO</Label>
+                                            <Input className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary text-center" value={formData.number} onChange={e => updateField('number', e.target.value.toUpperCase())} />
                                         </div>
-                                        <div className="col-span-3 space-y-3 pt-2">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">Bairro</Label>
-                                            <Input className="bg-black/40 border-white/5 py-8 rounded-2xl" value={formData.neighborhood} onChange={e => updateField('neighborhood', e.target.value)} />
+                                        <div className="col-span-3 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">BAIRRO / DISTRITO</Label>
+                                            <Input className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary" value={formData.neighborhood} onChange={e => updateField('neighborhood', e.target.value.toUpperCase())} />
                                         </div>
-                                        <div className="col-span-2 space-y-3">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">Cidade</Label>
-                                            <Input className="bg-black/40 border-white/5 py-8 rounded-2xl" value={formData.city} onChange={e => updateField('city', e.target.value)} />
+                                        <div className="col-span-2 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">CIDADE</Label>
+                                            <Input className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary" value={formData.city} onChange={e => updateField('city', e.target.value.toUpperCase())} />
                                         </div>
-                                        <div className="col-span-1 space-y-3">
-                                            <Label className="text-[10px] text-slate-500 tracking-widest">UF</Label>
-                                            <Input className="bg-black/40 border-white/5 py-8 rounded-2xl text-center" value={formData.state} onChange={e => updateField('state', e.target.value)} />
+                                        <div className="col-span-1 space-y-4">
+                                            <Label className="text-[10px] text-text-secondary tracking-[0.2em] ml-2">UF</Label>
+                                            <Input className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary text-center" value={formData.state} onChange={e => updateField('state', e.target.value.toUpperCase())} />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -594,26 +602,26 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     {step === 4 && (
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold text-white">Dados dos Dependentes</h2>
-                            <p className="text-slate-400 text-sm italic">Opcional: Informe dados de cônjuge ou filhos para salário-família e benefícios.</p>
+                            <p className="text-text-secondary text-sm italic opacity-80">Opcional: Informe dados de cônjuge ou filhos para salário-família e benefícios.</p>
 
                             {(isMarried || isMinor) && (
-                                <Card className="bg-indigo-500/5 border-indigo-500/10">
-                                    <CardContent className="pt-6 space-y-4">
+                                <Card className="bg-brand-orange/5 border-brand-orange/10 rounded-[2rem] shadow-xl overflow-hidden">
+                                    <CardContent className="p-10 space-y-8">
                                         {isMarried && (
-                                            <div className="space-y-4">
-                                                <h3 className="font-bold text-[#FF7800] flex items-center gap-2">💍 Dados do Cônjuge</h3>
-                                                <div className="space-y-3">
-                                                    <Input placeholder="Nome do Cônjuge" className="bg-slate-900 border-slate-800" value={formData.spouseName} onChange={e => updateField('spouseName', e.target.value)} />
-                                                    <Input placeholder="CPF do Cônjuge" className="bg-slate-900 border-slate-800" value={formData.spouseCpf} onChange={e => updateField('spouseCpf', maskCPF(e.target.value))} />
+                                            <div className="space-y-6">
+                                                <h3 className="font-black text-brand-orange uppercase tracking-widest flex items-center gap-3 italic">💍 Núcleo Conjugal</h3>
+                                                <div className="space-y-4">
+                                                    <Input placeholder="NOME DO CÔNJUGE" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary uppercase shadow-inner" value={formData.spouseName} onChange={e => updateField('spouseName', e.target.value.toUpperCase())} />
+                                                    <Input placeholder="CPF DO CÔNJUGE" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary shadow-inner" value={formData.spouseCpf} onChange={e => updateField('spouseCpf', maskCPF(e.target.value))} />
                                                 </div>
                                             </div>
                                         )}
                                         {isMinor && (
-                                            <div className="space-y-4 pt-4 border-t border-white/5">
-                                                <h3 className="font-bold text-orange-400 flex items-center gap-2">⚠️ Responsável Legal</h3>
-                                                <div className="space-y-3">
-                                                    <Input placeholder="Nome do Responsável" className="bg-slate-900 border-slate-800" value={formData.guardianName} onChange={e => updateField('guardianName', e.target.value)} />
-                                                    <Input placeholder="CPF do Responsável" className="bg-slate-900 border-slate-800" value={formData.guardianCpf} onChange={e => updateField('guardianCpf', maskCPF(e.target.value))} />
+                                            <div className="space-y-6 pt-8 border-t border-brand-orange/10">
+                                                <h3 className="font-black text-brand-orange uppercase tracking-widest flex items-center gap-3 italic">⚠️ Tutela / Responsável</h3>
+                                                <div className="space-y-4">
+                                                    <Input placeholder="NOME DO RESPONSÁVEL" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary uppercase shadow-inner" value={formData.guardianName} onChange={e => updateField('guardianName', e.target.value.toUpperCase())} />
+                                                    <Input placeholder="CPF DO RESPONSÁVEL" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary shadow-inner" value={formData.guardianCpf} onChange={e => updateField('guardianCpf', maskCPF(e.target.value))} />
                                                 </div>
                                             </div>
                                         )}
@@ -621,30 +629,30 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 </Card>
                             )}
 
-                            <div className="space-y-4">
-                                <h3 className="font-bold text-white">Filhos / Outros Dependentes</h3>
+                            <div className="space-y-6">
+                                <h3 className="font-black text-text-primary uppercase tracking-widest italic ml-2">Filhos / Outros Dependentes</h3>
                                 {formData.dependents.map((dep, idx) => (
-                                    <div key={idx} className="bg-slate-900 p-4 rounded-lg relative border border-white/5">
+                                    <div key={idx} className="bg-surface border border-border p-8 rounded-[2rem] relative shadow-xl animate-in slide-in-from-top-4">
                                         <button
-                                            className="absolute top-2 right-2 text-slate-500 hover:text-red-400"
+                                            className="absolute top-6 right-6 h-8 w-8 bg-brand-orange/10 rounded-full text-brand-orange hover:bg-brand-orange hover:text-white transition-all flex items-center justify-center font-black"
                                             onClick={() => setFormData(prev => ({
                                                 ...prev,
                                                 dependents: prev.dependents.filter((_, i) => i !== idx)
                                             }))}
                                         >✕</button>
-                                        <div className="space-y-2">
-                                            <Input placeholder="Nome" className="bg-slate-950" value={dep.name} onChange={e => {
+                                        <div className="space-y-6">
+                                            <Input placeholder="NOME COMPLETO DO DEPENDENTE" className="bg-surface-secondary border-border h-16 rounded-2xl font-black text-text-primary uppercase shadow-inner" value={dep.name} onChange={e => {
                                                 const newDeps = [...formData.dependents];
-                                                newDeps[idx].name = e.target.value;
+                                                newDeps[idx].name = e.target.value.toUpperCase();
                                                 updateField('dependents', newDeps);
                                             }} />
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Input placeholder="CPF" className="bg-slate-950" value={dep.cpf} onChange={e => {
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <Input placeholder="CPF" className="bg-surface-secondary border-border h-16 rounded-2xl font-black text-text-primary shadow-inner" value={dep.cpf} onChange={e => {
                                                     const newDeps = [...formData.dependents];
                                                     newDeps[idx].cpf = maskCPF(e.target.value);
                                                     updateField('dependents', newDeps);
                                                 }} />
-                                                <Input type="date" className="bg-slate-950" value={dep.birthDate} onChange={e => {
+                                                <Input type="date" className="bg-surface-secondary border-border h-16 rounded-2xl font-black text-text-primary shadow-inner" value={dep.birthDate} onChange={e => {
                                                     const newDeps = [...formData.dependents];
                                                     newDeps[idx].birthDate = e.target.value;
                                                     updateField('dependents', newDeps);
@@ -655,39 +663,41 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 ))}
                                 <Button
                                     variant="outline"
-                                    className="w-full border-dashed border-slate-700 text-slate-400 py-8"
+                                    className="w-full border-2 border-dashed border-border bg-surface-secondary/50 text-text-secondary h-24 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:border-brand-orange/50 hover:bg-brand-orange/5 hover:text-brand-orange transition-all"
                                     onClick={() => updateField('dependents', [...formData.dependents, { name: '', cpf: '', birthDate: '', relationship: 'Filho(a)' }])}
                                 >
-                                    + Adicionar Dependente
+                                    + Adicionar Novo Dependente
                                 </Button>
                             </div>
                         </div>
                     )}
 
                     {step === 5 && (
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-bold text-white">Dados Bancários</h2>
-                            <p className="text-slate-400 text-sm">Onde você deseja receber seu salário e benefícios?</p>
+                        <div className="space-y-8 py-4">
+                            <div className="space-y-2">
+                                <h2 className="text-3xl font-black text-text-primary tracking-tighter uppercase italic">Dados Bancários</h2>
+                                <p className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] opacity-80">Onde você deseja receber seu salário e benefícios?</p>
+                            </div>
 
-                            <Card className="bg-slate-900/80 border-indigo-500/20">
-                                <CardContent className="pt-6 space-y-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-400">Banco</Label>
-                                        <Input placeholder="Ex: Itaú, Bradesco, NuBank" className="bg-slate-950 border-slate-800 py-6" value={formData.bankName} onChange={e => updateField('bankName', e.target.value)} />
+                            <Card className="bg-surface-secondary border-border rounded-[2.5rem] shadow-xl overflow-hidden">
+                                <CardContent className="p-10 space-y-8">
+                                    <div className="space-y-4">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">INSTITUIÇÃO BANCÁRIA *</Label>
+                                        <Input placeholder="Ex: ITAÚ, BRADESCO, NUBANK" className="bg-surface border-border h-20 rounded-2xl text-xl font-black text-text-primary px-8 focus:ring-brand-blue/20 shadow-inner uppercase tracking-tight" value={formData.bankName} onChange={e => updateField('bankName', e.target.value.toUpperCase())} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-slate-400">Agência</Label>
-                                            <Input placeholder="0000" className="bg-slate-950 border-slate-800" value={formData.agency} onChange={e => updateField('agency', e.target.value)} />
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">AGÊNCIA</Label>
+                                            <Input placeholder="0000" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary px-6 shadow-inner" value={formData.agency} onChange={e => updateField('agency', e.target.value.toUpperCase())} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-slate-400">Conta</Label>
-                                            <Input placeholder="00000-0" className="bg-slate-950 border-slate-800" value={formData.accountNumber} onChange={e => updateField('accountNumber', e.target.value)} />
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">NÚMERO DA CONTA</Label>
+                                            <Input placeholder="00000-0" className="bg-surface border-border h-16 rounded-2xl font-black text-text-primary px-6 shadow-inner" value={formData.accountNumber} onChange={e => updateField('accountNumber', e.target.value.toUpperCase())} />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-400">Chave PIX (Obrigatório)</Label>
-                                        <Input placeholder="CPF, E-mail ou Celular" className="bg-slate-950 border-[#FF7800]/30 py-6" value={formData.pixKey} onChange={e => updateField('pixKey', e.target.value)} />
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">CHAVE PIX PARA RECEBIMENTO *</Label>
+                                        <Input placeholder="CPF, E-MAIL OU CELULAR" className="bg-brand-orange/5 border-brand-orange/30 h-20 rounded-2xl text-xl font-black text-brand-orange px-8 shadow-inner focus:ring-brand-orange/20" value={formData.pixKey} onChange={e => updateField('pixKey', e.target.value)} />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -697,24 +707,26 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     {step === 6 && (
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold text-white">Fotos dos Documentos</h2>
-                            <p className="text-slate-400 text-sm">Tire uma foto legível de cada documento solicitado. Use o botão 📷 para capturar ou selecionar da galeria.</p>
+                            <p className="text-text-secondary text-sm opacity-80">Tire uma foto legível de cada documento solicitado. Use o botão 📷 para capturar ou selecionar da galeria.</p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Profile Photo */}
-                                <div className="space-y-2">
-                                    <Label className="text-white font-bold">Foto de Perfil</Label>
-                                    <div className="h-48 bg-slate-900 rounded-xl border-2 border-dashed border-slate-800 flex items-center justify-center relative overflow-hidden group">
+                                <div className="space-y-4">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">FOTOGRAFIA DO PERFIL (3X4)</Label>
+                                    <div className="h-64 bg-surface border-2 border-dashed border-border rounded-[2rem] flex items-center justify-center relative overflow-hidden group shadow-inner">
                                         {uploadingSlots['PROFILE'] ? (
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
-                                                <span className="text-[10px] text-slate-500 uppercase font-black">Processando...</span>
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
                                             </div>
                                         ) : (formData.previews['PROFILE'] || formData.photoUrl) ? (
-                                            <img src={formData.previews['PROFILE'] || formData.photoUrl} className="w-full h-full object-cover animate-in fade-in duration-500" />
+                                            <img src={formData.previews['PROFILE'] || formData.photoUrl} className="w-full h-full object-cover animate-in fade-in duration-700" alt="Preview" />
                                         ) : (
-                                            <div className="text-center p-4">
-                                                <Camera className="h-10 w-10 text-[#FF7800] mx-auto mb-2 opacity-50" />
-                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Sua foto (Estilo 3x4)</span>
+                                            <div className="text-center p-8">
+                                                <div className="h-16 w-16 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-orange/20">
+                                                    <Camera className="h-8 w-8 text-brand-orange" />
+                                                </div>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Capturar Foto em Tempo Real</span>
                                             </div>
                                         )}
                                         <input
@@ -726,36 +738,40 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             onChange={e => handleFileUpload(e, 'PROFILE')}
                                             disabled={uploadingSlots['PROFILE']}
                                         />
-                                        {formData.photoUrl && !uploadingSlots['PROFILE'] && (
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-black uppercase tracking-widest pointer-events-none">
-                                                <Camera className="h-6 w-6 mb-2" />
-                                                Alterar Foto
+                                        {(formData.photoUrl || formData.previews['PROFILE']) && !uploadingSlots['PROFILE'] && (
+                                            <div className="absolute inset-0 bg-brand-blue/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center text-white text-[10px] font-black uppercase tracking-widest pointer-events-none backdrop-blur-sm">
+                                                <Camera className="h-8 w-8 mb-3" />
+                                                Substituir Imagem
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* RG/CNH Front */}
-                                <div className="space-y-2">
-                                    <Label className="text-white font-bold">RG ou CNH (Frente)</Label>
-                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all ${formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE') ? 'border-green-500/50 bg-green-500/5' : 'bg-slate-900 border-slate-800'}`}>
+                                <div className="space-y-4">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">DOCUMENTO DE IDENTIDADE (FRENTE)</Label>
+                                    <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
                                         {uploadingSlots['IDENTIDADE_FRENTE'] ? (
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
-                                                <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Enviando...</span>
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
                                             </div>
                                         ) : (formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE')) ? (
-                                            <div className="relative w-full h-full">
-                                                <img src={formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE').fileUrl} className="w-full h-full object-cover opacity-50" />
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <CheckCircle2 className="h-10 w-10 text-green-500 mb-1" />
-                                                    <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Documento Anexado</span>
+                                            <div className="relative w-full h-full group">
+                                                <img src={formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                    <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                    </div>
+                                                    <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="text-center p-4">
-                                                <Camera className="h-10 w-10 text-slate-700 mx-auto mb-2" />
-                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Capturar Frente</span>
+                                            <div className="text-center p-8">
+                                                <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                    <Camera className="h-8 w-8 text-brand-blue" />
+                                                </div>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar Frente</span>
                                             </div>
                                         )}
                                         <input
@@ -770,27 +786,70 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                     </div>
                                 </div>
 
-                                {/* Comp Residência */}
-                                <div className="space-y-2">
-                                    <Label className="text-white font-bold">Comprovante de Residência</Label>
-                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all ${formData.documents.find(d => d.type === 'ENDERECO') ? 'border-green-500/50 bg-green-500/5' : 'bg-slate-900 border-slate-800'}`}>
-                                        {uploadingSlots['ENDERECO'] ? (
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Loader2 className="h-8 w-8 animate-spin text-[#FF7800]" />
-                                                <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Enviando...</span>
+                                {/* DOCUMENTO DE IDENTIDADE (VERSO) */}
+                                <div className="space-y-4">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">DOCUMENTO DE IDENTIDADE (VERSO)</Label>
+                                    <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'IDENTIDADE_VERSO') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
+                                        {uploadingSlots['IDENTIDADE_VERSO'] ? (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
                                             </div>
-                                        ) : (formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO')) ? (
-                                            <div className="relative w-full h-full">
-                                                <img src={formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO').fileUrl} className="w-full h-full object-cover opacity-50" />
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <CheckCircle2 className="h-10 w-10 text-green-500 mb-1" />
-                                                    <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Comprovante Anexado</span>
+                                        ) : (formData.previews['IDENTIDADE_VERSO'] || formData.documents.find(d => d.type === 'IDENTIDADE_VERSO')) ? (
+                                            <div className="relative w-full h-full group">
+                                                <img src={formData.previews['IDENTIDADE_VERSO'] || formData.documents.find(d => d.type === 'IDENTIDADE_VERSO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                    <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                    </div>
+                                                    <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="text-center p-4">
-                                                <Camera className="h-10 w-10 text-slate-700 mx-auto mb-2" />
-                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Capturar Comprovante</span>
+                                            <div className="text-center p-8">
+                                                <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                    <Camera className="h-8 w-8 text-brand-blue" />
+                                                </div>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar VersO</span>
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            onClick={(e) => (e.currentTarget.value = '')}
+                                            onChange={e => handleFileUpload(e, 'IDENTIDADE_VERSO')}
+                                            disabled={uploadingSlots['IDENTIDADE_VERSO']}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Comp Residência */}
+                                <div className="space-y-4">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">COMPROVANTE DE RESIDÊNCIA</Label>
+                                    <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'ENDERECO') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
+                                        {uploadingSlots['ENDERECO'] ? (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
+                                            </div>
+                                        ) : (formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO')) ? (
+                                            <div className="relative w-full h-full group">
+                                                <img src={formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Comprovante de Residência" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                    <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                    </div>
+                                                    <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center p-8">
+                                                <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                    <Camera className="h-8 w-8 text-brand-blue" />
+                                                </div>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar Comprovante</span>
                                             </div>
                                         )}
                                         <input
@@ -806,16 +865,19 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                 </div>
 
                                 {/* Outros / CTPS */}
-                                <div className="space-y-2">
-                                    <Label className="text-white font-bold">Carteira de Trabalho / Outros</Label>
-                                    <div className={`h-48 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden group ${formData.documents.some(d => d.type === 'OUTROS') ? 'bg-[#FF7800]/10 border-[#FF7800]/40' : 'bg-slate-900 border-slate-800'}`}>
-                                        <div className="text-center p-4">
-                                            <Camera className="h-10 w-10 text-slate-700 mx-auto mb-2" />
-                                            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                                {formData.documents.filter(d => d.type === 'OUTROS').length} documento(s) enviado(s)
+                                <div className="space-y-4 col-span-full">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">CARTEIRA DE TRABALHO / OUTROS DOCUMENTOS</Label>
+                                    <div className={`h-48 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.some(d => d.type === 'OUTROS') ? 'border-brand-orange/40 bg-brand-orange/5' : 'bg-surface border-border'}`}>
+                                        <div className="text-center p-8">
+                                            <div className="h-16 w-16 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-orange/20">
+                                                <Camera className="h-8 w-8 text-brand-orange" />
+                                            </div>
+                                            <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black italic">
+                                                {formData.documents.filter(d => d.type === 'OUTROS').length} documento(s) capturado(s)
                                             </span>
+                                            <p className="text-[9px] text-text-secondary opacity-60 font-black uppercase tracking-widest mt-2">+ Adicionar Documentação Adicional</p>
                                         </div>
-                                        <input type="file" accept="image/*" multiple className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleFileUpload(e, 'OUTROS')} />
+                                        <input type="file" accept="image/*" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'OUTROS')} />
                                     </div>
                                 </div>
                             </div>
@@ -823,77 +885,82 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                     )}
 
                     {step === 7 && (
-                        <div className="space-y-6 text-center py-8">
-                            <div className="h-20 w-20 bg-[#FF7800]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle2 className="h-10 w-10 text-[#FF7800]" />
+                        <div className="space-y-12 py-8">
+                            <div className="text-center space-y-4">
+                                <div className="h-28 w-28 bg-brand-orange/10 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(255,120,0,0.1)] border border-brand-orange/20 animate-bounce">
+                                    <CheckCircle2 className="h-14 w-14 text-brand-orange" />
+                                </div>
+                                <h2 className="text-4xl font-black text-text-primary tracking-tighter uppercase italic">Protocolo Final</h2>
+                                <p className="text-[11px] text-text-secondary font-black uppercase tracking-[0.2em] max-w-sm mx-auto opacity-80">
+                                    Confirme seus dados antes da transmissão criptografada para nossa central de inteligência.
+                                </p>
                             </div>
-                            <h2 className="text-3xl font-bold text-white">Revisar e Enviar</h2>
-                            <p className="text-slate-400">
-                                Conferiu tudo? Ao clicar no botão abaixo, seus dados serão enviados para nossa equipe revisar.
-                            </p>
 
-                            <Card className="bg-slate-900/50 border-white/5 text-left divide-y divide-white/5">
-                                <div className="p-4 flex items-center justify-between">
-                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Informações Pessoais</span>
-                                    {formData.name && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                                </div>
-                                <div className="p-4 flex items-center justify-between">
-                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Endereço Completo</span>
-                                    {formData.street && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                                </div>
-                                <div className="p-4 flex items-center justify-between">
-                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Dados Bancários</span>
-                                    {formData.pixKey && <CheckCircle2 className="h-4 w-4 text-[#FF7800]" />}
-                                </div>
-                                <div className="p-4 flex items-center justify-between">
-                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Documentos</span>
-                                    <span className="text-xs font-mono text-[#FF7800]">{formData.documents.length} fotos</span>
-                                </div>
-                            </Card>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {[
+                                    { label: 'Identificação', status: formData.name ? 'CONCLUÍDO' : 'PENDENTE', icon: <User className="h-4 w-4" /> },
+                                    { label: 'Logística de Endereço', status: formData.street ? 'CONCLUÍDO' : 'PENDENTE', icon: <MapPin className="h-4 w-4" /> },
+                                    { label: 'Financeiro (PIX)', status: formData.pixKey ? 'CONCLUÍDO' : 'PENDENTE', icon: <CreditCard className="h-4 w-4" /> },
+                                    { label: 'Dossiê Documental', status: `${formData.documents.length} ANEXOS`, icon: <Camera className="h-4 w-4" /> }
+                                ].map((item, i) => (
+                                    <div key={i} className="bg-surface-secondary border border-border rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 bg-brand-blue/10 rounded-xl flex items-center justify-center text-brand-blue">
+                                                {item.icon}
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-text-primary">{item.label}</span>
+                                        </div>
+                                        <span className={`text-[9px] font-black px-3 py-1 rounded-full ${item.status === 'PENDENTE' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'} italic`}>
+                                            {item.status}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
 
-                            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex gap-3 text-left">
-                                <Info className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
-                                <p className="text-xs text-orange-300 leading-normal">
-                                    Importante: Garanta que as fotos estejam nítidas. Fotos tremidas ou escuras podem atrasar sua contratação.
+                            <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-[2rem] p-8 flex gap-6 italic">
+                                <Sparkles className="h-8 w-8 text-brand-orange shrink-0 animate-pulse" />
+                                <p className="text-[11px] text-brand-orange font-black uppercase tracking-widest leading-relaxed opacity-80">
+                                    Ao finalizar, nossa equipe receberá seus dados instantaneamente. Certifique-se de que todas as fotos de documentos estão nítidas para evitar a recusa do protocolo.
                                 </p>
                             </div>
                         </div>
                     )}
-
                 </motion.div>
             </AnimatePresence>
 
-            {/* Footer Navigation */}
-            <div className="flex gap-4 pt-12">
+            {/* Navigation Footer */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-12 pb-12 border-t border-border/50">
+                <Button
+                    variant="ghost"
+                    onClick={handleBack}
+                    disabled={loading || step === 0}
+                    className="flex-1 py-10 h-auto font-black uppercase tracking-widest text-[10px] text-text-secondary hover:bg-surface-secondary rounded-[2rem] border border-transparent hover:border-border transition-all flex items-center justify-center"
+                >
+                    <ChevronLeft className="mr-2 h-5 w-5" />
+                    Retroceder Passo
+                </Button>
+
                 {step > 0 && (
                     <Button
-                        variant="outline"
-                        size="lg"
-                        className="flex-1 bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 py-10 rounded-2xl"
-                        onClick={handleBack}
-                        disabled={loading}
+                        onClick={step === (steps.length - 1) ? handleSubmit : handleNext}
+                        disabled={loading || Object.keys(uploadingSlots).some(k => uploadingSlots[k])}
+                        className={`flex-[2] py-10 h-auto font-black uppercase tracking-widest text-[12px] rounded-[2rem] shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98] border-b-4 border-black/20 flex items-center justify-center ${step === steps.length - 1 ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-brand-orange hover:bg-orange-600 text-white'}`}
                     >
-                        <ChevronLeft className="mr-2 h-5 w-5" /> Voltar
-                    </Button>
-                )}
-
-                {step === 0 ? null : step < steps.length - 1 ? (
-                    <Button
-                        size="lg"
-                        className="flex-[2] bg-[#FF7800] hover:bg-orange-600 text-white font-black uppercase tracking-widest text-sm py-10 shadow-2xl shadow-[#FF7800]/20 rounded-2xl transition-all"
-                        onClick={handleNext}
-                        disabled={loading}
-                    >
-                        Continuar <ChevronRight className="ml-2 h-5 w-5" />
-                    </Button>
-                ) : (
-                    <Button
-                        size="lg"
-                        className="flex-[2] bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest text-sm py-10 shadow-2xl shadow-green-600/20 rounded-2xl transition-all"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                    >
-                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Finalizar Cadastro ✨'}
+                        {loading ? (
+                            <div className="flex items-center gap-3">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <span>SINCRONIZANDO DADOS...</span>
+                            </div>
+                        ) : step === steps.length - 1 ? (
+                            <div className="flex items-center gap-2">
+                                FINALIZAR MEU PROTOCOLO 🚀
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                CONTINUAR JORNADA
+                                <ChevronRight className="h-6 w-6" />
+                            </div>
+                        )}
                     </Button>
                 )}
             </div>

@@ -3,41 +3,55 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-secondary: #f8fafc;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+
+  /* Brand Colors */
+  --brand-blue: #0A1E50;
+  --brand-orange: #FF7800;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --surface: #0a0f1c;
+  --surface-hover: #1e293b;
+  --surface-secondary: #020617;
+  --border: rgba(255, 255, 255, 0.05);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --glass-bg: rgba(10, 15, 28, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.05);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-orange: var(--brand-orange);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-
-  /* Brand Colors */
-  --color-brand-blue: #0A1E50;
-  --color-brand-orange: #FF7800;
-
-  /* Semantic Aliases */
-  --color-primary: #0A1E50;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #FF7800;
-  --color-secondary-foreground: #ffffff;
-}
-
-/* Forcing Light Mode Look for "Corporate" feel */
-:root {
-  --background: #f8fafc;
-  /* Slate-50 */
-  --foreground: #0f172a;
-  /* Slate-900 */
-}
-
-/* Dark Mode Overrides */
-.dark {
-  --background: #020617;
-  /* Slate-950 */
-  --foreground: #f8fafc;
-  /* Slate-50 */
 }
 
 body {
@@ -80,6 +94,8 @@ body {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }

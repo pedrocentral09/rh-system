@@ -37,7 +37,7 @@ export function OrphanPunchesTab() {
     return (
         <div className="space-y-10 animate-in fade-in duration-700">
             {/* Premium Header/Status Panel */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#0A0F1C]/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-surface/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="flex flex-col gap-2 z-10">
@@ -45,26 +45,26 @@ export function OrphanPunchesTab() {
                         <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
                             <ShieldAlert className="h-5 w-5 text-amber-500" />
                         </div>
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight">Vácuo de Identidade Operacional</h2>
+                        <h2 className="text-xl font-black text-text-primary uppercase tracking-tight">Vácuo de Identidade Operacional</h2>
                     </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-14">Registros via PIS/CPF detectados sem vínculo com Colaboradores ativos</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-14">Registros via PIS/CPF detectados sem vínculo com Colaboradores ativos</p>
                 </div>
 
                 <div className="flex items-center gap-4 z-10 overflow-hidden">
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-brand-orange transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/60 group-focus-within:text-brand-orange transition-colors" />
                         <input
                             type="text"
                             placeholder="FILTRAR POR PIS..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="h-12 bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 text-[10px] font-black text-white uppercase tracking-widest placeholder:text-slate-700 focus:border-brand-orange/30 transition-all shadow-inner w-64"
+                            className="h-12 bg-text-primary/5 border border-border rounded-2xl pl-12 pr-6 text-[10px] font-black text-text-primary uppercase tracking-widest placeholder:text-text-muted/40 focus:border-brand-orange/30 transition-all shadow-inner w-64"
                         />
                     </div>
                     <button
                         onClick={fetchOrphans}
                         disabled={loading}
-                        className="h-12 px-6 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+                        className="h-12 px-6 rounded-2xl bg-text-primary/5 border border-border text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary hover:bg-text-primary/10 transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
                     </button>
@@ -73,7 +73,7 @@ export function OrphanPunchesTab() {
 
             {/* List Feed */}
             <div className="space-y-4">
-                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                     <div className="col-span-4 text-left">PIS / Identificador Digital</div>
                     <div className="col-span-2 text-center">Frequência</div>
                     <div className="col-span-4 text-left ml-4">Última Atividade Detectada</div>
@@ -84,16 +84,16 @@ export function OrphanPunchesTab() {
                     <AnimatePresence mode="popLayout">
                         {loading ? (
                             Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className="h-20 bg-white/5 rounded-[1.5rem] animate-pulse border border-white/5" />
+                                <div key={i} className="h-20 bg-text-primary/5 rounded-[1.5rem] animate-pulse border border-border" />
                             ))
                         ) : filtered.length === 0 ? (
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center py-24 text-slate-700 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed"
+                                className="flex flex-col items-center justify-center py-24 text-text-muted/40 bg-text-primary/2 rounded-[2.5rem] border border-border border-dashed"
                             >
                                 <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 mb-6">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse" />
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(var(--emerald-rgb),0.8)] animate-pulse" />
                                 </div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-center">Integridade Operacional Confirmada - Sem órfãos</p>
                             </motion.div>
@@ -104,15 +104,15 @@ export function OrphanPunchesTab() {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.03 }}
-                                    className="bg-[#0A0F1C]/80 border border-white/5 rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-brand-orange/30 hover:bg-white/[0.02] transition-all duration-300 group"
+                                    className="bg-surface/80 border border-border rounded-[1.5rem] px-8 py-5 grid grid-cols-12 items-center hover:border-brand-orange/30 hover:bg-text-primary/[0.02] transition-all duration-300 group"
                                 >
                                     <div className="col-span-4 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center font-mono text-[11px] font-black text-slate-400 group-hover:text-brand-orange transition-colors">
+                                        <div className="w-10 h-10 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center font-mono text-[11px] font-black text-text-muted group-hover:text-brand-orange transition-colors">
                                             #{i + 1}
                                         </div>
                                         <div>
-                                            <h4 className="text-[13px] font-mono font-black text-white tracking-tight uppercase group-hover:text-brand-orange transition-colors">{item.pis}</h4>
-                                            <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Identificador Não Mapeado</span>
+                                            <h4 className="text-[13px] font-mono font-black text-text-primary tracking-tight uppercase group-hover:text-brand-orange transition-colors">{item.pis}</h4>
+                                            <span className="text-[9px] font-bold text-text-muted/60 uppercase tracking-widest">Identificador Não Mapeado</span>
                                         </div>
                                     </div>
 
@@ -124,15 +124,15 @@ export function OrphanPunchesTab() {
 
                                     <div className="col-span-4 ml-4">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[12px] font-black text-slate-300 uppercase tracking-tight">
+                                            <span className="text-[12px] font-black text-text-primary/80 uppercase tracking-tight">
                                                 {format(new Date(item.lastSeen), "dd MMM yyyy", { locale: ptBR })}
                                             </span>
-                                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">Consolidado às {item.lastTime}</span>
+                                            <span className="text-[10px] font-bold text-text-muted/60 uppercase tracking-widest italic">Consolidado às {item.lastTime}</span>
                                         </div>
                                     </div>
 
                                     <div className="col-span-2 flex justify-end opacity-0 group-hover:opacity-100 transition-all duration-500">
-                                        <button className="h-11 px-6 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-[0.1em] hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 flex items-center gap-2">
+                                        <button className="h-11 px-6 rounded-xl bg-text-primary text-surface text-[10px] font-black uppercase tracking-[0.1em] hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 flex items-center gap-2">
                                             <UserPlus className="w-3.5 h-3.5" /> Vincular RH
                                         </button>
                                     </div>

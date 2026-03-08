@@ -47,10 +47,10 @@ export function UserList() {
     };
 
     const getRoleBadge = (user: any) => {
-        if (user.role === 'ADMIN') return <span className="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">Acesso Total</span>;
+        if (user.role === 'ADMIN') return <span className="bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">Acesso Total</span>;
         if (user.role === 'HR_MANAGER') return <span className="bg-brand-orange/10 text-brand-orange px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-brand-orange/20">Gestão RH</span>;
-        if (user.roleDef) return <span className="bg-white/5 text-slate-400 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">{user.roleDef.name}</span>;
-        return <span className="bg-white/5 text-slate-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/5">Operacional</span>;
+        if (user.roleDef) return <span className="bg-surface-secondary text-text-muted px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-border">{user.roleDef.name}</span>;
+        return <span className="bg-surface-secondary text-text-muted px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-border">Operacional</span>;
     };
 
     const companies = Array.from(new Set(
@@ -83,8 +83,8 @@ export function UserList() {
         <div className="space-y-8 animate-in fade-in duration-700 mt-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Administração de <span className="text-brand-orange">Acessos</span></h2>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Controle de Usuários e Permissões do Sistema</p>
+                    <h2 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Administração de <span className="text-brand-orange">Acessos</span></h2>
+                    <p className="text-text-muted text-xs font-bold uppercase tracking-widest mt-1">Controle de Usuários e Permissões do Sistema</p>
                 </div>
                 <button
                     onClick={() => setIsCreateOpen(true)}
@@ -95,7 +95,7 @@ export function UserList() {
                 </button>
             </div>
 
-            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row gap-4 mb-8 relative z-10">
@@ -104,32 +104,32 @@ export function UserList() {
                         placeholder="Buscar por nome ou email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:border-brand-orange/50 transition-colors outline-none"
+                        className="flex-1 h-12 bg-surface-secondary border border-border rounded-xl px-4 text-sm text-text-primary placeholder-text-muted focus:border-brand-orange/50 transition-colors outline-none"
                     />
                     <select
                         value={filterCompany}
                         onChange={(e) => setFilterCompany(e.target.value)}
-                        className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-slate-300 focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
+                        className="h-12 bg-surface-secondary border border-border rounded-xl px-4 text-sm text-text-secondary focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
                     >
-                        <option value="" className="bg-[#0A0F1C]">Todas as Empresas</option>
+                        <option value="" className="bg-surface">Todas as Empresas</option>
                         {companies.map((company: any) => (
-                            <option key={company} value={company} className="bg-[#0A0F1C]">{company}</option>
+                            <option key={company} value={company} className="bg-surface">{company}</option>
                         ))}
                     </select>
                     <select
                         value={filterStore}
                         onChange={(e) => setFilterStore(e.target.value)}
-                        className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-slate-300 focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
+                        className="h-12 bg-surface-secondary border border-border rounded-xl px-4 text-sm text-text-secondary focus:border-brand-orange/50 transition-colors outline-none cursor-pointer appearance-none min-w-[200px] w-full md:w-auto"
                     >
-                        <option value="" className="bg-[#0A0F1C]">Todas as Lojas</option>
+                        <option value="" className="bg-surface">Todas as Lojas</option>
                         {stores.map((store: any) => (
-                            <option key={store} value={store} className="bg-[#0A0F1C]">{store}</option>
+                            <option key={store} value={store} className="bg-surface">{store}</option>
                         ))}
                     </select>
                 </div>
 
                 <div className="space-y-4 relative z-10">
-                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                         <div className="col-span-12 md:col-span-5 text-left">Usuário / Identificação</div>
                         <div className="hidden md:block md:col-span-4 text-left">Perfil & Vinclulo</div>
                         <div className="hidden md:block md:col-span-3 text-right">Comandos</div>
@@ -142,19 +142,19 @@ export function UserList() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.03 }}
-                                className="grid grid-cols-12 items-center px-8 py-5 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-indigo-500/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group relative overflow-hidden"
+                                className="grid grid-cols-12 items-center px-8 py-5 bg-surface border border-border rounded-[1.5rem] hover:border-indigo-500/30 hover:scale-[1.01] hover:bg-surface-hover transition-all duration-300 group relative overflow-hidden"
                             >
                                 <div className="col-span-12 md:col-span-5 flex items-center gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-indigo-500/30 transition-colors overflow-hidden">
+                                    <div className="w-12 h-12 rounded-2xl bg-surface-secondary border border-border flex items-center justify-center text-xl shadow-inner group-hover:border-indigo-500/30 transition-colors overflow-hidden">
                                         {user.employee?.photoUrl ? (
                                             <img src={user.employee.photoUrl} className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-slate-500 font-black">{user.name?.charAt(0) || 'U'}</span>
+                                            <span className="text-text-muted font-black">{user.name?.charAt(0) || 'U'}</span>
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[14px] font-black text-white uppercase tracking-tight group-hover:text-indigo-400 transition-colors truncate">{user.name || 'Usuário Sem Nome'}</h4>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{user.email}</p>
+                                        <h4 className="text-[14px] font-black text-text-primary uppercase tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{user.name || 'Usuário Sem Nome'}</h4>
+                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{user.email}</p>
                                     </div>
                                 </div>
 
@@ -166,14 +166,14 @@ export function UserList() {
                                         {user.storeAccess && user.storeAccess.length > 0 ? (
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 {user.storeAccess.slice(0, 2).map((sa: any) => (
-                                                    <span key={sa.id} className="text-[8px] bg-white/5 text-slate-500 px-1.5 py-0.5 rounded border border-white/5 font-black uppercase tracking-tighter">
+                                                    <span key={sa.id} className="text-[8px] bg-surface-secondary text-text-muted px-1.5 py-0.5 rounded border border-border font-black uppercase tracking-tighter">
                                                         {sa.store.name}
                                                     </span>
                                                 ))}
-                                                {user.storeAccess.length > 2 && <span className="text-[8px] text-slate-600 font-bold ml-1">+{user.storeAccess.length - 2} mais</span>}
+                                                {user.storeAccess.length > 2 && <span className="text-[8px] text-text-muted font-bold ml-1">+{user.storeAccess.length - 2} mais</span>}
                                             </div>
                                         ) : (
-                                            <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest italic">Acesso Universal</span>
+                                            <span className="text-[9px] font-black text-text-muted/50 uppercase tracking-widest italic">Acesso Universal</span>
                                         )}
                                     </div>
                                 </div>

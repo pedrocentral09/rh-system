@@ -33,49 +33,53 @@ export function MobileEmployeeCard({
 }: MobileEmployeeCardProps) {
     return (
         <Card
-            className="mb-4 shadow-sm active:scale-[0.99] transition-transform cursor-pointer border-l-4 border-l-indigo-500 bg-white dark:bg-slate-800 dark:border-slate-700"
+            className="mb-4 shadow-xl active:scale-[0.98] transition-all cursor-pointer border-l-4 border-l-brand-blue bg-surface text-text-primary rounded-2xl overflow-hidden hover:shadow-2xl"
             onClick={onClick}
         >
-            <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
+            <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                         {employee.photoUrl ? (
-                            <img src={employee.photoUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-600" />
+                            <img src={employee.photoUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-border" />
                         ) : (
-                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-300">
+                            <div className="w-12 h-12 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-sm font-black text-text-secondary uppercase">
                                 {employee.name.charAt(0)}
                             </div>
                         )}
                         <div>
-                            <h3 className="font-semibold text-slate-800 dark:text-slate-100">{employee.name}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{employee.jobTitle || (employee as any).jobRole?.name || 'Sem cargo'}</p>
+                            <h3 className="text-sm font-black text-text-primary uppercase tracking-tight truncate max-w-[150px]">{employee.name}</h3>
+                            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest truncate max-w-[150px] opacity-80">{employee.jobTitle || (employee as any).jobRole?.name || 'Sem cargo'}</p>
                         </div>
                     </div>
-                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full 
-                        ${employee.status === 'ACTIVE' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                    <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border
+                        ${employee.status === 'ACTIVE'
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
+                            : 'bg-surface-secondary border-border text-text-secondary opacity-70'}`}>
                         {translateStatus(employee.status)}
                     </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-900 p-2 rounded">
-                    <div>
-                        <span className="block text-slate-400 dark:text-slate-500">Loja</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-200">{(employee as any).contract?.store?.name || '-'}</span>
+                <div className="grid grid-cols-2 gap-4 text-[10px] text-text-secondary uppercase font-black mb-5 bg-surface-secondary/50 p-4 rounded-xl border border-border shadow-inner">
+                    <div className="border-r border-border pr-2">
+                        <span className="block text-text-secondary opacity-60 mb-1 tracking-tighter">LOJA / FILIAL</span>
+                        <span className="font-black text-text-primary tracking-tight">{(employee as any).contract?.store?.name || '-'}</span>
                     </div>
-                    <div>
-                        <span className="block text-slate-400 dark:text-slate-500">Setor</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-200">{(employee as any).contract?.sectorDef?.name || employee.department || '-'}</span>
+                    <div className="pl-2">
+                        <span className="block text-text-secondary opacity-60 mb-1 tracking-tighter">DEPARTAMENTO</span>
+                        <span className="font-black text-text-primary tracking-tight">{(employee as any).contract?.sectorDef?.name || employee.department || '-'}</span>
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700">
-                    <div className="flex space-x-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300" onClick={onEdit}>✏️</Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300" onClick={onTransfer}>🚚</Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300" onClick={onTimeTracking}>⏰</Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-sky-500 hover:text-sky-600 dark:hover:text-sky-400" onClick={onVacation}>🏖️</Button>
+                <div className="flex justify-between items-center pt-4 border-t border-border">
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-sm" onClick={onEdit} title="Editar">✏️</Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-orange hover:bg-brand-orange hover:text-white transition-all shadow-sm" onClick={onTransfer} title="Transferir">🚚</Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-sm" onClick={onTimeTracking} title="Ponto">⏰</Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm" onClick={onVacation} title="Férias">🌴</Button>
                     </div>
-                    <span className="text-xs text-indigo-500 dark:text-indigo-400 font-medium">Ver Detalhes →</span>
+                    <span className="text-[10px] text-brand-blue font-black uppercase tracking-widest flex items-center gap-1 active:translate-x-1 transition-transform">
+                        Detalhes ➜
+                    </span>
                 </div>
             </CardContent>
         </Card>

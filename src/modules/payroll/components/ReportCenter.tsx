@@ -76,33 +76,33 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Filters Section */}
-            <Card className="border-slate-200 shadow-sm rounded-none">
+            <Card className="bg-surface border-border shadow-sm rounded-2xl">
                 <CardHeader>
-                    <CardTitle className="text-lg font-black uppercase tracking-tight">Filtros de Relatório</CardTitle>
-                    <CardDescription>Refine os dados antes de exportar.</CardDescription>
+                    <CardTitle className="text-lg font-black uppercase tracking-tight text-text-primary">Filtros de Relatório</CardTitle>
+                    <CardDescription className="text-text-muted">Refine os dados antes de exportar.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-black uppercase text-slate-500">Empresa</label>
+                            <label className="text-xs font-black uppercase text-text-muted">Empresa</label>
                             <select
-                                className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-none text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                className="w-full h-10 px-3 bg-text-primary/5 border border-border rounded-xl text-sm font-bold text-text-primary focus:ring-2 focus:ring-brand-orange outline-none transition-all"
                                 value={filters.companyId}
                                 onChange={(e) => setFilters({ ...filters, companyId: e.target.value })}
                             >
-                                <option value="">Todas as Empresas</option>
-                                {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                <option value="" className="bg-surface">Todas as Empresas</option>
+                                {companies.map(c => <option key={c.id} value={c.id} className="bg-surface">{c.name}</option>)}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-black uppercase text-slate-500">Unidade/Loja</label>
+                            <label className="text-xs font-black uppercase text-text-muted">Unidade/Loja</label>
                             <select
-                                className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-none text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                className="w-full h-10 px-3 bg-text-primary/5 border border-border rounded-xl text-sm font-bold text-text-primary focus:ring-2 focus:ring-brand-orange outline-none transition-all"
                                 value={filters.storeId}
                                 onChange={(e) => setFilters({ ...filters, storeId: e.target.value })}
                             >
-                                <option value="">Todas as Unidades</option>
-                                {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                <option value="" className="bg-surface">Todas as Unidades</option>
+                                {stores.map(s => <option key={s.id} value={s.id} className="bg-surface">{s.name}</option>)}
                             </select>
                         </div>
                     </div>
@@ -110,12 +110,12 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
             </Card>
 
             <Tabs defaultValue="export" className="space-y-6">
-                <TabsList className="bg-slate-900 border border-white/5 p-1 rounded-2xl">
-                    <TabsTrigger value="export" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6">
+                <TabsList className="bg-surface border border-border p-1 rounded-2xl">
+                    <TabsTrigger value="export" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6 text-text-muted">
                         <Download className="w-3.5 h-3.5 mr-2" />
                         Exportação
                     </TabsTrigger>
-                    <TabsTrigger value="analytics" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6">
+                    <TabsTrigger value="analytics" className="data-[state=active]:bg-brand-orange data-[state=active]:text-white rounded-xl font-black uppercase text-[10px] tracking-widest px-6 text-text-muted">
                         <BarChart3 className="w-3.5 h-3.5 mr-2" />
                         People Analytics
                     </TabsTrigger>
@@ -124,25 +124,25 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
                 <TabsContent value="export" className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Turnover Card */}
-                        <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(249,115,22,0.4)] transition-all">
+                        <Card className="bg-surface border border-border shadow-sm rounded-2xl hover:border-brand-orange/40 transition-all">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <div className="space-y-1">
-                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-                                        <Users className="w-5 h-5 text-orange-500" />
+                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2 text-text-primary">
+                                        <Users className="w-5 h-5 text-brand-orange" />
                                         Turnover e Equipe
                                     </CardTitle>
-                                    <CardDescription>Lista completa de ativos e desligados.</CardDescription>
+                                    <CardDescription className="text-text-muted">Lista completa de ativos e desligados.</CardDescription>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <p className="text-sm text-slate-600 leading-tight">
+                                <p className="text-sm text-text-muted leading-tight">
                                     Gera um relatório detalhado com nomes, CPFs, cargos, datas de admissão e status atual dos colaboradores selecionados nos filtros.
                                 </p>
                                 <div className="flex flex-wrap gap-2 pt-2">
                                     <Button
                                         onClick={() => handleExportTurnover('excel')}
                                         disabled={loading === 'turnover'}
-                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg"
                                     >
                                         {loading === 'turnover' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <TableIcon className="w-4 h-4 mr-2" />}
                                         EXCEL (XLSX)
@@ -151,7 +151,7 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
                                         onClick={() => handleExportTurnover('pdf')}
                                         disabled={loading === 'turnover'}
                                         variant="outline"
-                                        className="border-slate-900 border-2 rounded-none font-bold uppercase text-xs tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
+                                        className="border-text-primary border-2 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-text-primary hover:text-surface transition-all shadow-lg text-text-primary"
                                     >
                                         <FileText className="w-4 h-4 mr-2" />
                                         PDF
@@ -161,25 +161,25 @@ export function ReportCenter({ companies, stores }: ReportCenterProps) {
                         </Card>
 
                         {/* Payroll Preview Card */}
-                        <Card className="border-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none hover:shadow-[4px_4px_0px_0px_rgba(79,70,229,0.4)] transition-all">
+                        <Card className="bg-surface border border-border shadow-sm rounded-2xl hover:border-brand-blue/40 transition-all">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <div className="space-y-1">
-                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-                                        <Receipt className="w-5 h-5 text-indigo-600" />
+                                    <CardTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2 text-text-primary">
+                                        <Receipt className="w-5 h-5 text-brand-blue" />
                                         Prévia de Folha
                                     </CardTitle>
-                                    <CardDescription>Estimativa de custos e salários base.</CardDescription>
+                                    <CardDescription className="text-text-muted">Estimativa de custos e salários base.</CardDescription>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <p className="text-sm text-slate-600 leading-tight">
+                                <p className="text-sm text-text-muted leading-tight">
                                     Analise os custos fixos estimados baseados em salários base, bônus e adicionais configurados nos contratos dos colaborares ATIVOS.
                                 </p>
                                 <div className="flex flex-wrap gap-2 pt-2">
                                     <Button
                                         onClick={() => handleExportPayroll('excel')}
                                         disabled={loading === 'payroll'}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-none font-bold uppercase text-xs tracking-widest shadow-lg"
+                                        className="bg-brand-blue hover:brightness-110 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg"
                                     >
                                         {loading === 'payroll' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
                                         EXCEL (EST.)

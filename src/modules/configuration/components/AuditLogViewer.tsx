@@ -42,13 +42,13 @@ export function AuditLogViewer() {
         if (action.includes('DELETE')) return 'bg-red-500/10 text-red-500 border-red-500/20';
         if (action.includes('CREATE')) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
         if (action.includes('UPDATE')) return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-text-primary/10 text-text-muted border-border';
     };
 
     if (loading) return (
         <div className="space-y-4">
             {[1, 2, 3].map(i => (
-                <div key={i} className="h-16 bg-white/5 rounded-2xl animate-pulse" />
+                <div key={i} className="h-16 bg-text-primary/5 rounded-2xl animate-pulse" />
             ))}
         </div>
     );
@@ -57,8 +57,8 @@ export function AuditLogViewer() {
         <div className="space-y-6 animate-in fade-in duration-700">
             <div className="flex items-center justify-between mb-2 px-2">
                 <div>
-                    <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Rastro de <span className="text-brand-orange">Operações</span></h3>
-                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1">Histórico Blindado de Ações do Sistema</p>
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.2em]">Rastro de <span className="text-brand-orange">Operações</span></h3>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Histórico Blindado de Ações do Sistema</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -66,8 +66,8 @@ export function AuditLogViewer() {
                 </div>
             </div>
 
-            <div className="bg-[#0A0F1C]/40 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden">
-                <div className="p-4 bg-white/[0.02] border-b border-white/5 grid grid-cols-12 gap-4 text-[9px] font-black text-slate-500 uppercase tracking-widest px-8">
+            <div className="bg-surface/40 backdrop-blur-xl border border-border rounded-[2rem] overflow-hidden">
+                <div className="p-4 bg-text-primary/[0.02] border-b border-border grid grid-cols-12 gap-4 text-[9px] font-black text-text-muted uppercase tracking-widest px-8">
                     <div className="col-span-2">Timestamp</div>
                     <div className="col-span-3">Operador</div>
                     <div className="col-span-2 text-center">Ação</div>
@@ -75,31 +75,31 @@ export function AuditLogViewer() {
                     <div className="col-span-3 text-right">Diferencial / Payload</div>
                 </div>
 
-                <div className="divide-y divide-white/[0.02]">
+                <div className="divide-y divide-border/20">
                     {logs.map((log, i) => (
                         <motion.div
                             key={log.id}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.02 }}
-                            className="grid grid-cols-12 gap-4 px-8 py-4 items-center hover:bg-white/[0.01] transition-colors group"
+                            className="grid grid-cols-12 gap-4 px-8 py-4 items-center hover:bg-text-primary/[0.01] transition-colors group"
                         >
                             <div className="col-span-2">
-                                <div className="text-[11px] font-black text-white tracking-tighter">
+                                <div className="text-[11px] font-black text-text-primary tracking-tighter">
                                     {format(new Date(log.timestamp), "dd MMM, yy", { locale: ptBR })}
                                 </div>
-                                <div className="text-[9px] font-bold text-slate-600 uppercase">
+                                <div className="text-[9px] font-bold text-text-muted uppercase">
                                     {format(new Date(log.timestamp), "HH:mm:ss", { locale: ptBR })}
                                 </div>
                             </div>
 
                             <div className="col-span-3 flex items-center gap-3">
-                                <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black text-slate-500 group-hover:text-brand-orange group-hover:bg-brand-orange/10 transition-all border border-white/5">
+                                <div className="w-7 h-7 rounded-lg bg-text-primary/5 flex items-center justify-center text-[10px] font-black text-text-muted group-hover:text-brand-orange group-hover:bg-brand-orange/10 transition-all border border-border">
                                     {log.user?.name?.charAt(0) || 'S'}
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-[11px] font-black text-white truncate">{log.user?.name || 'SISTEMA'}</div>
-                                    <div className="text-[8px] font-bold text-slate-600 truncate uppercase tracking-tighter">{log.user?.email || 'AUTO-RUN'}</div>
+                                    <div className="text-[11px] font-black text-text-primary truncate">{log.user?.name || 'SISTEMA'}</div>
+                                    <div className="text-[8px] font-bold text-text-muted truncate uppercase tracking-tighter">{log.user?.email || 'AUTO-RUN'}</div>
                                 </div>
                             </div>
 
@@ -116,11 +116,11 @@ export function AuditLogViewer() {
                             </div>
 
                             <div className="col-span-3 text-right">
-                                <div className="text-[10px] text-slate-500 font-medium truncate group-hover:text-slate-300 transition-colors" title={log.details || ''}>
+                                <div className="text-[10px] text-text-primary/60 font-medium truncate group-hover:text-text-primary transition-colors" title={log.details || ''}>
                                     {log.details || 'Sem detalhes técnicos'}
                                 </div>
                                 {log.ipAddress && (
-                                    <div className="text-[8px] font-bold text-slate-700 uppercase tracking-tighter mt-0.5">Origin: {log.ipAddress}</div>
+                                    <div className="text-[8px] font-bold text-text-muted/40 uppercase tracking-tighter mt-0.5">Origin: {log.ipAddress}</div>
                                 )}
                             </div>
                         </motion.div>
@@ -128,7 +128,7 @@ export function AuditLogViewer() {
 
                     {logs.length === 0 && (
                         <div className="py-20 text-center">
-                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest italic">Vazio. Nenhuma atividade registrada no período.</p>
+                            <p className="text-[10px] font-black text-text-muted/40 uppercase tracking-widest italic">Vazio. Nenhuma atividade registrada no período.</p>
                         </div>
                     )}
                 </div>

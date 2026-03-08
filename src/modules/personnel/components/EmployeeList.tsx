@@ -11,11 +11,17 @@ import { EmployeeEditModal } from './EmployeeEditModal';
 import EmployeeTransferModal from './EmployeeTransferModal';
 import { EmployeeTimeTrackingModal } from './EmployeeTimeTrackingModal';
 import { VacationModal } from './VacationModal';
+import { EmployeeTerminationModal } from './EmployeeTerminationModal';
+import { EmployeeRehireModal } from './EmployeeRehireModal';
+import { EmployeeCreateModal } from './EmployeeCreateModal';
+import { EmployeeOnboardingRequestModal } from './EmployeeOnboardingRequestModal';
+import { MinimumWageUpdateButton } from './MinimumWageUpdateButton';
 import { MobileEmployeeCard } from './MobileEmployeeCard';
 import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link } from 'lucide-react';
 
 /*
 Vacation Improvements:
@@ -40,6 +46,10 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     const [transferringEmployee, setTransferringEmployee] = useState<any>(null);
     const [timeTrackingEmployee, setTimeTrackingEmployee] = useState<any>(null);
     const [vacationEmployee, setVacationEmployee] = useState<any>(null);
+    const [terminatingEmployee, setTerminatingEmployee] = useState<any>(null);
+    const [rehiringEmployee, setRehiringEmployee] = useState<any>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isOnboardingRequestOpen, setIsOnboardingRequestOpen] = useState(false);
     const [vacationModalTab, setVacationModalTab] = useState<'vacations' | 'atestados'>('vacations');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive' | 'approval'>('active');
@@ -190,8 +200,8 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
 
     if (loading) return (
         <div className="space-y-4">
-            <div className="h-12 bg-slate-900 rounded-lg animate-pulse"></div>
-            <div className="h-64 bg-slate-900 rounded-lg animate-pulse"></div>
+            <div className="h-12 bg-text-primary/5 rounded-lg animate-pulse"></div>
+            <div className="h-64 bg-text-primary/5 rounded-lg animate-pulse"></div>
         </div>
     );
 
@@ -200,13 +210,35 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Header / Stats Summary or Tabs */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Quadro de <span className="text-brand-orange">Colaboradores</span></h2>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Gestão Estratégica de Capital Humano</p>
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                <div className="space-y-1">
+                    <h2 className="text-3xl font-black text-text-primary uppercase tracking-tighter italic">Quadro de <span className="text-brand-orange">Colaboradores</span></h2>
+                    <p className="text-[10px] text-text-secondary font-black uppercase tracking-[0.3em] opacity-80">Gestão Estratégica de Capital Humano & Talento</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
+                    <MinimumWageUpdateButton />
+
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="h-14 px-8 rounded-2xl bg-brand-orange text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-orange/20 flex items-center gap-3 border-b-4 border-black/20"
+                    >
+                        <UserPlus className="h-5 w-5" />
+                        Adicionar Colaborador
+                    </button>
+
+
+
+                    <button
+                        onClick={() => setIsOnboardingRequestOpen(true)}
+                        className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-surface transition-all shadow-md flex items-center gap-3 border-b-4 border-black/5"
+                    >
+                        <Link className="h-5 w-5 text-brand-orange" />
+                        Autocadastro Digital
+                    </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-6">
                     <ExportButton
                         data={filteredEmployees}
                         filename="funcionarios"
@@ -214,26 +246,28 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                         onExportPDF={handleExportPDF}
                     />
 
-                    <div className="bg-[#0A0F1C] border border-white/5 p-1 rounded-2xl flex items-center gap-1">
+                    <div className="bg-surface-secondary/50 backdrop-blur-md border border-border p-1.5 rounded-[1.5rem] flex items-center gap-1 shadow-inner">
                         {[
-                            { id: 'active', label: 'Ativos', color: 'brand-orange', count: employees.filter(e => e.status === 'ACTIVE').length },
-                            { id: 'approval', label: 'Pendentes', color: 'amber-500', count: employees.filter(e => e.status === 'PENDING_APPROVAL' || e.status === 'WAITING_ONBOARDING').length },
-                            { id: 'inactive', label: 'Egressos', color: 'slate-500', count: employees.filter(e => e.status === 'TERMINATED' || e.status === 'INACTIVE').length }
+                            { id: 'active', label: 'Efetivos', color: 'brand-orange', count: employees.filter(e => e.status === 'ACTIVE').length },
+                            { id: 'approval', label: 'Pendentes', color: 'brand-blue', count: employees.filter(e => e.status === 'PENDING_APPROVAL' || e.status === 'WAITING_ONBOARDING').length },
+                            { id: 'inactive', label: 'Egressos', color: 'text-muted', count: employees.filter(e => e.status === 'TERMINATED' || e.status === 'INACTIVE').length }
                         ].map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative ${activeTab === tab.id
-                                    ? 'bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]'
-                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative ${activeTab === tab.id
+                                    ? 'bg-surface text-text-primary shadow-xl ring-1 ring-border'
+                                    : 'text-text-secondary hover:text-text-primary hover:bg-surface/40'
                                     }`}
                             >
-                                <span className="flex items-center gap-2">
+                                <span className="flex items-center gap-3">
                                     {tab.label}
-                                    <span className={`px-1.5 py-0.5 rounded-md bg-${tab.color}/20 text-white/80 text-[8px]`}>{tab.count}</span>
+                                    <span className={`px-2 py-0.5 rounded-lg font-black bg-brand-orange/10 text-brand-orange text-[9px] min-w-[20px] shadow-inner`}>
+                                        {tab.count}
+                                    </span>
                                 </span>
                                 {activeTab === tab.id && (
-                                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-2 right-2 h-0.5 bg-brand-orange rounded-full" />
+                                    <motion.div layoutId="activeTabList" className="absolute bottom-1 left-4 right-4 h-0.5 bg-brand-orange rounded-full z-10" />
                                 )}
                             </button>
                         ))}
@@ -242,59 +276,74 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
             </div>
 
             {/* Premium Filter Bar */}
-            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <div className="lg:col-span-2 relative group">
-                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-brand-orange transition-colors">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <div className="bg-surface-secondary/30 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 lg:p-10 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none group-hover:bg-brand-orange/10 transition-all duration-1000" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 relative">
+                    <div className="lg:col-span-2 relative group-filter">
+                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-text-muted group-focus-within/filter:text-brand-orange transition-colors">
+                            <Search className="h-5 w-5" />
                         </div>
-                        <input
-                            placeholder="PESQUISAR POR NOME OU CPF..."
+                        <Input
+                            placeholder="Pesquise por nome, CPF ou cargo..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-black text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-brand-orange/30 focus:bg-white/10 transition-all"
+                            className="bg-surface border-border h-16 rounded-2xl pl-14 text-sm font-black text-text-primary uppercase tracking-widest focus:ring-brand-orange/20 shadow-inner group-hover/filter:border-brand-orange/30 transition-all"
                         />
                     </div>
 
                     <div className="relative">
                         <select
-                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
+                            className="w-full appearance-none bg-surface border border-border h-16 rounded-2xl px-6 text-[10px] font-black text-text-secondary uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-text-primary transition-all shadow-inner"
                             value={filterStore}
                             onChange={e => setFilterStore(e.target.value)}
                         >
-                            <option value="" className="bg-[#0A0F1C]">Todas as Lojas</option>
-                            {uniqueStores.map((s: any) => <option key={s} value={s} className="bg-[#0A0F1C]">{s}</option>)}
+                            <option value="">Todas as Unidades</option>
+                            {uniqueStores.map((s: any) => <option key={s} value={s}>{s}</option>)}
                         </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                            <motion.div animate={{ y: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 2 }}>↓</motion.div>
+                        </div>
                     </div>
 
                     <div className="relative">
                         <select
-                            className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
+                            className="w-full appearance-none bg-surface border border-border h-16 rounded-2xl px-6 text-[10px] font-black text-text-secondary uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-text-primary transition-all shadow-inner"
                             value={filterCompany}
                             onChange={e => setFilterCompany(e.target.value)}
                         >
-                            <option value="" className="bg-[#0A0F1C]">Empresas: Geral</option>
-                            {uniqueCompanies.map((c: any) => <option key={c} value={c} className="bg-[#0A0F1C]">{c}</option>)}
+                            <option value="">Múltiplas Empresas</option>
+                            {uniqueCompanies.map((c: any) => <option key={c} value={c}>{c}</option>)}
                         </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                            <motion.div animate={{ y: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}>↓</motion.div>
+                        </div>
                     </div>
 
                     <div className="relative">
                         {(filterStore || filterCompany || filterSector || searchTerm) ? (
-                            <button
+                            <Button
                                 onClick={() => { setFilterStore(''); setFilterCompany(''); setFilterSector(''); setSearchTerm(''); }}
-                                className="w-full h-full bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-300"
+                                size="lg"
+                                variant="destructive"
+                                className="w-full h-16 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 hover:scale-105 active:scale-95 transition-all"
                             >
-                                Limpar Filtros
-                            </button>
+                                Resetar Filtros
+                            </Button>
                         ) : (
-                            <select
-                                className="w-full appearance-none bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-white transition-all"
-                                value={filterSector}
-                                onChange={e => setFilterSector(e.target.value)}
-                            >
-                                <option value="" className="bg-[#0A0F1C]">Setores: Todos</option>
-                                {uniqueSectors.map((s: any) => <option key={s} value={s} className="bg-[#0A0F1C]">{s}</option>)}
-                            </select>
+                            <div className="relative">
+                                <select
+                                    className="w-full appearance-none bg-surface border border-border h-16 rounded-2xl px-6 text-[10px] font-black text-text-secondary uppercase tracking-widest cursor-pointer focus:outline-none focus:border-brand-orange/30 focus:text-text-primary transition-all shadow-inner"
+                                    value={filterSector}
+                                    onChange={e => setFilterSector(e.target.value)}
+                                >
+                                    <option value="">Divisões / Setores</option>
+                                    {uniqueSectors.map((s: any) => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                                    <motion.div animate={{ y: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 1 }}>↓</motion.div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -322,101 +371,125 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                 <div className="hidden lg:block">
                     <div className="grid grid-cols-12 px-8 mb-4">
                         <div
-                            className="col-span-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] cursor-pointer hover:text-brand-orange transition-colors"
+                            className="col-span-4 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] cursor-pointer hover:text-brand-orange transition-colors"
                             onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
                         >
                             Colaborador {sortOrder === 'asc' ? '↑' : '↓'}
                         </div>
-                        <div className="col-span-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Alocação / Unidade</div>
-                        <div className="col-span-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Cargo Estratégico</div>
-                        <div className="col-span-1 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] text-center">Status</div>
-                        <div className="col-span-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] text-right">Controle</div>
+                        <div className="col-span-3 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Alocação / Unidade</div>
+                        <div className="col-span-2 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Cargo Estratégico</div>
+                        <div className="col-span-1 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] text-center">Status</div>
+                        <div className="col-span-2 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] text-right">Controle</div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {sortedEmployees.map((emp, i) => (
                             <motion.div
                                 key={emp.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.02 }}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.03 }}
                                 onClick={() => setSelectedEmployee(emp)}
-                                className={`grid grid-cols-12 items-center px-8 py-5 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-brand-orange/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group cursor-pointer relative overflow-hidden ${emp.isIncomplete ? 'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-amber-500/50' : ''}`}
+                                className={`grid grid-cols-12 items-center px-10 py-6 bg-surface-secondary/40 backdrop-blur-sm border border-border/60 rounded-[2.5rem] hover:border-brand-orange/40 hover:scale-[1.01] hover:bg-surface transition-all duration-500 group cursor-pointer relative overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-brand-orange/5 ${emp.isIncomplete ? 'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-brand-orange animate-pulse' : ''}`}
                             >
-                                <div className="col-span-4 flex items-center gap-4">
-                                    <div className="relative group/photo">
-                                        <div className="w-10 h-10 md:w-11 md:h-11 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-brand-orange/30 group-hover:scale-105 shadow-xl">
+                                <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/0 via-brand-orange/[0.02] to-brand-orange/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+
+                                <div className="col-span-4 flex items-center gap-6 relative">
+                                    <div className="relative group/photo shrink-0">
+                                        <div className="w-14 h-14 bg-surface rounded-[1.25rem] border border-border flex items-center justify-center overflow-hidden transition-all duration-700 group-hover:border-brand-orange/50 shadow-inner group-hover:shadow-2xl">
                                             {emp.photoUrl ? (
-                                                <img src={emp.photoUrl} alt="" className="w-full h-full object-cover" />
+                                                <img src={emp.photoUrl} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                             ) : (
-                                                <span className="text-sm font-black text-slate-500 group-hover:text-brand-orange transition-colors">{emp.name.charAt(0)}</span>
+                                                <User className="h-6 w-6 text-text-secondary group-hover:text-brand-orange transition-colors" />
                                             )}
-                                            {emp.isIncomplete && <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" />}
 
-                                            {/* ASO STATUS INDICATOR */}
-                                            {(() => {
-                                                const latestAso = emp.healthRecords?.[0];
-                                                if (!latestAso) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-[#0A0F1C]" title="Sem ASO Admissional" />;
+                                            {/* Status Dots */}
+                                            <div className="absolute -bottom-1 -right-1 flex gap-0.5">
+                                                {emp.isIncomplete && <div className="w-3.5 h-3.5 bg-brand-orange rounded-full border-2 border-surface shadow-lg" title="Cadastro Incompleto" />}
 
-                                                const expirationDate = new Date(latestAso.date);
-                                                expirationDate.setMonth(expirationDate.getMonth() + (latestAso.periodicity || 12));
-                                                const isExpired = expirationDate < new Date();
+                                                {(() => {
+                                                    const latestAso = emp.healthRecords?.[0];
+                                                    if (!latestAso) return <div className="w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-surface shadow-lg" title="Sem ASO" />;
 
-                                                if (isExpired) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full border-2 border-[#0A0F1C] animate-pulse" title="ASO Vencido" />;
+                                                    const expirationDate = new Date(latestAso.date);
+                                                    expirationDate.setMonth(expirationDate.getMonth() + (latestAso.periodicity || 12));
+                                                    const isExpired = expirationDate < new Date();
 
-                                                const in30Days = new Date();
-                                                in30Days.setDate(in30Days.getDate() + 30);
-                                                if (expirationDate < in30Days) return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0A0F1C]" title="Vence em breve" />;
+                                                    if (isExpired) return <div className="w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-surface shadow-lg animate-pulse" title="ASO Vencido" />;
 
-                                                return <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0A0F1C]" title="ASO em dia" />;
-                                            })()}
+                                                    const in30Days = new Date();
+                                                    in30Days.setDate(in30Days.getDate() + 30);
+                                                    if (expirationDate < in30Days) return <div className="w-3.5 h-3.5 bg-brand-orange rounded-full border-2 border-surface shadow-lg" title="ASO a vencer" />;
+
+                                                    return <div className="w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-surface shadow-lg" title="ASO OK" />;
+                                                })()}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <h4 className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{emp.name}</h4>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{emp.cpf || 'Documento não informado'}</p>
+                                    <div className="min-w-0">
+                                        <h4 className="text-[14px] font-black text-text-primary uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{emp.name}</h4>
+                                        <p className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] mt-1 opacity-80">
+                                            CPF {emp.cpf || 'Não Identificado'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="col-span-3">
-                                    <p className="text-[11px] font-black text-slate-300 uppercase tracking-tighter">{emp.contract?.store?.name || 'Não alocado'}</p>
-                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">{emp.contract?.sectorDef?.name || emp.department || 'Setor geral'}</p>
+                                <div className="col-span-3 relative">
+                                    <div className="flex items-center gap-3 text-text-secondary group-hover:text-text-primary transition-colors">
+                                        <Building2 className="h-4 w-4 opacity-70" />
+                                        <p className="text-[11px] font-black uppercase tracking-tighter truncate">{emp.contract?.store?.name || 'Não alocado'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1.5 opacity-80">
+                                        <MapPin className="h-3 w-3 opacity-70" />
+                                        <p className="text-[9px] font-bold uppercase tracking-widest truncate">{emp.contract?.sectorDef?.name || emp.department || 'Setor geral'}</p>
+                                    </div>
                                 </div>
 
-                                <div className="col-span-2">
-                                    <p className="text-[11px] font-black text-brand-orange uppercase tracking-tighter">{emp.jobTitle || emp.jobRole?.name || 'Posto indefinido'}</p>
-                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-0.5">Desde {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '--/--/--'}</p>
+                                <div className="col-span-2 relative">
+                                    <div className="flex items-center gap-3 text-brand-orange">
+                                        <Briefcase className="h-4 w-4 opacity-80" />
+                                        <p className="text-[11px] font-black uppercase tracking-tighter truncate">{emp.jobTitle || emp.jobRole?.name || 'Posto indefinido'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1.5 opacity-80">
+                                        <Calendar className="h-3 w-3 opacity-60 text-text-secondary" />
+                                        <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Adm. {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '--/--/--'}</p>
+                                    </div>
                                 </div>
 
-                                <div className="col-span-1 flex justify-center">
-                                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.1em] border ${emp.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                        emp.status === 'PENDING_APPROVAL' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                            emp.status === 'WAITING_ONBOARDING' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
-                                                'bg-slate-500/10 text-slate-500 border-white/5'
+                                <div className="col-span-1 flex justify-center relative">
+                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm transition-all duration-500 group-hover:shadow-md ${emp.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                        emp.status === 'PENDING_APPROVAL' ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' :
+                                            emp.status === 'WAITING_ONBOARDING' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                'bg-surface-secondary text-text-secondary border-border'
                                         }`}>
                                         {translateStatus(emp.status)}
                                     </span>
                                 </div>
 
-                                <div className="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                                <div className="col-span-2 flex justify-end gap-3 opacity-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 relative">
                                     {(emp.status === 'PENDING_APPROVAL' || emp.status === 'WAITING_ONBOARDING') && (
                                         <button
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (confirm('Tem certeza que deseja excluir este colaborador? Esta ação é permanente.')) {
-                                                    const res = await deleteEmployee(emp.id);
-                                                    if (res.success) {
-                                                        toast.success('Colaborador excluído');
-                                                        loadEmployees();
-                                                    } else {
-                                                        toast.error(res.message);
+                                                toast('🗑️ Protocolo de Exclusão', {
+                                                    description: `Deseja realmente remover o registro de ${emp.name}?`,
+                                                    action: {
+                                                        label: 'Remover',
+                                                        onClick: async () => {
+                                                            const res = await deleteEmployee(emp.id);
+                                                            if (res.success) {
+                                                                toast.success('Registro removido');
+                                                                loadEmployees();
+                                                            } else {
+                                                                toast.error(res.message);
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                });
                                             }}
-                                            className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg"
-                                            title="Excluir Colaborador"
+                                            className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
                                         >
-                                            🗑️
+                                            <Trash2 className="h-4 w-4" />
                                         </button>
                                     )}
 
@@ -424,27 +497,69 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                         <button
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (confirm('Deseja resetar o cadastro deste colaborador? Ele precisará preencher os dados novamente.')) {
-                                                    const res = await resetOnboarding(emp.id);
-                                                    if (res.success) {
-                                                        toast.success('Cadastro resetado com sucesso');
-                                                        loadEmployees();
-                                                    } else {
-                                                        toast.error(res.message);
+                                                toast('🔄 Reset de Onboarding', {
+                                                    description: `O colaborador ${emp.name} precisará preencher todos os dados novamente. Confirmar?`,
+                                                    action: {
+                                                        label: 'Resetar',
+                                                        onClick: async () => {
+                                                            const res = await resetOnboarding(emp.id);
+                                                            if (res.success) {
+                                                                toast.success('Onboarding reiniciado');
+                                                                loadEmployees();
+                                                            } else {
+                                                                toast.error(res.message);
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                });
                                             }}
-                                            className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xs hover:bg-amber-500 hover:text-white transition-all shadow-lg"
-                                            title="Refazer Cadastro"
+                                            className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 hover:bg-amber-500 hover:text-white transition-all shadow-xl shadow-amber-500/10"
                                         >
-                                            🔄
+                                            <RefreshCw className="h-4 w-4" />
                                         </button>
                                     )}
 
-                                    <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Editar">✏️</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Transferir">🚚</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-brand-orange hover:text-white transition-all shadow-lg" title="Ponto">⏰</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); setVacationModalTab('vacations'); }} className="w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-sky-500 hover:text-white transition-all shadow-lg" title="Férias e Afastamentos">🏖️</button>
+                                    {emp.status === 'ACTIVE' && (
+                                        <>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setTransferringEmployee(emp); }}
+                                                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:scale-110"
+                                                title="Transferir Colaborador"
+                                            >
+                                                <Truck className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setVacationEmployee(emp); }}
+                                                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-xl hover:scale-110"
+                                                title="Gestão de Férias"
+                                            >
+                                                <Palmtree className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setTerminatingEmployee(emp); }}
+                                                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl hover:scale-110"
+                                                title="Iniciar Desligamento"
+                                            >
+                                                <Ban className="h-4 w-4" />
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {(emp.status === 'TERMINATED' || emp.status === 'INACTIVE') && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setRehiringEmployee(emp); }}
+                                            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-xl hover:scale-110"
+                                            title="Recontratar Colaborador"
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                        </button>
+                                    )}
+
+                                    <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all shadow-xl hover:scale-110" title="Editar Dossiê"><Briefcase className="h-4 w-4" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-secondary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:scale-110" title="Cartão de Ponto"><Clock className="h-4 w-4" /></button>
+                                    <div className="w-8 flex items-center justify-center text-text-muted/20 group-hover:text-brand-orange transition-colors">
+                                        <ChevronRight className="h-5 w-5" />
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
@@ -452,11 +567,11 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                 </div>
 
                 {sortedEmployees.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 text-slate-600">
-                        <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6">
+                    <div className="flex flex-col items-center justify-center py-20 text-text-secondary">
+                        <div className="w-20 h-20 rounded-full bg-text-primary/5 border border-border flex items-center justify-center mb-6">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-20"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum registro localizado</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Nenhum registro localizado</p>
                     </div>
                 )}
             </div>
@@ -510,6 +625,47 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                     defaultTab={vacationModalTab}
                 />
             )}
+
+            {terminatingEmployee && (
+                <EmployeeTerminationModal
+                    isOpen={!!terminatingEmployee}
+                    onClose={() => setTerminatingEmployee(null)}
+                    employee={terminatingEmployee}
+                    onSuccess={() => {
+                        setTerminatingEmployee(null);
+                        loadEmployees();
+                    }}
+                />
+            )}
+
+            {rehiringEmployee && (
+                <EmployeeRehireModal
+                    isOpen={!!rehiringEmployee}
+                    onClose={() => setRehiringEmployee(null)}
+                    employee={rehiringEmployee}
+                    onSuccess={() => {
+                        setRehiringEmployee(null);
+                        loadEmployees();
+                    }}
+                />
+            )}
+
+            <EmployeeCreateModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={() => {
+                    setIsCreateModalOpen(false);
+                    loadEmployees();
+                }}
+            />
+
+
+
+            <EmployeeOnboardingRequestModal
+                isOpen={isOnboardingRequestOpen}
+                onClose={() => setIsOnboardingRequestOpen(false)}
+                onSuccess={loadEmployees}
+            />
         </div>
     );
 }

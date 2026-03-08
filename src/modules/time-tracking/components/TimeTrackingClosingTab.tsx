@@ -110,51 +110,51 @@ export function TimeTrackingClosingTab() {
     return (
         <div className="space-y-12 max-w-5xl mx-auto animate-in fade-in duration-700">
             {/* Control Panel */}
-            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
+            <div className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[100px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="relative z-10 space-y-8">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center">
                                 <Lock className="h-5 w-5 text-brand-orange" />
                             </div>
-                            <h2 className="text-xl font-black text-white uppercase tracking-tight">Fechamento Estratégico em Massa</h2>
+                            <h2 className="text-xl font-black text-text-primary uppercase tracking-tight">Fechamento Estratégico em Massa</h2>
                         </div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-14">Homologação de Ciclo e Consolidação de Saldos Mensais</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-14">Homologação de Ciclo e Consolidação de Saldos Mensais</p>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-end gap-6 border-t border-white/5 pt-8">
+                    <div className="flex flex-col md:flex-row items-end gap-6 border-t border-border pt-8">
                         <div className="space-y-2 group">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Ciclo (Mês)</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Ciclo (Mês)</label>
                             <select
-                                className="h-14 w-48 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
+                                className="h-14 w-48 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
                                 value={month}
                                 onChange={(e) => { setMonth(parseInt(e.target.value)); setStatus('IDLE'); }}
                                 disabled={status === 'CLOSING'}
                             >
-                                {months.map((m, i) => <option key={i} value={i} className="bg-[#0A0F1C]">{m}</option>)}
+                                {months.map((m, i) => <option key={i} value={i} className="bg-surface">{m}</option>)}
                             </select>
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Ano</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-4 group-focus-within:text-brand-orange transition-colors">Ano</label>
                             <select
-                                className="h-14 w-32 bg-white/5 border border-white/5 rounded-2xl px-6 text-[11px] font-black text-white uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
+                                className="h-14 w-32 bg-text-primary/5 border border-border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:border-brand-orange/30 transition-all cursor-pointer shadow-inner appearance-none"
                                 value={year}
                                 onChange={(e) => { setYear(parseInt(e.target.value)); setStatus('IDLE'); }}
                                 disabled={status === 'CLOSING'}
                             >
-                                <option value={2024} className="bg-[#0A0F1C]">2024</option>
-                                <option value={2025} className="bg-[#0A0F1C]">2025</option>
-                                <option value={2026} className="bg-[#0A0F1C]">2026</option>
+                                <option value={2024} className="bg-surface">2024</option>
+                                <option value={2025} className="bg-surface">2025</option>
+                                <option value={2026} className="bg-surface">2026</option>
                             </select>
                         </div>
 
                         <button
                             onClick={handleAnalyze}
                             disabled={status !== 'IDLE'}
-                            className="h-14 px-10 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(255,255,255,0.05)] disabled:bg-slate-800 disabled:text-slate-500"
+                            className="h-14 px-10 rounded-2xl bg-text-primary text-surface text-[11px] font-black uppercase tracking-[0.2em] hover:brightness-110 transition-all flex items-center justify-center gap-3 shadow-lg disabled:opacity-50"
                         >
                             {status === 'FETCHING' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Analisar Pendências'}
                         </button>
@@ -172,13 +172,13 @@ export function TimeTrackingClosingTab() {
                                         <AlertTriangle className="h-6 w-6 text-amber-500" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-white uppercase tracking-tight">Pronto para Consolidar?</p>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Serão processados <span className="text-amber-500">{employees.length}</span> colaboradores ativos</p>
+                                        <p className="text-sm font-black text-text-primary uppercase tracking-tight">Pronto para Consolidar?</p>
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Serão processados <span className="text-amber-500">{employees.length}</span> colaboradores ativos</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={executeBulkClose}
-                                    className="h-14 px-10 rounded-2xl bg-amber-500 text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-lg active:scale-95"
+                                    className="h-14 px-10 rounded-2xl bg-amber-500 text-surface text-[11px] font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-lg active:scale-95"
                                 >
                                     Executar Fechamento Geral
                                 </button>
@@ -193,14 +193,14 @@ export function TimeTrackingClosingTab() {
                             >
                                 <div className="flex justify-between items-end">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Processamento em tempo real...</p>
-                                        <p className="text-2xl font-black text-white tracking-tighter">{progress}%</p>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Processamento em tempo real...</p>
+                                        <p className="text-2xl font-black text-text-primary tracking-tighter">{progress}%</p>
                                     </div>
                                     <span className="text-[10px] font-black text-brand-orange uppercase tracking-widest">Estabilizando Banco de Dados</span>
                                 </div>
-                                <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                <div className="h-2 bg-text-primary/5 rounded-full overflow-hidden border border-border">
                                     <motion.div
-                                        className="h-full bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+                                        className="h-full bg-brand-orange shadow-[0_0_15px_rgba(var(--brand-orange-rgb),0.5)]"
                                         initial={{ width: 0 }}
                                         animate={{ width: `${progress}%` }}
                                         transition={{ duration: 0.5 }}
@@ -217,28 +217,28 @@ export function TimeTrackingClosingTab() {
                             >
                                 <div className="space-y-3">
                                     <div className="mx-auto w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
-                                        <CheckCircle className="h-8 w-8 text-emerald-400" />
+                                        <CheckCircle className="h-8 w-8 text-emerald-500" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-white tracking-tight uppercase">Operação Finalizada</h3>
-                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                                        {results.success} Fechamentos com Sucesso <span className="mx-4 opacity-20">|</span> <span className="text-red-400">{results.fail} Falhas Detectadas</span>
+                                    <h3 className="text-2xl font-black text-text-primary tracking-tight uppercase">Operação Finalizada</h3>
+                                    <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">
+                                        {results.success} Fechamentos com Sucesso <span className="mx-4 opacity-20">|</span> <span className="text-red-500">{results.fail} Falhas Detectadas</span>
                                     </p>
                                 </div>
 
-                                <div className="bg-[#0A0F1C]/80 border border-white/5 rounded-3xl overflow-hidden text-left relative">
-                                    <div className="bg-white/5 px-6 py-4 border-b border-white/5">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Folhas Prontas para Auditoria</span>
+                                <div className="bg-surface/80 border border-border rounded-3xl overflow-hidden text-left relative">
+                                    <div className="bg-text-primary/5 px-6 py-4 border-b border-border">
+                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Folhas Prontas para Auditoria</span>
                                     </div>
-                                    <div className="max-h-60 overflow-y-auto divide-y divide-white/2 custom-scrollbar">
+                                    <div className="max-h-60 overflow-y-auto divide-y divide-border custom-scrollbar">
                                         {processedEmployees.map(emp => (
-                                            <div key={emp.id} className="px-6 py-4 flex justify-between items-center hover:bg-white/2 transition-colors group">
+                                            <div key={emp.id} className="px-6 py-4 flex justify-between items-center hover:bg-text-primary/2 transition-colors group">
                                                 <div>
-                                                    <p className="text-[12px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors">{emp.name}</p>
-                                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{emp.role}</p>
+                                                    <p className="text-[12px] font-black text-text-primary uppercase tracking-tight group-hover:text-brand-orange transition-colors">{emp.name}</p>
+                                                    <p className="text-[9px] font-bold text-text-muted/60 uppercase tracking-widest">{emp.role}</p>
                                                 </div>
                                                 <button
                                                     onClick={() => window.open(`/dashboard/time-tracking/print?employeeId=${emp.id}&month=${month + 1}&year=${year}`, '_blank')}
-                                                    className="h-10 px-6 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+                                                    className="h-10 px-6 rounded-xl bg-text-primary/5 border border-border text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary hover:bg-text-primary/10 transition-all flex items-center gap-2"
                                                 >
                                                     <Printer className="h-3.5 w-3.5" /> Imprimir
                                                 </button>
@@ -249,7 +249,7 @@ export function TimeTrackingClosingTab() {
 
                                 <button
                                     onClick={() => setStatus('IDLE')}
-                                    className="px-10 h-14 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-white/10 transition-all"
+                                    className="px-10 h-14 rounded-2xl bg-text-primary/5 border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-primary hover:bg-text-primary/10 transition-all"
                                 >
                                     Novo Ciclo de Fechamento
                                 </button>
@@ -262,13 +262,13 @@ export function TimeTrackingClosingTab() {
             {/* History Feed */}
             <div className="space-y-8">
                 <div className="flex items-center gap-4 px-6">
-                    <h3 className="text-sm font-black text-white uppercase tracking-[0.4em]">Auditória de Fechamentos</h3>
-                    <div className="h-px flex-1 bg-white/5" />
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.4em]">Auditória de Fechamentos</h3>
+                    <div className="h-px flex-1 bg-border" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
                     {history.length === 0 && !loadingHistory && (
-                        <div className="text-center py-20 text-slate-700 bg-white/2 rounded-[2.5rem] border border-white/5 border-dashed">
+                        <div className="text-center py-20 text-text-muted/40 bg-text-primary/2 rounded-[2.5rem] border border-border border-dashed">
                             <Lock className="h-12 w-12 mb-6 mx-auto opacity-10" />
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] italic">Vácuo Histórico - Comece a Consolidar</p>
                         </div>
@@ -291,48 +291,48 @@ export function TimeTrackingClosingTab() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="bg-[#0A0F1C]/40 border border-white/5 rounded-[2rem] overflow-hidden hover:border-brand-orange/20 transition-all group"
+                                className="bg-surface/40 border border-border rounded-[2rem] overflow-hidden hover:border-brand-orange/20 transition-all group"
                             >
-                                <div className="bg-white/5 px-8 py-5 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 group-hover:bg-white/[0.07] transition-all">
+                                <div className="bg-text-primary/5 px-8 py-5 border-b border-border flex flex-col md:flex-row justify-between items-center gap-4 group-hover:bg-text-primary/[0.07] transition-all">
                                     <div className="flex items-center gap-6">
                                         <div className="bg-brand-orange/10 p-3 rounded-2xl border border-brand-orange/20">
                                             <span className="text-sm font-black text-brand-orange">{y}</span>
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-black text-white tracking-widest uppercase leading-none mb-1">{monthName}</h4>
-                                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{items.length} Funcionários Consolidados</span>
+                                            <h4 className="text-lg font-black text-text-primary tracking-widest uppercase leading-none mb-1">{monthName}</h4>
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">{items.length} Funcionários Consolidados</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => window.open(`/dashboard/time-tracking/print?month=${m}&year=${y}&bulk=true`, '_blank')}
-                                        className="h-11 px-8 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-slate-300 hover:text-white hover:bg-brand-orange transition-all flex items-center gap-3 group/btn shadow-xl active:scale-95"
+                                        className="h-11 px-8 rounded-xl bg-text-primary/5 border border-border text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary hover:bg-brand-orange transition-all flex items-center gap-3 group/btn shadow-xl active:scale-95"
                                     >
                                         <Printer className="h-4 w-4" /> Exportar Lote Completo
                                     </button>
                                 </div>
 
-                                <div className="divide-y divide-white/2 max-h-80 overflow-y-auto custom-scrollbar">
+                                <div className="divide-y divide-border max-h-80 overflow-y-auto custom-scrollbar">
                                     {items.map((item: any) => (
-                                        <div key={item.id} className="px-8 py-5 flex justify-between items-center hover:bg-white/[0.02] transition-colors group/item">
+                                        <div key={item.id} className="px-8 py-5 flex justify-between items-center hover:bg-text-primary/[0.02] transition-colors group/item">
                                             <div className="flex items-center gap-6">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 shadow-[0_0_8px_rgba(var(--emerald-rgb),0.4)]" />
                                                 <div>
-                                                    <p className="text-[13px] font-black text-slate-200 uppercase tracking-tight group-hover/item:text-white transition-colors">{item.employee.name}</p>
-                                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">
+                                                    <p className="text-[13px] font-black text-text-primary uppercase tracking-tight group-hover/item:text-brand-orange transition-colors">{item.employee.name}</p>
+                                                    <p className="text-[9px] font-bold text-text-muted/60 uppercase tracking-widest mt-1">
                                                         Protocolo em {new Date(item.closedAt).toLocaleDateString('pt-BR')} às {new Date(item.closedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-8 items-center">
                                                 <div className="text-right">
-                                                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest h-3">Acúmulo</p>
-                                                    <span className={`text-[13px] font-mono font-black ${parseFloat(item.totalBalance) < 0 ? 'text-red-500' : 'text-emerald-400'}`}>
+                                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest h-3">Acúmulo</p>
+                                                    <span className={`text-[13px] font-mono font-black ${parseFloat(item.totalBalance) < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                                                         {parseFloat(item.totalBalance) > 0 ? '+' : ''}{item.totalBalance}h
                                                     </span>
                                                 </div>
                                                 <button
                                                     onClick={() => window.open(`/dashboard/time-tracking/print?employeeId=${item.employee.id}&month=${m}&year=${y}`, '_blank')}
-                                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
+                                                    className="w-10 h-10 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-text-primary/10 transition-all shadow-lg active:scale-95"
                                                 >
                                                     <Printer className="h-4 w-4" />
                                                 </button>

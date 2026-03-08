@@ -130,8 +130,8 @@ export function CompanyList() {
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Entidades <span className="text-brand-orange">Legais</span></h2>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Gestão de Empresas e Registros Centrais</p>
+                    <h2 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Entidades <span className="text-brand-orange">Legais</span></h2>
+                    <p className="text-text-muted text-xs font-bold uppercase tracking-widest mt-1">Gestão de Empresas e Registros Centrais</p>
                 </div>
                 <button
                     onClick={() => openModal()}
@@ -142,11 +142,11 @@ export function CompanyList() {
                 </button>
             </div>
 
-            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-surface/60 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                    <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                         <div className="col-span-12 md:col-span-6 text-left">Razão Social / Dados Fiscais</div>
                         <div className="hidden md:block md:col-span-4 text-center">Estatísticas de Contrato</div>
                         <div className="hidden md:block md:col-span-2 text-right">Controle</div>
@@ -159,25 +159,25 @@ export function CompanyList() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.03 }}
-                                className="grid grid-cols-12 items-center px-8 py-6 bg-[#0A0F1C] border border-white/5 rounded-[1.5rem] hover:border-brand-orange/30 hover:scale-[1.01] hover:bg-white/[0.02] transition-all duration-300 group relative overflow-hidden"
+                                className="grid grid-cols-12 items-center px-8 py-6 bg-surface border border-border rounded-[1.5rem] hover:border-brand-orange/30 hover:scale-[1.01] hover:bg-text-primary/[0.02] transition-all duration-300 group relative overflow-hidden"
                             >
                                 <div className="col-span-12 md:col-span-6 flex items-center gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:border-brand-orange/30 transition-colors">
+                                    <div className="w-12 h-12 rounded-2xl bg-text-primary/5 border border-border flex items-center justify-center text-xl shadow-inner group-hover:border-brand-orange/30 transition-colors">
                                         🏢
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[14px] font-black text-white uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{comp.name}</h4>
+                                        <h4 className="text-[14px] font-black text-text-primary uppercase tracking-tight group-hover:text-brand-orange transition-colors truncate">{comp.name}</h4>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">CNPJ: {comp.cnpj || 'PENDENTE'}</p>
+                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">CNPJ: {comp.cnpj || 'PENDENTE'}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="hidden md:block md:col-span-4 text-center">
-                                    <div className="inline-flex items-center gap-4 bg-white/5 px-6 py-2 rounded-2xl border border-white/5">
+                                    <div className="inline-flex items-center gap-4 bg-text-primary/5 px-6 py-2 rounded-2xl border border-border">
                                         <div className="flex flex-col items-center">
                                             <span className="text-sm font-black text-indigo-400">{comp._count?.contracts || 0}</span>
-                                            <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Matrículas</span>
+                                            <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">Matrículas</span>
                                         </div>
                                     </div>
                                 </div>
@@ -185,13 +185,13 @@ export function CompanyList() {
                                 <div className="col-span-12 md:col-span-2 flex justify-end gap-2 mt-4 md:mt-0">
                                     <button
                                         onClick={() => openModal(comp)}
-                                        className="h-9 px-4 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
+                                        className="h-9 px-4 rounded-xl bg-text-primary/5 border border-border text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-lg flex items-center gap-2"
                                     >
                                         ✏️ Editar
                                     </button>
                                     <button
                                         onClick={() => handleDelete(comp.id)}
-                                        className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                                        className="w-9 h-9 rounded-xl bg-text-primary/5 border border-border flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all shadow-lg"
                                     >
                                         🗑️
                                     </button>
@@ -200,7 +200,7 @@ export function CompanyList() {
                         ))}
 
                         {companies.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-slate-600 bg-white/5 rounded-[2rem] border border-white/5 border-dashed">
+                            <div className="flex flex-col items-center justify-center py-20 text-text-muted/40 bg-text-primary/2 rounded-[2rem] border border-border border-dashed">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhuma empresa cadastrada</p>
                             </div>
                         )}
@@ -212,23 +212,23 @@ export function CompanyList() {
                 <form onSubmit={handleSubmit} className="space-y-8 py-6 max-h-[75vh] overflow-y-auto px-4 custom-scrollbar">
                     <div className="space-y-6">
                         <div className="text-center">
-                            <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Dados Corporativos & Fiscais</h4>
+                            <h4 className="inline-block text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-b border-border pb-2 mb-8">Dados Corporativos & Fiscais</h4>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1 group-focus-within:text-brand-orange transition-colors">Razão Social</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-orange transition-colors">Razão Social</label>
                                 <Input
-                                    className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white focus:border-brand-orange/30 transition-all font-mono"
+                                    className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary focus:border-brand-orange/30 transition-all font-mono"
                                     value={formData.name}
                                     onChange={e => handleChange('name', e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1 group-focus-within:text-brand-orange transition-colors">Nome Fantasia</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-orange transition-colors">Nome Fantasia</label>
                                 <Input
-                                    className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white focus:border-brand-orange/30 transition-all"
+                                    className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary focus:border-brand-orange/30 transition-all"
                                     value={formData.tradingName}
                                     onChange={e => handleChange('tradingName', e.target.value)}
                                 />
@@ -236,16 +236,16 @@ export function CompanyList() {
                             <div className="space-y-2 group uppercase">
                                 <label className="text-[9px] font-black text-brand-orange uppercase tracking-widest ml-1">CNPJ Matriz</label>
                                 <Input
-                                    className="bg-brand-orange/5 border-brand-orange/20 rounded-2xl h-12 text-sm font-black text-white focus:border-brand-orange/40 transition-all"
+                                    className="bg-brand-orange/5 border-brand-orange/20 rounded-2xl h-12 text-sm font-black text-text-primary focus:border-brand-orange/40 transition-all"
                                     value={formData.cnpj}
                                     onChange={e => handleChange('cnpj', e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Responsável Legal</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Responsável Legal</label>
                                 <Input
-                                    className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white transition-all"
+                                    className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary transition-all"
                                     value={formData.responsible}
                                     onChange={e => handleChange('responsible', e.target.value)}
                                 />
@@ -254,40 +254,40 @@ export function CompanyList() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Inscrição Estadual</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.stateRegistration} onChange={e => handleChange('stateRegistration', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Inscrição Estadual</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.stateRegistration} onChange={e => handleChange('stateRegistration', e.target.value)} />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Inscrição Municipal</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.municipalRegistration} onChange={e => handleChange('municipalRegistration', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Inscrição Municipal</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.municipalRegistration} onChange={e => handleChange('municipalRegistration', e.target.value)} />
                             </div>
                         </div>
 
                         <div className="text-center pt-6">
-                            <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Informações de Contato</h4>
+                            <h4 className="inline-block text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-b border-border pb-2 mb-8">Informações de Contato</h4>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Email Corporativo</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.email} onChange={e => handleChange('email', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Email Corporativo</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.email} onChange={e => handleChange('email', e.target.value)} />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Telefone Fixo / Celular</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Telefone Fixo / Celular</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} />
                             </div>
                         </div>
 
                         <div className="text-center pt-6">
-                            <h4 className="inline-block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2 mb-8">Sede Administrativa</h4>
+                            <h4 className="inline-block text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-b border-border pb-2 mb-8">Sede Administrativa</h4>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">CEP</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">CEP</label>
                                 <div className="relative">
                                     <Input
-                                        className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white pr-10"
+                                        className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary pr-10"
                                         value={formData.zipCode}
                                         onChange={e => handleChange('zipCode', e.target.value)}
                                         maxLength={9}
@@ -296,32 +296,32 @@ export function CompanyList() {
                                 </div>
                             </div>
                             <div className="md:col-span-2 space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Logradouro</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.street} onChange={e => handleChange('street', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Logradouro</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.street} onChange={e => handleChange('street', e.target.value)} />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Número</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.number} onChange={e => handleChange('number', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Número</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.number} onChange={e => handleChange('number', e.target.value)} />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Bairro</label>
-                                <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white" value={formData.neighborhood} onChange={e => handleChange('neighborhood', e.target.value)} />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Bairro</label>
+                                <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary" value={formData.neighborhood} onChange={e => handleChange('neighborhood', e.target.value)} />
                             </div>
                             <div className="space-y-2 group">
-                                <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Cidade - UF</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Cidade - UF</label>
                                 <div className="flex gap-2">
-                                    <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white flex-1" value={formData.city} onChange={e => handleChange('city', e.target.value)} />
-                                    <Input className="bg-white/5 border-white/10 rounded-2xl h-12 text-sm font-bold text-white w-16 text-center uppercase" value={formData.state} onChange={e => handleChange('state', e.target.value)} maxLength={2} />
+                                    <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary flex-1" value={formData.city} onChange={e => handleChange('city', e.target.value)} />
+                                    <Input className="bg-text-primary/5 border-border rounded-2xl h-12 text-sm font-bold text-text-primary w-16 text-center uppercase" value={formData.state} onChange={e => handleChange('state', e.target.value)} maxLength={2} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-8 border-t border-white/5">
+                    <div className="flex justify-end gap-4 pt-8 border-t border-border">
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors"
                         >
                             Cancelar
                         </button>

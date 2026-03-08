@@ -9,6 +9,9 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 
+import { motion } from 'framer-motion';
+import { UserPlus, Briefcase, Building, Wallet, Calendar, ShieldCheck, ChevronRight } from 'lucide-react';
+
 interface EmployeeRehireModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -59,59 +62,125 @@ export function EmployeeRehireModal({ isOpen, onClose, employee, onSuccess }: Em
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Recontratação: ${employee.name}`} width="lg">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm text-blue-800">
-                    ℹ️ Esta ação iniciará um novo ciclo contratual. O histórico anterior será preservado.
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} hideHeader width="3xl">
+            <div className="bg-surface/95 backdrop-blur-2xl rounded-[2.5rem] p-0 overflow-hidden relative border border-border">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-brand-blue/5 blur-[80px] rounded-full -ml-32 -mt-32 pointer-events-none" />
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Novo Cargo</label>
-                        <Input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} required />
+                <form onSubmit={handleSubmit} className="space-y-10 p-10 relative z-10">
+                    {/* Header */}
+                    <div className="flex items-center gap-6 pb-8 border-b border-border">
+                        <div className="w-16 h-16 rounded-2xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shadow-2xl">
+                            <UserPlus className="h-8 w-8 text-brand-blue" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-text-primary uppercase tracking-tight italic">Protocolo de Recontratação</h3>
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Restauração de Vínculo e Novo Ciclo</p>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Departamento</label>
-                        <Input value={department} onChange={(e) => setDepartment(e.target.value)} required />
+
+                    <div className="bg-brand-blue/10 border border-brand-blue/20 p-6 rounded-2xl flex items-start gap-4 shadow-inner group overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-brand-blue/5 via-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <ShieldCheck className="h-5 w-5 text-brand-blue flex-shrink-0" />
+                        <p className="text-[11px] font-bold text-brand-blue/80 leading-relaxed uppercase tracking-wider">
+                            Nota: Esta ação iniciará um novo ciclo contratual para <span className="text-brand-blue font-black">{employee.name}</span>. O histórico anterior será preservado para auditoria.
+                        </p>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Loja</label>
-                        <Input value={store} onChange={(e) => setStore(e.target.value)} required />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 italic">Novo Cargo Estratégico</label>
+                            <div className="relative group">
+                                <Briefcase className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue pointer-events-none group-focus-within:text-text-primary transition-colors" />
+                                <input
+                                    value={jobTitle}
+                                    onChange={(e) => setJobTitle(e.target.value)}
+                                    required
+                                    className="w-full h-16 bg-surface-secondary border border-border rounded-2xl pl-14 pr-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 italic">Departamento / Setor</label>
+                            <div className="relative group">
+                                <Building className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue pointer-events-none group-focus-within:text-text-primary transition-colors" />
+                                <input
+                                    value={department}
+                                    onChange={(e) => setDepartment(e.target.value)}
+                                    required
+                                    className="w-full h-16 bg-surface-secondary border border-border rounded-2xl pl-14 pr-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 italic">Saldamento Base (R$)</label>
+                            <div className="relative group">
+                                <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue pointer-events-none group-focus-within:text-text-primary transition-colors" />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={baseSalary}
+                                    onChange={(e) => setBaseSalary(e.target.value)}
+                                    required
+                                    className="w-full h-16 bg-surface-secondary border border-border rounded-2xl pl-14 pr-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 italic">Data de Reingresso</label>
+                            <div className="relative group">
+                                <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue pointer-events-none group-focus-within:text-text-primary transition-colors" />
+                                <input
+                                    type="date"
+                                    value={admissionDate}
+                                    onChange={(e) => setAdmissionDate(e.target.value)}
+                                    required
+                                    className="w-full h-16 bg-surface-secondary border border-border rounded-2xl pl-14 pr-6 text-[11px] font-black text-text-primary uppercase tracking-widest focus:outline-none focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2 space-y-3">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4 italic">Natureza Jurídica do Contrato</label>
+                            <div className="grid grid-cols-3 gap-4">
+                                {['CLT', 'PJ', 'ESTAGIO'].map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setContractType(type)}
+                                        className={`h-16 rounded-2xl border font-black text-[10px] uppercase tracking-widest transition-all ${contractType === type
+                                            ? 'bg-brand-blue border-brand-blue text-white shadow-lg shadow-brand-blue/20 scale-[1.02]'
+                                            : 'bg-surface-secondary border-border text-text-muted hover:border-brand-blue/30'
+                                            }`}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Salário Base (R$)</label>
-                        <Input type="number" step="0.01" value={baseSalary} onChange={(e) => setBaseSalary(e.target.value)} required />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nova Data de Admissão</label>
-                        <Input type="date" value={admissionDate} onChange={(e) => setAdmissionDate(e.target.value)} required />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Empresa Registro</label>
-                        <Input value={registrationCompany} onChange={(e) => setRegistrationCompany(e.target.value)} required />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipo Contrato</label>
-                        <select
-                            className="w-full flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                            value={contractType} onChange={(e) => setContractType(e.target.value)}
+
+                    <div className="flex justify-end items-center gap-8 pt-10 border-t border-border">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text-primary transition-colors"
                         >
-                            <option value="CLT">CLT</option>
-                            <option value="PJ">PJ</option>
-                            <option value="ESTAGIO">Estágio</option>
-                        </select>
+                            Abortar Operação
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="h-16 px-12 rounded-[1.25rem] bg-brand-blue text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-brand-blue/20 flex items-center justify-center gap-3 border-b-4 border-black/20"
+                        >
+                            {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                            RESTAURAR VÍNCULO ♻️
+                        </button>
                     </div>
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-4 border-t border-slate-200">
-                    <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading}>
-                        {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : '✨'} Recontratar
-                    </Button>
-                </div>
-            </form>
+                </form>
+            </div>
         </Modal>
     );
 }

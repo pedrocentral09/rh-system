@@ -17,7 +17,7 @@ export function ConfigurationTabs() {
     return (
         <div className="space-y-12 animate-in fade-in duration-700">
             {/* Premium Tabs Navigation */}
-            <div className="flex flex-wrap gap-2 p-1.5 bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[1.5rem] w-fit">
+            <div className="flex flex-wrap gap-2 p-1.5 bg-surface/60 backdrop-blur-xl border border-border rounded-[1.5rem] w-fit">
                 {[
                     { id: 'company', label: 'Empresa & Unidades', icon: '🏢' },
                     { id: 'users', label: 'Contas & Segurança', icon: '👥' },
@@ -30,7 +30,7 @@ export function ConfigurationTabs() {
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 flex items-center gap-2 group ${activeTab === tab.id
                             ? 'bg-brand-orange text-white shadow-[0_0_25px_rgba(255,102,0,0.3)]'
-                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]'
+                            : 'text-text-muted hover:text-text-primary hover:bg-text-primary/[0.03]'
                             }`}
                     >
                         <span className="text-sm scale-110 group-hover:scale-125 transition-transform">{tab.icon}</span>
@@ -48,10 +48,10 @@ export function ConfigurationTabs() {
                             Parametrização global: Estes dados regem a emissão de contratos e documentos legais do sistema.
                         </div>
                         <CompanyProfileForm />
-                        <div className="pt-12 border-t border-white/5">
+                        <div className="pt-12 border-t border-border">
                             <div className="mb-8">
-                                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Matriz <span className="text-brand-orange">Organizacional</span></h3>
-                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Gestão Multinível de Sociedades e Unidades de Negócio</p>
+                                <h3 className="text-lg font-black text-text-primary uppercase tracking-tighter">Matriz <span className="text-brand-orange">Organizacional</span></h3>
+                                <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">Gestão Multinível de Sociedades e Unidades de Negócio</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <CompanyList />
@@ -64,7 +64,7 @@ export function ConfigurationTabs() {
                 {activeTab === 'users' && (
                     <div className="space-y-12">
                         <UserList />
-                        <div className="border-t border-white/5 pt-12">
+                        <div className="border-t border-border pt-12">
                             <ProfileList />
                         </div>
                     </div>

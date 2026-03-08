@@ -11,10 +11,8 @@ interface EmployeeCreateModalProps {
 
 export function EmployeeCreateModal({ isOpen, onClose, onSuccess }: EmployeeCreateModalProps) {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Cadastrar Novo Funcionário" width="5xl">
-            <div className="max-h-[70vh] overflow-y-auto px-1">
-                <EmployeeForm onSuccess={onSuccess} onCancel={onClose} />
-            </div>
+        <Modal isOpen={isOpen} onClose={onClose} hideHeader width="6xl">
+            <EmployeeForm onSuccess={onSuccess} onCancel={onClose} />
         </Modal>
     );
 }

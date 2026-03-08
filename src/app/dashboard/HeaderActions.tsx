@@ -26,10 +26,10 @@ export function HeaderActions({ stats }: { stats: any }) {
             {/* Search Trigger */}
             <button
                 onClick={() => setIsSearchOpen(true)}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-200 transition-colors text-sm"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-surface-secondary text-text-muted rounded-md hover:brightness-95 transition-colors text-sm"
             >
                 <span>🔍 Buscar...</span>
-                <span className="text-xs bg-white dark:bg-slate-700 px-1.5 rounded border border-slate-200 dark:border-slate-600">⌘K</span>
+                <span className="text-xs bg-surface px-1.5 rounded border border-border">⌘K</span>
             </button>
             <button
                 onClick={() => setIsSearchOpen(true)}
@@ -43,7 +43,7 @@ export function HeaderActions({ stats }: { stats: any }) {
             {/* Theme Toggle */}
             <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 rounded-full hover:bg-surface-secondary transition-colors"
                 title="Alternar Tema"
             >
                 {theme === 'light' ? '🌙' : '☀️'}
@@ -53,7 +53,7 @@ export function HeaderActions({ stats }: { stats: any }) {
             <NotificationsPopover stats={stats} />
 
             {/* User Avatar */}
-            <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold ml-2">
+            <div className="w-10 h-10 rounded-full bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center text-brand-blue font-bold ml-2">
                 PC
             </div>
         </div>
