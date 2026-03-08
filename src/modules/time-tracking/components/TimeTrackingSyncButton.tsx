@@ -48,14 +48,14 @@ export function TimeTrackingSyncButton() {
             <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="h-10 px-6 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-white/10 hover:border-brand-orange/30 transition-all flex items-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50"
+                className="h-10 px-6 rounded-xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-primary hover:bg-surface-hover hover:border-brand-orange/30 transition-all flex items-center gap-3 shadow-lg active:scale-95 disabled:opacity-50"
             >
                 <RefreshCw className={`h-3.5 w-3.5 text-brand-orange ${isSyncing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
                 {isSyncing ? 'PROCESSANDO NODE...' : 'SINCRONIZAR TERMINAL'}
             </button>
             {lastSync && (
-                <div className="flex items-center text-[8px] font-black text-slate-600 uppercase tracking-widest gap-2 bg-white/[0.02] px-3 py-1 rounded-full border border-white/5">
-                    <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,1)]" />
+                <div className="flex items-center text-[8px] font-black text-text-muted uppercase tracking-widest gap-2 bg-surface-secondary/50 px-3 py-1 rounded-full border border-border/50">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
                     ÚLTIMO RECEBIMENTO: {format(lastSync, "HH:mm 'BRT' - dd/MM", { locale: ptBR })}
                 </div>
             )}

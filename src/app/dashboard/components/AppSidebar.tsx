@@ -75,6 +75,7 @@ export function AppSidebar() {
                     <SidebarLink href="/dashboard/recruitment" icon="📢" label="Recrutamento" />
                     <SidebarLink href="/dashboard/time-tracking" icon="⏰" label="Controle de Ponto" />
                     <SidebarLink href="/dashboard/vacations" icon="🏖️" label="Férias & Licenças" />
+                    <SidebarLink href="/dashboard/disciplinary" icon="⚖️" label="Disciplinar" />
 
                     <div className="pt-6 pb-2 px-4">
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Financeiro & Carreira</p>

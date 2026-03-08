@@ -31,7 +31,7 @@ export default function TimeTrackingPage() {
     return (
         <div className="space-y-12 max-w-[1600px] mx-auto pb-20 animate-in fade-in duration-700">
             {/* Premium Page Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#0A0F1C]/60 backdrop-blur-xl p-10 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-surface/60 backdrop-blur-xl p-10 rounded-[3rem] border border-border shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-brand-orange/5 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none" />
 
                 <div className="flex items-center gap-6 relative z-10">
@@ -39,8 +39,8 @@ export default function TimeTrackingPage() {
                         <Timer className="h-8 w-8 text-brand-orange" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none mb-2">Central de <span className="text-brand-orange">Cronometria</span></h1>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">Governança Temporal & Conformidade Operacional</p>
+                        <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter leading-none mb-2">Central de <span className="text-brand-orange">Cronometria</span></h1>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.4em] italic">Governança Temporal & Conformidade Operacional</p>
                     </div>
                 </div>
 
@@ -50,7 +50,7 @@ export default function TimeTrackingPage() {
             </div>
 
             {/* Premium Navigation */}
-            <div className="flex bg-[#0A0F1C]/40 backdrop-blur-md p-2 rounded-[2rem] border border-white/5 w-full overflow-x-auto no-scrollbar shadow-xl">
+            <div className="bg-surface-secondary/50 backdrop-blur-md border border-border p-1.5 rounded-[2rem] flex items-center gap-1 shadow-inner w-fit mx-auto overflow-x-auto no-scrollbar max-w-full">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -58,20 +58,20 @@ export default function TimeTrackingPage() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap relative group ${isActive
-                                    ? 'bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.1)]'
-                                    : 'text-slate-500 hover:text-white hover:bg-white/5'
+                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative flex items-center gap-3 whitespace-nowrap ${isActive
+                                ? 'bg-surface text-text-primary shadow-xl ring-1 ring-border'
+                                : 'text-text-muted hover:text-text-primary hover:bg-surface/40'
                                 }`}
                         >
-                            <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${isActive ? 'text-brand-orange' : 'text-slate-600 group-hover:text-brand-orange/60'}`} />
+                            <Icon className={`w-4 h-4 transition-transform ${isActive ? 'text-brand-orange' : 'text-text-muted group-hover:text-brand-orange'}`} />
                             {tab.label}
                             {tab.pulse && !isActive && (
                                 <span className="ml-2 w-2 h-2 rounded-full bg-brand-orange animate-pulse shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
                             )}
                             {isActive && (
                                 <motion.div
-                                    layoutId="activeGlow"
-                                    className="absolute inset-0 bg-brand-orange/5 blur-xl rounded-full -z-10"
+                                    layoutId="activeTabIndicator"
+                                    className="absolute bottom-1.5 left-6 right-6 h-0.5 bg-brand-orange rounded-full z-10"
                                 />
                             )}
                         </button>
@@ -95,7 +95,7 @@ export default function TimeTrackingPage() {
                             <AFDUploadForm />
                         </div>
                         <div className="xl:col-span-8">
-                            <div className="bg-[#0A0F1C]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                            <div className="bg-surface border border-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none" />
                                 <TimeFileList />
                             </div>

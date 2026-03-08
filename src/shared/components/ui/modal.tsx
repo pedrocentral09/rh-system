@@ -73,7 +73,7 @@ export function Modal({ isOpen, onClose, title, children, width = 'md', hideHead
                         variant="ghost"
                         size="sm"
                         onClick={onClose}
-                        className="absolute right-10 top-10 h-12 w-12 p-0 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white z-50 backdrop-blur-md transition-all active:scale-90"
+                        className="absolute right-10 top-10 h-10 w-10 p-0 rounded-2xl bg-surface-secondary/90 border border-border hover:bg-surface-hover text-text-primary z-[60] backdrop-blur-md transition-all active:scale-95 shadow-sm"
                     >
                         ✕
                     </Button>

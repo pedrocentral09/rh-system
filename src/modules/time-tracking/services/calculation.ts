@@ -118,17 +118,17 @@ export async function calculateDay(
     // 5. Determine Status & Balance
     let balanceMinutes = 0;
     let status: DailyStatus['status'] = 'OK';
-    let statusColor = 'bg-green-100 text-green-700';
+    let statusColor = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
 
     if (isDayOff) {
         expectedMinutes = 0;
         balanceMinutes = workedMinutes; // All worked is extra
         if (workedMinutes > 0) {
             status = 'EXTRA';
-            statusColor = 'bg-blue-100 text-blue-700'; // Worked on Day Off
+            statusColor = 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'; // Worked on Day Off
         } else {
             status = 'DAY_OFF';
-            statusColor = 'bg-slate-100 text-slate-500';
+            statusColor = 'bg-surface-secondary text-text-muted border-border';
         }
     } else {
         // Regular Work Day
@@ -148,20 +148,20 @@ export async function calculateDay(
 
         if (punches.length === 0) {
             status = 'ABSENT';
-            statusColor = 'bg-red-100 text-red-700';
+            statusColor = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
         } else if (punches.length % 2 !== 0) {
             // Odd punches (Incomplete)
             status = 'MISSING'; // Missing punch
-            statusColor = 'bg-amber-100 text-amber-700';
+            statusColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
         } else if (balanceMinutes < -tolerance) {
             status = 'DELAY';
-            statusColor = 'bg-yellow-100 text-yellow-700'; // Negative balance > tolerance
+            statusColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'; // Negative balance > tolerance
         } else if (balanceMinutes > tolerance) {
             status = 'EXTRA';
-            statusColor = 'bg-purple-100 text-purple-700'; // Positive balance
+            statusColor = 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'; // Positive balance
         } else {
             status = 'OK';
-            statusColor = 'bg-green-100 text-green-700';
+            statusColor = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
         }
     }
 

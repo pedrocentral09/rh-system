@@ -107,10 +107,10 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
 
                     {/* Elite Stats Grid */}
                     <div className="flex-1 w-full grid grid-cols-2 gap-4">
-                        <StatusCard label="Presentes" value={stats.present} color="text-emerald-500" bg="bg-emerald-500/5 dark:bg-emerald-500/10" dot="bg-emerald-500" />
-                        <StatusCard label="Incidências" value={stats.late} color="text-amber-500" bg="bg-amber-500/5 dark:bg-amber-500/10" dot="bg-amber-500" />
-                        <StatusCard label="Ausências" value={stats.absent} color="text-rose-500" bg="bg-rose-500/5 dark:bg-rose-500/10" dot="bg-rose-500" />
-                        <StatusCard label="Descansos" value={stats.dayOff} color="text-text-secondary" bg="bg-surface-secondary" dot="bg-text-muted" />
+                        <StatusCard label="Presentes" value={stats.present} color="text-emerald-500" bg="bg-emerald-500/10 border-emerald-500/20" dot="bg-emerald-500" />
+                        <StatusCard label="Incidências" value={stats.late} color="text-amber-500" bg="bg-amber-500/10 border-amber-500/20" dot="bg-amber-500" />
+                        <StatusCard label="Ausências" value={stats.absent} color="text-rose-500" bg="bg-rose-500/10 border-rose-500/20" dot="bg-rose-500" />
+                        <StatusCard label="Descansos" value={stats.dayOff} color="text-text-muted" bg="bg-surface-secondary border-border" dot="bg-text-muted" />
                     </div>
                 </div>
 
@@ -130,9 +130,9 @@ export function AttendanceWidget({ overview }: { overview: any[] }) {
 
 function StatusCard({ label, value, color, bg, dot }: { label: string, value: number, color: string, bg: string, dot: string }) {
     return (
-        <div className={`${bg} border border-border p-4 rounded-3xl transition-all duration-300 hover:border-surface-hover group/card`}>
+        <div className={`p-4 rounded-3xl transition-all duration-300 border hover:border-brand-orange/30 group/card ${bg}`}>
             <div className="flex items-center gap-2 mb-2">
-                <div className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+                <div className={`h-1.5 w-1.5 rounded-full ${dot} shadow-[0_0_5px_currentColor]`} />
                 <p className="text-[9px] text-text-muted font-black uppercase tracking-widest group-hover/card:text-text-secondary transition-colors">{label}</p>
             </div>
             <p className={`text-2xl font-black ${color} tracking-tighter`}>{value}</p>

@@ -607,7 +607,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} hideHeader width="6xl">
-            <div className="bg-surface/95 backdrop-blur-3xl rounded-[2.5rem] p-0 overflow-hidden relative border border-border shadow-2xl min-h-[85vh] flex flex-col">
+            <div className="flex-1 flex flex-col relative min-h-[85vh]">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-orange/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-blue/5 blur-[100px] rounded-full -ml-48 -mb-48 pointer-events-none" />
 
@@ -627,12 +627,6 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="h-12 w-12 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-text-muted hover:text-brand-orange hover:border-brand-orange/50 transition-all active:scale-90"
-                        >
-                            <ChevronRight className="h-6 w-10 rotate-180" />
-                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mt-8 no-scrollbar">

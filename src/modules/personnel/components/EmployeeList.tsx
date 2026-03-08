@@ -21,7 +21,7 @@ import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link } from 'lucide-react';
+import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link, Pencil } from 'lucide-react';
 
 /*
 Vacation Improvements:
@@ -555,7 +555,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                         </button>
                                     )}
 
-                                    <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all shadow-xl hover:scale-110" title="Editar Dossiê"><Briefcase className="h-4 w-4" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); setEditingEmployee(emp); }} className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all shadow-xl hover:scale-110" title="Editar Dossiê"><Pencil className="h-4 w-4" /></button>
                                     <button onClick={(e) => { e.stopPropagation(); setTimeTrackingEmployee(emp); }} className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-secondary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:scale-110" title="Cartão de Ponto"><Clock className="h-4 w-4" /></button>
                                     <div className="w-8 flex items-center justify-center text-text-muted/20 group-hover:text-brand-orange transition-colors">
                                         <ChevronRight className="h-5 w-5" />
