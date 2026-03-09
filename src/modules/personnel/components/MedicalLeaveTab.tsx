@@ -98,6 +98,7 @@ export function MedicalLeaveTab({ employeeId }: MedicalLeaveTabProps) {
                 documentUrl: downloadUrl,
                 status: 'APPROVED', // HR submitted is auto-approved
                 submittedByType: 'HR',
+                submittedById: 'system',
                 daysCount: Number(formData.daysCount)
             };
 

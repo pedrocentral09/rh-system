@@ -3,36 +3,55 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+import { getCurrentUser } from '@/modules/core/actions/auth';
 import { parseSafeDate } from '@/shared/utils/date-utils';
 
 export async function createMedicalLeave(data: any) {
     try {
+        console.log('[createMedicalLeave] Incoming data:', data);
+        const user = await getCurrentUser();
+
+        const startDate = parseSafeDate(data.startDate);
+        const endDate = parseSafeDate(data.endDate);
+
+        if (!startDate) throw new Error('Data de início inválida.');
+        if (!endDate) throw new Error('Data de término inválida.');
+
+        const daysCount = typeof data.daysCount === 'string' ? parseInt(data.daysCount) : data.daysCount;
+
+        if (isNaN(daysCount)) throw new Error('Número de dias inválido.');
+
         const leave = await prisma.medicalLeave.create({
             data: {
                 employeeId: data.employeeId,
                 type: data.type,
-                startDate: parseSafeDate(data.startDate)!,
-                endDate: parseSafeDate(data.endDate)!,
-                daysCount: parseInt(data.daysCount),
-                crm: data.crm || null,
-                doctorName: data.doctorName || null,
-                cid: data.cid || null,
+                startDate,
+                endDate,
+                daysCount,
+                crm: data.crm ? String(data.crm).trim() : null,
+                doctorName: data.doctorName ? String(data.doctorName).trim() : null,
+                cid: data.cid ? String(data.cid).trim().toUpperCase() : null,
                 documentUrl: data.documentUrl,
-                status: data.status || 'APPROVED', // HR bypasses approval by default
+                status: data.status || 'APPROVED',
                 submittedByType: data.submittedByType || 'HR',
-                submittedById: data.submittedById,
-                notes: data.notes || null,
+                submittedById: data.submittedById || user?.id || 'system',
+                notes: data.notes ? String(data.notes).trim() : null,
             }
         });
+
+        console.log('[createMedicalLeave] Success:', leave.id);
 
         revalidatePath('/dashboard');
         revalidatePath('/dashboard/personnel');
         revalidatePath('/dashboard/vacations');
 
         return { success: true, data: leave };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating medical leave:', error);
-        return { success: false, error: 'Erro ao registrar atestado.' };
+        return {
+            success: false,
+            error: error.message || 'Erro ao registrar atestado no banco de dados.'
+        };
     }
 }
 
