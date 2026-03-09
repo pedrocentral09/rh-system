@@ -13,19 +13,18 @@ export class BaseService {
     protected static error(error: any, message: string): ServiceResult<any> {
         console.error(`[Service Error]: ${message}`, error);
 
-        // Ensure error is serializable for Next.js Server Actions
-        let safeError = error;
+        // Always return error as a STRING so toast.error(result.error) never
+        // passes an object to React (which would crash with "Objects are not
+        // valid as a React child").
+        let safeError: string;
         if (error instanceof Error) {
-            safeError = { message: error.message, stack: process.env.NODE_ENV === 'development' ? error.stack : undefined };
-        } else if (typeof error !== 'object' || error === null) {
-            safeError = { message: String(error) };
+            safeError = error.message;
+        } else if (typeof error === 'string') {
+            safeError = error;
+        } else if (error && typeof error === 'object' && 'message' in error) {
+            safeError = String(error.message);
         } else {
-            // Try to serialize complex objects or extract just the message
-            try {
-                safeError = JSON.parse(JSON.stringify(error));
-            } catch (e) {
-                safeError = { message: 'Unknown non-serializable error' };
-            }
+            safeError = message || 'Erro desconhecido';
         }
 
         return { success: false, error: safeError, message };
