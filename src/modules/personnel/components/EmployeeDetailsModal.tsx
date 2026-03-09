@@ -766,6 +766,42 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                     </motion.div>
                                 )}
 
+                                {displayEmployee.status === 'WAITING_ONBOARDING' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-brand-blue/10 border border-brand-blue/20 rounded-[2.5rem] p-10 flex flex-col items-center gap-8 shadow-[0_20px_50px_rgba(59,130,246,0.1)] relative overflow-hidden group"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10 w-full">
+                                            <div className="h-20 w-20 bg-brand-blue/20 rounded-[2rem] flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/20">
+                                                <UserPlus className="h-10 w-10 animate-pulse" />
+                                            </div>
+                                            <div className="text-center md:text-left flex-1">
+                                                <p className="text-lg font-black text-brand-blue uppercase tracking-tight italic">Protocolo de Vínculo Digital Ativo</p>
+                                                <p className="text-[11px] text-text-primary font-bold uppercase tracking-widest mt-2 opacity-80">O colaborador ainda não preencheu seus dados. Transmita o link de acesso seguro abaixo.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full flex items-center gap-4 bg-surface/50 border border-border rounded-2xl p-6 relative z-10 group/link">
+                                            <span className="text-xs text-text-primary font-mono truncate flex-1 block overflow-hidden font-black tracking-tight self-center">
+                                                {typeof window !== 'undefined' ? `${window.location.origin}/onboarding/${displayEmployee.id}` : ''}
+                                            </span>
+                                            <button
+                                                className="h-12 px-8 rounded-xl bg-brand-blue text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center gap-2 shadow-lg active:scale-95"
+                                                onClick={() => {
+                                                    const link = `${window.location.origin}/onboarding/${displayEmployee.id}`;
+                                                    navigator.clipboard.writeText(link);
+                                                    toast.success('Link de autocadastro copiado!');
+                                                }}
+                                            >
+                                                <Copy className="h-4 w-4" />
+                                                COPIAR LINK
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+
                                 {/* Profile Hero Section */}
                                 <div className="flex flex-col md:flex-row items-center md:items-end gap-10 pb-12 border-b border-border relative">
                                     <div className="relative group">

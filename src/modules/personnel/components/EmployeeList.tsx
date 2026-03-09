@@ -21,7 +21,7 @@ import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link, Pencil } from 'lucide-react';
+import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link as LinkIcon, Pencil } from 'lucide-react';
 import { Badge } from '@/shared/components/ui/badge';
 
 /*
@@ -234,7 +234,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                         onClick={() => setIsOnboardingRequestOpen(true)}
                         className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-surface transition-all shadow-md flex items-center gap-3 border-b-4 border-black/5"
                     >
-                        <Link className="h-5 w-5 text-brand-orange" />
+                        <LinkIcon className="h-5 w-5 text-brand-orange" />
                         Autocadastro Digital
                     </button>
                 </div>
@@ -470,29 +470,45 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
 
                                 <div className="col-span-2 flex justify-end gap-3 opacity-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 relative">
                                     {(emp.status === 'PENDING_APPROVAL' || emp.status === 'WAITING_ONBOARDING') && (
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                toast('🗑️ Protocolo de Exclusão', {
-                                                    description: `Deseja realmente remover o registro de ${emp.name}?`,
-                                                    action: {
-                                                        label: 'Remover',
-                                                        onClick: async () => {
-                                                            const res = await deleteEmployee(emp.id);
-                                                            if (res.success) {
-                                                                toast.success('Registro removido');
-                                                                loadEmployees();
-                                                            } else {
-                                                                toast.error(res.message);
+                                        <div className="flex gap-2">
+                                            {emp.status === 'WAITING_ONBOARDING' && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const link = `${window.location.origin}/onboarding/${emp.id}`;
+                                                        navigator.clipboard.writeText(link);
+                                                        toast.success('Link de autocadastro copiado!');
+                                                    }}
+                                                    className="w-10 h-10 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl shadow-brand-blue/10"
+                                                    title="Copiar Link de Autocadastro"
+                                                >
+                                                    <LinkIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    toast('🗑️ Protocolo de Exclusão', {
+                                                        description: `Deseja realmente remover o registro de ${emp.name}?`,
+                                                        action: {
+                                                            label: 'Remover',
+                                                            onClick: async () => {
+                                                                const res = await deleteEmployee(emp.id);
+                                                                if (res.success) {
+                                                                    toast.success('Registro removido');
+                                                                    loadEmployees();
+                                                                } else {
+                                                                    toast.error(res.message);
+                                                                }
                                                             }
                                                         }
-                                                    }
-                                                });
-                                            }}
-                                            className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                                    });
+                                                }}
+                                                className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     )}
 
                                     {emp.status === 'PENDING_APPROVAL' && (

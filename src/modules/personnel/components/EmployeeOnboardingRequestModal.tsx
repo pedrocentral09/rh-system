@@ -23,25 +23,27 @@ export function EmployeeOnboardingRequestModal({ isOpen, onClose, onSuccess }: E
     const [copied, setCopied] = useState(false);
 
     const handleGenerate = async () => {
-        if (!cpf || cpf.length < 11) {
-            toast.error('Informe um CPF válido');
+        const cleanCpf = cpf.replace(/\D/g, '');
+        if (!cleanCpf || cleanCpf.length !== 11) {
+            toast.error('Informe um CPF válido com 11 dígitos');
             return;
         }
 
         setLoading(true);
         try {
-            const result = await initiateSelfOnboarding(cpf);
-            if (result.success) {
+            const result = await initiateSelfOnboarding(cleanCpf);
+            if (result.success && result.data?.id) {
                 const baseUrl = window.location.origin;
                 const link = `${baseUrl}/onboarding/${result.data.id}`;
                 setGeneratedLink(link);
-                toast.success('Processo iniciado com sucesso!');
+                toast.success('Protocolo de autocadastro gerado!');
                 onSuccess();
             } else {
                 toast.error(result.message || 'Erro ao iniciar processo');
             }
         } catch (error) {
-            toast.error('Erro de conexão ao gerar link');
+            console.error('Onboarding Generation Error:', error);
+            toast.error('Erro técnico ao gerar protocolo');
         } finally {
             setLoading(false);
         }

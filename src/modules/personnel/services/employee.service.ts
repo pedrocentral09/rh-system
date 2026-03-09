@@ -697,15 +697,19 @@ export class EmployeeService extends BaseService {
 
     static async initiateSelfOnboarding(cpf: string, performingUserId?: string): Promise<ServiceResult<any>> {
         try {
+            const cleanCpf = cpf.replace(/\D/g, '');
+            if (!cleanCpf || cleanCpf.length !== 11) return this.error(null, 'CPF inválido para cadastro.');
+
             // Check if already exists
-            const existing = await prisma.employee.findUnique({ where: { cpf } });
+            const existing = await prisma.employee.findFirst({ where: { cpf: cleanCpf } });
             if (existing) return this.error(null, 'Este CPF já está cadastrado no sistema.');
 
             const employee = await prisma.employee.create({
                 data: {
                     name: 'Novo Colaborador (Aguardando Cadastro)',
-                    cpf,
+                    cpf: cleanCpf,
                     status: 'WAITING_ONBOARDING',
+                    isIncomplete: true
                 }
             });
 
@@ -715,10 +719,11 @@ export class EmployeeService extends BaseService {
                 module: 'PERSONNEL',
                 resource: 'Employee',
                 resourceId: employee.id,
-                newData: { cpf, status: 'WAITING_ONBOARDING' }
+                newData: { cpf: cleanCpf, status: 'WAITING_ONBOARDING' }
             });
 
-            return this.success(employee);
+            const serialized = JSON.parse(JSON.stringify(employee));
+            return this.success(serialized);
         } catch (error) {
             console.error('EmployeeService.initiateSelfOnboarding error:', error);
             return this.error(error, 'Erro ao iniciar processo de autocadastro');
@@ -744,7 +749,8 @@ export class EmployeeService extends BaseService {
                 newData: { status: 'PENDING_APPROVAL' }
             });
 
-            return this.success(employee);
+            const serialized = JSON.parse(JSON.stringify(employee));
+            return this.success(serialized);
         } catch (error) {
             console.error('EmployeeService.submitSelfOnboarding error:', error);
             return this.error(error, 'Erro ao enviar dados de cadastro');
