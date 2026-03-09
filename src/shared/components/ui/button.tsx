@@ -7,14 +7,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant = 'primary', size = 'md', ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50';
+    const baseStyles = 'inline-flex items-center justify-center rounded-2xl font-black uppercase tracking-widest transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange disabled:pointer-events-none disabled:opacity-50 active:scale-95 text-[10px]';
 
     const variants = {
-        primary: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm',
-        secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200',
-        outline: 'border border-zinc-200 bg-transparent hover:bg-zinc-100 text-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-800',
-        ghost: 'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
-        destructive: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
+        primary: 'bg-brand-orange text-white hover:bg-orange-600 shadow-xl shadow-brand-orange/20 border-b-4 border-black/20',
+        secondary: 'bg-brand-blue text-white hover:bg-[#071539] shadow-xl shadow-brand-blue/20 border-b-4 border-black/20',
+        outline: 'border border-border bg-surface hover:bg-surface-secondary text-text-primary shadow-sm hover:border-brand-orange/30',
+        ghost: 'hover:bg-surface-secondary text-text-muted hover:text-text-primary',
+        destructive: 'bg-rose-500 text-white hover:bg-rose-600 shadow-xl shadow-rose-500/20 border-b-4 border-black/20',
     };
 
     const sizes = {

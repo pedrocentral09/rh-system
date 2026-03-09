@@ -50,14 +50,14 @@
   --color-brand-blue: var(--brand-blue);
   --color-brand-orange: var(--brand-orange);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -98,4 +98,11 @@ body {
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }

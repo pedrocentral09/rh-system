@@ -3,12 +3,31 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
-export async function signDocument(documentId: string, confirmationCode: string, ipAddress?: string) {
+export async function signDocument(
+    documentId: string,
+    signatureImageUrl: string,
+    metadata: {
+        userAgent: string;
+        pin: string;
+        ip?: string;
+        lat?: number;
+        lng?: number;
+    }
+) {
     try {
         const document = await prisma.document.findUnique({
             where: { id: documentId },
-            include: { employee: true }
+            include: {
+                employee: {
+                    select: {
+                        id: true,
+                        pinHash: true,
+                        name: true
+                    }
+                }
+            }
         });
 
         if (!document) {
@@ -19,10 +38,20 @@ export async function signDocument(documentId: string, confirmationCode: string,
             return { success: false, error: 'Este documento já foi assinado.' };
         }
 
+        // Verify PIN Security
+        if (!document.employee.pinHash) {
+            return { success: false, error: 'Colaborador sem PIN cadastrado. Favor configurar no Totem.' };
+        }
+
+        const isPinValid = await bcrypt.compare(metadata.pin, document.employee.pinHash);
+        if (!isPinValid) {
+            return { success: false, error: 'PIN de segurança incorreto.' };
+        }
+
         // Generate SHA-256 Hash for the signature
-        // We hash the document ID, parent employee ID, code, and timestamp
+        // We hash the document ID, parent employee ID, the visual signature, and metadata package
         const timestamp = new Date().toISOString();
-        const dataToHash = `${documentId}|${document.employeeId}|${confirmationCode}|${timestamp}`;
+        const dataToHash = `${documentId}|${document.employeeId}|${signatureImageUrl.slice(-50)}|${metadata.userAgent}|${timestamp}`;
         const hash = crypto.createHash('sha256').update(dataToHash).digest('hex');
 
         await prisma.document.update({
@@ -30,15 +59,18 @@ export async function signDocument(documentId: string, confirmationCode: string,
             data: {
                 status: 'SIGNED',
                 signatureHash: hash,
+                signatureImageUrl: signatureImageUrl,
                 signatureDate: new Date(),
-                signatureIp: ipAddress || 'Unknown'
+                signatureIp: metadata.ip || 'Unknown',
+                signatureUserAgent: metadata.userAgent,
+                signatureLat: metadata.lat,
+                signatureLng: metadata.lng
             }
         });
 
         try {
             revalidatePath('/dashboard/personnel');
         } catch (e) {
-            // Ignore revalidation errors in non-Next.js environments (standalone scripts)
             console.log('Skipping revalidatePath: No Next.js context');
         }
         return { success: true, hash };

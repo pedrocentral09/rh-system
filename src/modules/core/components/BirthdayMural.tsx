@@ -15,52 +15,64 @@ interface BirthdayMuralProps {
 
 export function BirthdayMural({ birthdays }: BirthdayMuralProps) {
     return (
-        <div className="bg-surface border border-border rounded-[2rem] p-8 relative overflow-hidden h-full group shadow-lg">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="bg-surface border border-white/5 rounded-[2.5rem] p-10 relative overflow-hidden h-full group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)]">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/[0.03] blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-pink-500/[0.02] blur-[80px] rounded-full" />
 
-            <h4 className="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                Ciclo de Celebrações
-            </h4>
+            <div className="flex justify-between items-center mb-8 relative z-10">
+                <h4 className="text-[10px] font-[1000] text-pink-500 uppercase tracking-[0.4em] flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]" />
+                    Celebrações
+                </h4>
+                <div className="bg-pink-500/10 text-pink-500 px-3 py-1 rounded-full text-[9px] font-[1000] uppercase tracking-widest border border-pink-500/20">
+                    PRÓXIMOS 30 DIAS
+                </div>
+            </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 relative z-10">
                 {(birthdays || []).length > 0 ? (
                     birthdays.map((emp, index) => (
                         <motion.div
                             key={emp.id}
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 30 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            className="flex items-center space-x-4 p-4 bg-surface-secondary rounded-[1.5rem] border border-border group/item hover:bg-surface-hover hover:border-pink-500/20 transition-all duration-300 shadow-sm"
+                            transition={{ delay: index * 0.1, duration: 0.8, ease: "circOut" }}
+                            whileHover={{ scale: 1.02, x: 5 }}
+                            className="flex items-center space-x-5 p-5 bg-surface-secondary/40 backdrop-blur-sm rounded-[1.8rem] border border-white/5 group/item transition-all duration-500 hover:border-pink-500/30 hover:bg-surface hover:shadow-2xl hover:shadow-pink-500/5"
                         >
-                            <div className="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 font-black overflow-hidden relative shadow-lg group-hover/item:border-pink-500/50 transition-colors">
+                            <div className="w-14 h-14 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 font-black overflow-hidden relative shadow-inner group-hover/item:border-pink-500/50 transition-all duration-700 group-hover:rotate-3">
                                 {emp.photoUrl ? (
-                                    <img src={emp.photoUrl} alt={emp.name} className="h-full w-full object-cover" />
+                                    <img src={emp.photoUrl} alt={emp.name} className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-700" />
                                 ) : (
-                                    <span className="text-lg leading-none">{emp.name.charAt(0)}</span>
+                                    <span className="text-xl leading-none italic font-[1000]">{emp.name.charAt(0)}</span>
                                 )}
                             </div>
-                            <div>
-                                <p className="text-xs font-black text-text-primary uppercase tracking-tighter group-hover/item:text-pink-500 transition-colors">{emp.name}</p>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <span className="text-[10px] text-pink-400 font-black uppercase tracking-widest">Dia {emp.day}</span>
-                                    <span className="text-[10px] text-text-muted mb-0.5">•</span>
-                                    <span className="text-[10px] text-text-secondary font-bold uppercase tracking-tighter">Aniversário 🎉</span>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-[1000] text-text-primary uppercase tracking-tight truncate group-hover/item:text-pink-500 transition-colors duration-500 italic">{emp.name}</p>
+                                <div className="flex items-center gap-2 mt-1.5 px-2 py-0.5 bg-pink-500/5 rounded-full w-fit border border-pink-500/10 opacity-70 group-hover/item:opacity-100 transition-opacity">
+                                    <span className="text-[9px] text-pink-400 font-black uppercase tracking-widest">Dia {emp.day}</span>
+                                    <div className="w-1 h-1 rounded-full bg-pink-400/50" />
+                                    <span className="text-[9px] text-pink-300 font-black uppercase tracking-tighter">ANIVERSÁRIO 🎉</span>
                                 </div>
+                            </div>
+                            <div className="opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-pink-500/40"><path d="M5 12h14m-7-7 7 7-7 7" stroke="currentColor" strokeWidth="3" /></svg>
                             </div>
                         </motion.div>
                     ))
                 ) : (
-                    <div className="h-40 flex flex-col items-center justify-center text-text-muted italic">
-                        <span className="text-2xl opacity-20 mb-2">🎁</span>
-                        <p className="text-[10px] font-black uppercase tracking-widest">Sem ciclos para hoje</p>
+                    <div className="h-48 flex flex-col items-center justify-center text-text-muted gap-4">
+                        <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center">
+                            <span className="text-3xl grayscale opacity-20">🎁</span>
+                        </div>
+                        <p className="text-[10px] font-[1000] uppercase tracking-[0.4em] opacity-40">Ciclo Concluído</p>
                     </div>
                 )}
             </div>
 
             {/* Decorative Bottom Bar */}
-            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-pink-500/20 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-1000" />
         </div>
     );
 }

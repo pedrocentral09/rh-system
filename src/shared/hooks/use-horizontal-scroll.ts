@@ -17,7 +17,7 @@ export function useHorizontalScroll() {
         stopScrolling();
         scrollInterval.current = setInterval(() => {
             if (scrollRef.current) {
-                const maxStep = 20; // Max pixels to scroll
+                const maxStep = 50; // Increased to 50 for ultra-responsive feel
                 const step = maxStep * intensity;
                 scrollRef.current.scrollLeft += direction === 'right' ? step : -step;
             }

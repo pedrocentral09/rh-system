@@ -4,7 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/modules/core/actions/auth';
+import { ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AppSidebarProps {
     // We can add props here if needed
@@ -65,12 +68,14 @@ export function AppSidebar() {
                     </div>
 
                     <SidebarLink href="/dashboard" icon="🏠" label="Início" />
+                    <SidebarLink href="/dashboard/reports" icon="📊" label="Relatórios" />
 
                     <div className="pt-6 pb-2 px-4">
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Pessoas & Operação</p>
                     </div>
 
                     <SidebarLink href="/dashboard/personnel" icon="👥" label="Colaboradores" />
+                    <SidebarLink href="/dashboard/documents" icon="📁" label="Documentação" />
                     <SidebarLink href="/dashboard/scales" icon="🗓️" label="Escalas de Trabalho" />
                     <SidebarLink href="/dashboard/recruitment" icon="📢" label="Recrutamento" />
                     <SidebarLink href="/dashboard/time-tracking" icon="⏰" label="Controle de Ponto" />
@@ -97,6 +102,7 @@ export function AppSidebar() {
                     </div>
 
                     <SidebarLink href="/dashboard/tools/admission-form" icon="📋" label="Ficha Admissão" />
+                    <SidebarLink href="/dashboard/security/audit" icon="🛡️" label="Audit. Segurança" />
                 </nav>
 
                 <div className="p-6 border-t border-border space-y-3">
@@ -120,15 +126,49 @@ export function AppSidebar() {
 }
 
 function SidebarLink({ href, icon, label, color = "text-text-secondary" }: { href: string, icon: string, label: string, color?: string }) {
+    const pathname = usePathname();
+    const isActive = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
+
     return (
         <Link
             href={href}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-surface-hover transition-all duration-300 group relative overflow-hidden`}
+            className={cn(
+                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-500 group relative overflow-hidden active:scale-95",
+                isActive ? "bg-brand-orange/10 text-text-primary shadow-[inset_0_0_20px_rgba(255,120,0,0.05)]" : "hover:bg-surface-secondary/80"
+            )}
         >
-            <div className="absolute inset-y-0 left-0 w-1 bg-brand-orange transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 rounded-r-full" />
-            <span className="text-lg group-hover:scale-110 transition-transform">{icon}</span>
-            <span className={`font-bold text-[11px] uppercase tracking-wider ${color} group-hover:text-text-primary transition-colors`}>{label}</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <motion.div
+                initial={false}
+                animate={{
+                    opacity: isActive ? 1 : 0,
+                    height: isActive ? '60%' : '0%'
+                }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-brand-orange rounded-r-full shadow-[0_0_15px_rgba(255,102,0,0.8)] z-10"
+            />
+
+            <span className={cn(
+                "text-lg transition-all duration-500 group-hover:scale-125 group-hover:rotate-6",
+                isActive && "scale-110 rotate-3 animate-pulse"
+            )}>{icon}</span>
+
+            <span className={cn(
+                "font-black text-[10px] uppercase tracking-widest transition-colors flex-1",
+                isActive ? "text-brand-orange" : color,
+                "group-hover:text-text-primary"
+            )}>
+                {label}
+            </span>
+
+            <ChevronRight className={cn(
+                "h-3 w-3 transition-all duration-500",
+                isActive ? "text-brand-orange translate-x-0 opacity-100" : "text-text-muted opacity-0 group-hover:opacity-100 group-hover:translate-x-1"
+            )} />
+
+            {isActive && (
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/5 via-transparent to-transparent pointer-events-none" />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         </Link>
     );
 }

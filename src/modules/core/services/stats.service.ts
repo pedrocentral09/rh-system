@@ -35,7 +35,9 @@ export class StatsService extends BaseService {
                     allVacationRequests,
                     upcomingSuspensions,
                     allHealthData,
-                    allMedicalLeaves
+                    allMedicalLeaves,
+                    pendingSignaturesCount,
+                    pendingVacationsCount
                 ] = await Promise.all([
                     prisma.employee.count({ where: baseWhere }),
                     prisma.employee.count({ where: { ...baseWhere, status: 'ACTIVE' } }),
@@ -90,6 +92,18 @@ export class StatsService extends BaseService {
                         where: { endDate: { gte: today, lte: in30Days }, status: 'APPROVED' },
                         include: { employee: { select: { name: true, photoUrl: true, department: true } } },
                         orderBy: { endDate: 'asc' }
+                    }),
+                    prisma.document.count({
+                        where: {
+                            status: 'PENDING',
+                            employee: baseWhere
+                        }
+                    }),
+                    prisma.vacationRequest.count({
+                        where: {
+                            status: 'PENDING',
+                            employee: baseWhere
+                        }
                     })
                 ]);
 
@@ -286,7 +300,9 @@ export class StatsService extends BaseService {
                         name,
                         count,
                         percentage: Math.round((count / allActiveEmployees.length) * 100)
-                    })).sort((a, b) => b.count - a.count)
+                    })).sort((a, b) => b.count - a.count),
+                    pendingSignatures: pendingSignaturesCount,
+                    pendingVacations: pendingVacationsCount
                 };
             };
 

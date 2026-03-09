@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { addYears, addMonths, isBefore, differenceInDays } from 'date-fns';
 
 import { parseSafeDate } from '@/shared/utils/date-utils';
+import { createNotificationAction } from '@/modules/core/actions/notifications';
+import { getCurrentUser } from '@/modules/core/actions/auth';
 
 export async function getVacationData(employeeId: string) {
     try {
@@ -149,6 +151,9 @@ export async function createVacationRequest(data: {
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + data.daysCount - 1);
 
+            const requester = await getCurrentUser();
+            const status = requester?.role === 'EMPLOYEE' ? 'PENDING' : 'APPROVED';
+
             const request = await tx.vacationRequest.create({
                 data: {
                     employeeId: data.employeeId,
@@ -157,9 +162,24 @@ export async function createVacationRequest(data: {
                     endDate: endDate,
                     daysCount: data.daysCount,
                     soldDays: data.soldDays,
-                    status: 'APPROVED'
-                }
+                    status: status
+                },
+                include: { employee: true }
             });
+
+            // If pending, notify admins
+            if (status === 'PENDING') {
+                const admins = await tx.user.findMany({ where: { role: 'ADMIN' } });
+                for (const admin of admins) {
+                    await createNotificationAction({
+                        userId: admin.id,
+                        title: '🏖️ Nova Solicitação de Férias',
+                        message: `${request.employee.name} solicitou ${data.daysCount} dias de férias.`,
+                        type: 'INFO',
+                        link: '/dashboard/vacations'
+                    });
+                }
+            }
 
             // 5. Audit Log
             await tx.auditLog.create({
@@ -267,10 +287,24 @@ export async function updateVacationRequestStatus(requestId: string, status: str
     try {
         const request = await prisma.vacationRequest.update({
             where: { id: requestId },
-            data: { status, notes }
+            data: { status, notes },
+            include: { employee: true }
         });
 
-        // If approved, we might need to revalidate paths
+        // Notify Employee
+        if (request.employee.userId) {
+            const statusLabel = status === 'APPROVED' ? 'APROVADA ✅' : 'REPROVADA ❌';
+            await createNotificationAction({
+                userId: request.employee.userId,
+                title: `Sua solicitação de férias foi ${statusLabel}`,
+                message: status === 'APPROVED'
+                    ? `Boas notícias! Suas férias iniciando em ${request.startDate.toLocaleDateString()} foram confirmadas.`
+                    : `Sua solicitação foi analisada. Notas: ${notes || 'Sem observações.'}`,
+                type: status === 'APPROVED' ? 'SUCCESS' : 'WARNING',
+                link: '/portal/vacations'
+            });
+        }
+
         revalidatePath('/dashboard/vacations');
         return { success: true, data: request };
     } catch (error) {

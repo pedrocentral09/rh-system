@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import EmployeeTransferModal from './EmployeeTransferModal';
 import { EmployeeEditModal } from './EmployeeEditModal';
 import { getTransferHistory, getEmployee } from '../actions';
-import { Loader2, ShieldAlert, KeyRound, Copy, CheckCircle, CheckCircle2, AlertCircle, Heart, HeartPulse, MapPin, User, CreditCard, Sparkles, ChevronRight, Search, FileText, Camera, BadgeCheck } from 'lucide-react';
+import { Loader2, ShieldAlert, KeyRound, Copy, CheckCircle, CheckCircle2, AlertCircle, Heart, HeartPulse, MapPin, User, CreditCard, Sparkles, ChevronRight, Search, FileText, Camera, BadgeCheck, Pencil, PencilLine, UserPlus, Phone, Mail, Calendar, Building2, UserCircle, Briefcase, Plus, Send } from 'lucide-react';
+import { getTemplatesAction } from '@/modules/documents/actions/templates';
+import { generateDocumentFromTemplateAction } from '@/modules/documents/actions/generate';
 import { EmployeeTerminationModal } from './EmployeeTerminationModal';
 import { EmployeeRehireModal } from './EmployeeRehireModal';
 import { VacationModal } from './VacationModal';
@@ -18,6 +20,8 @@ import { MedicalLeaveTab } from './MedicalLeaveTab';
 import { resetEmployeePinAction } from '@/modules/core/actions/auth';
 import { toast } from 'sonner';
 import { approveSelfOnboarding } from '../actions/employees';
+import { SignatureCapture } from './SignatureCapture';
+import { signDocument } from '../actions/signatures';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
@@ -37,6 +41,10 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
     const [history, setHistory] = useState<any[]>([]);
     const [fullEmployee, setFullEmployee] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [signingDocument, setSigningDocument] = useState<any>(null);
+    const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [isTemplateSelectOpen, setIsTemplateSelectOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen && employee?.id) {
@@ -413,30 +421,122 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
             label: '📁 Documentos',
             content: (
                 <div className="space-y-8 py-4">
-                    <div className="text-center">
-                        <h4 className="inline-block text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-b border-border pb-2 mb-8">Gestão de Documentos</h4>
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                        <div>
+                            <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Gestão de Prontuário Digital</h4>
+                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1 opacity-60 italic">Arquivos oficiais e conformidade legal</p>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                setIsGeneratingDoc(true);
+                                const res = await getTemplatesAction();
+                                if (res.success) {
+                                    setTemplates(res.data as any);
+                                    setIsTemplateSelectOpen(true);
+                                } else {
+                                    toast.error(res.error);
+                                }
+                                setIsGeneratingDoc(false);
+                            }}
+                            disabled={isGeneratingDoc}
+                            className="h-12 px-8 rounded-2xl bg-brand-orange text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-xl shadow-brand-orange/20 flex items-center gap-3 border-b-4 border-black/20 group"
+                        >
+                            {isGeneratingDoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />}
+                            Emitir Novo Documento
+                        </button>
                     </div>
+
+                    {isTemplateSelectOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            className="bg-surface-secondary border border-brand-orange/20 p-8 rounded-[2.5rem] mb-10 shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl rounded-full" />
+                            <div className="flex items-center justify-between mb-6">
+                                <h5 className="text-xs font-black text-text-primary uppercase tracking-widest italic">Selecione uma Matriz para Geração</h5>
+                                <button onClick={() => setIsTemplateSelectOpen(false)} className="text-text-muted hover:text-text-primary uppercase text-[8px] font-black tracking-widest">✕ Cancelar Operação</button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {templates.map(template => (
+                                    <button
+                                        key={template.id}
+                                        onClick={async () => {
+                                            toast.loading('Sintetizando documento...', { id: 'doc-gen' });
+                                            setIsTemplateSelectOpen(false);
+                                            setIsGeneratingDoc(true);
+                                            const res = await generateDocumentFromTemplateAction(template.id, displayEmployee.id);
+                                            if (res.success) {
+                                                toast.success('Documento gerado com sucesso!', { id: 'doc-gen' });
+                                                // Reload data
+                                                const empRes = await getEmployee(displayEmployee.id);
+                                                if (empRes.success) setFullEmployee(empRes.data);
+                                            } else {
+                                                toast.error(res.error, { id: 'doc-gen' });
+                                            }
+                                            setIsGeneratingDoc(false);
+                                        }}
+                                        className="p-6 bg-surface border border-border rounded-2xl text-left hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-all group relative"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <p className="text-[10px] font-black text-text-primary uppercase tracking-tighter mb-1 line-clamp-1 group-hover:text-brand-orange">{template.title}</p>
+                                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest line-clamp-1">{template.category} • {template.variables.length} variáveis</p>
+                                            </div>
+                                            <Send className="h-4 w-4 text-brand-orange opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
                     {displayEmployee.documents && displayEmployee.documents.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {displayEmployee.documents.map((doc: any) => (
-                                <div key={doc.id} className="flex items-center justify-between p-6 bg-surface-secondary/40 border border-border rounded-[2rem] hover:border-brand-orange/30 transition-all group shadow-sm">
-                                    <div className="flex items-center gap-5">
-                                        <div className="h-14 w-14 bg-surface text-brand-orange rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border border-border relative">
+                                <div key={doc.id} className="flex items-center justify-between p-6 bg-surface-secondary/40 border border-border rounded-[2rem] hover:border-brand-orange/30 transition-all group shadow-sm relative overflow-hidden">
+                                    <div className="flex items-center gap-5 relative z-10">
+                                        <div className={`h-14 w-14 rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border relative ${doc.status === 'SIGNED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface text-brand-orange border-border'}`}>
                                             <FileText className="h-6 w-6" />
-                                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-brand-orange rounded-full border-2 border-white animate-pulse" />
+                                            {doc.status !== 'SIGNED' && (
+                                                <div className="absolute -top-1 -right-1 h-3 w-3 bg-brand-orange rounded-full border-2 border-white animate-pulse" />
+                                            )}
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-xs font-black text-text-primary uppercase tracking-tight truncate max-w-[150px] group-hover:text-brand-orange transition-colors">{doc.fileName}</p>
-                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1 opacity-60">{doc.type}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest opacity-60">{doc.type}</p>
+                                                {doc.status === 'SIGNED' && (
+                                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/10">Autenticado</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => window.open(doc.fileUrl, '_blank')}
-                                        className="h-12 w-12 rounded-2xl bg-surface border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:scale-110 active:scale-95"
-                                        title="Baixar Documento"
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </button>
+                                    <div className="flex items-center gap-3 relative z-10">
+                                        {doc.status === 'PENDING' && (
+                                            <button
+                                                onClick={() => setSigningDocument(doc)}
+                                                className="h-12 px-6 rounded-2xl bg-brand-orange text-white text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                                            >
+                                                <Pencil className="h-3.5 w-3.5" />
+                                                Assinar
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => window.open(doc.fileUrl, '_blank')}
+                                            className="h-12 w-12 rounded-2xl bg-surface border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:scale-110 active:scale-95"
+                                            title="Baixar Documento"
+                                        >
+                                            <ChevronRight className="h-5 w-5" />
+                                        </button>
+                                    </div>
+
+                                    {doc.status === 'SIGNED' && (
+                                        <div className="absolute top-2 right-14 opacity-5 pointer-events-none">
+                                            <BadgeCheck className="h-20 w-20 text-emerald-500" />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -710,6 +810,61 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                 <div className="py-2">
                                     <Tabs tabs={tabs} defaultValue={defaultTab} />
                                 </div>
+
+                                {/* Digital Signature Interface Overlay */}
+                                <AnimatePresence>
+                                    {signingDocument && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                                        >
+                                            <motion.div
+                                                initial={{ scale: 0.9, y: 20 }}
+                                                animate={{ scale: 1, y: 0 }}
+                                                exit={{ scale: 0.9, y: 20 }}
+                                                className="bg-surface border border-border rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden relative"
+                                            >
+                                                <div className="p-8 border-b border-border flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-12 w-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center">
+                                                            <Pencil className="h-6 w-6 text-brand-orange" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-lg font-black text-text-primary uppercase tracking-tight italic">Assinatura Eletrônica</h4>
+                                                            <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">{signingDocument.fileName}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setSigningDocument(null)}
+                                                        className="h-10 w-10 rounded-xl hover:bg-surface-secondary text-text-muted flex items-center justify-center transition-all"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                                <div className="p-8">
+                                                    <SignatureCapture
+                                                        documentName={signingDocument.fileName}
+                                                        onSign={async (img, metadata) => {
+                                                            const res = await signDocument(signingDocument.id, img, metadata);
+                                                            if (res.success) {
+                                                                setSigningDocument(null);
+                                                                if (onSuccess) onSuccess();
+                                                                // Reload employee data
+                                                                getEmployee(displayEmployee.id).then(empRes => {
+                                                                    if (empRes.success) setFullEmployee(empRes.data);
+                                                                });
+                                                            } else {
+                                                                toast.error(res.error || 'Erro na assinatura');
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            </motion.div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         )}
                     </div>

@@ -22,6 +22,7 @@ import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link, Pencil } from 'lucide-react';
+import { Badge } from '@/shared/components/ui/badge';
 
 /*
 Vacation Improvements:
@@ -456,14 +457,15 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                     </div>
                                 </div>
 
-                                <div className="col-span-1 flex justify-center relative">
-                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm transition-all duration-500 group-hover:shadow-md ${emp.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                        emp.status === 'PENDING_APPROVAL' ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/20' :
-                                            emp.status === 'WAITING_ONBOARDING' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                                'bg-surface-secondary text-text-secondary border-border'
-                                        }`}>
-                                        {translateStatus(emp.status)}
-                                    </span>
+                                <div className="col-span-1 flex justify-center scale-90">
+                                    {(() => {
+                                        type BadgeVariant = 'success' | 'destructive' | 'warning' | 'secondary' | 'default' | 'outline';
+                                        let variant: BadgeVariant = 'success';
+                                        if (emp.status === 'TERMINATED' || emp.status === 'INACTIVE') variant = 'destructive';
+                                        if (emp.status === 'PENDING_APPROVAL' || emp.status === 'WAITING_ONBOARDING') variant = 'warning';
+
+                                        return <Badge variant={variant} className="whitespace-nowrap">{translateStatus(emp.status)}</Badge>;
+                                    })()}
                                 </div>
 
                                 <div className="col-span-2 flex justify-end gap-3 opacity-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 relative">

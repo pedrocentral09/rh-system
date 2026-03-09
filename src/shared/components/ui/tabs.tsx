@@ -75,23 +75,30 @@ const Tabs = React.forwardRef<
     if (tabs && tabs.length > 0) {
         return (
             <TabsRoot ref={ref} className={className} defaultValue={tabs[0]?.id} {...props}>
-                <div
-                    className="flex justify-start pb-4 overflow-x-auto scroll-smooth no-scrollbar"
-                    ref={scrollRef}
-                    onMouseMove={onMouseMove}
-                    onMouseLeave={onMouseLeave}
-                >
-                    <TabsList className="inline-flex h-12 w-auto justify-start p-1.5 bg-surface/60 backdrop-blur-xl border border-border rounded-2xl shadow-2xl">
-                        {tabs.map(tab => (
-                            <TabsTrigger
-                                key={tab.id}
-                                value={tab.id}
-                                className="data-[state=active]:bg-brand-orange data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(255,102,0,0.3)] text-text-muted rounded-xl px-5 py-2 transition-all whitespace-nowrap text-[10px] font-black uppercase tracking-widest leading-none"
-                            >
-                                {tab.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                <div className="relative group/tabs">
+                    {/* Shadow indicators for scroll */}
+                    <div className="absolute left-0 top-0 bottom-4 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-0 group-hover/tabs:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-0 group-hover/tabs:opacity-100 transition-opacity duration-500" />
+
+                    <div
+                        className="flex justify-start pb-4 overflow-x-auto scroll-smooth no-scrollbar relative z-0 cursor-ew-resize"
+                        ref={scrollRef}
+                        onMouseMove={onMouseMove}
+                        onMouseLeave={onMouseLeave}
+                    >
+                        <TabsList className="inline-flex h-14 w-auto justify-start p-1.5 bg-surface/40 backdrop-blur-3xl border border-white/5 rounded-2xl shadow-xl">
+                            {tabs.map(tab => (
+                                <TabsTrigger
+                                    key={tab.id}
+                                    value={tab.id}
+                                    className="data-[state=active]:bg-brand-orange data-[state=active]:text-white data-[state=active]:shadow-[0_8px_20px_-6px_rgba(249,115,22,0.6)] data-[state=active]:scale-105 text-text-muted hover:text-text-primary rounded-xl px-6 py-2 transition-all whitespace-nowrap text-[10px] font-black uppercase tracking-widest leading-none border border-transparent data-[state=active]:border-white/10 relative group/trigger overflow-hidden"
+                                >
+                                    <span className="relative z-10">{tab.label}</span>
+                                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover/trigger:opacity-100 transition-opacity" />
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
                 {tabs.map(tab => (
                     <TabsContent

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CommandPalette } from '@/shared/components/CommandPalette';
-import { NotificationsPopover } from '@/shared/components/NotificationsPopover';
+import { NotificationCenter } from '@/modules/core/components/NotificationCenter';
 import { useTheme } from '@/shared/providers/ThemeProvider';
 
 export function HeaderActions({ stats }: { stats: any }) {
@@ -50,7 +50,7 @@ export function HeaderActions({ stats }: { stats: any }) {
             </button>
 
             {/* Notifications */}
-            <NotificationsPopover stats={stats} />
+            <NotificationCenter />
 
             {/* User Avatar */}
             <div className="w-10 h-10 rounded-full bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center text-brand-blue font-bold ml-2">

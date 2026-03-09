@@ -4,7 +4,10 @@ import { cn } from '@/lib/utils';
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
     <div
         ref={ref}
-        className={cn("rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50", className)}
+        className={cn(
+            "rounded-[2.5rem] border border-border bg-surface text-text-primary shadow-2xl backdrop-blur-3xl transition-all duration-500",
+            className
+        )}
         {...props}
     />
 ));
@@ -26,7 +29,7 @@ const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>((
 CardContent.displayName = 'CardContent';
 
 const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(({ className, ...props }, ref) => (
-    <p ref={ref} className={`text-sm text-slate-500 ${className}`} {...props} />
+    <p ref={ref} className={cn("text-xs font-bold text-text-muted uppercase tracking-widest opacity-60", className)} {...props} />
 ));
 CardDescription.displayName = 'CardDescription';
 

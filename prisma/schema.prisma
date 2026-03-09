@@ -22,6 +22,7 @@ model User {
   roleDef     Role?             @relation(fields: [roleId], references: [id])
   employee    Employee?
   supportMessages SupportMessage[]
+  notifications   Notification[]
 
   @@map("core_users")
 }
@@ -277,19 +278,37 @@ model Contract {
 }
 
 model Document {
-  id            String    @id @default(uuid())
-  employeeId    String
-  type          String
-  fileUrl       String
-  fileName      String
-  status        String    @default("PENDING")
-  signatureHash String?
-  signatureDate DateTime?
-  signatureIp   String?
-  uploadedAt    DateTime  @default(now())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(uuid())
+  employeeId            String
+  type                  String
+  fileUrl               String
+  fileName              String
+  status                String    @default("PENDING") // PENDING, SIGNED, EXPIRED
+  signatureHash         String?   // SHA-256 of metadata + file
+  signatureImageUrl     String?   // Base64 or URL of the drawn signature
+  signatureDate         DateTime?
+  signatureIp           String?
+  signatureUserAgent    String?   // Device info
+  signatureLat          Float?    // Geography (optional)
+  signatureLng          Float?
+  signatureManifestUrl  String?   // Link to the generated PDF proof
+  uploadedAt            DateTime  @default(now())
+  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("personnel_documents")
+}
+
+model DocumentTemplate {
+  id          String   @id @default(uuid())
+  title       String
+  category    String   // CONTRACT, WARNING, AUTHORIZATION, PAYSLIP
+  content     String   @db.Text // HTML or EditorJSON
+  description String?
+  variables   String[] // List of variables found in template
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("personnel_document_templates")
 }
 
 model TransferHistory {
@@ -1142,4 +1161,18 @@ model SupportMessage {
   sender    User          @relation(fields: [senderId], references: [id])
 
   @@map("portal_support_messages")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, URGENT
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("core_notifications")
 }
