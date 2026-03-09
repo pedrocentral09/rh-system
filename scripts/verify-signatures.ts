@@ -12,7 +12,11 @@ async function verifySignatures() {
     }
 
     console.log(`Testing signature on doc: ${doc.id}`);
-    const result = await signDocument(doc.id, '123456', '127.0.0.1');
+    const result = await signDocument(doc.id, 'TEST_IMAGE_URL', {
+        userAgent: 'TEST_AGENT',
+        pin: '123456',
+        ip: '127.0.0.1'
+    });
 
     if (result.success) {
         console.log('✅ Signature successfully generated!');

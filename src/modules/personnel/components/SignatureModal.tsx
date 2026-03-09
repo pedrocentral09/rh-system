@@ -30,7 +30,11 @@ export function SignatureModal({ isOpen, onClose, documentId, documentName }: Si
 
         setIsSigning(true);
         try {
-            const result = await signDocument(documentId, code);
+            const result = await signDocument(documentId, 'PIN_ONLY_SIGNATURE', {
+                userAgent: navigator.userAgent,
+                pin: code,
+                ip: 'CLIENT_SIDE'
+            });
             if (result.success) {
                 setSignedHash(result.hash || '');
                 toast.success('Documento assinado com sucesso!');

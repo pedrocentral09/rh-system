@@ -68,7 +68,11 @@ async function runTests() {
             }
         });
 
-        const signResult = await signDocument(doc.id, 'SYSTEM_TEST', '127.0.0.1');
+        const signResult = await signDocument(doc.id, 'SYSTEM_TEST_IMAGE', {
+            userAgent: 'SYSTEM_TESTER',
+            pin: '123456',
+            ip: '127.0.0.1'
+        });
         if (!signResult.success) throw new Error(`Falha na assinatura: ${signResult.error}`);
         console.log('✅ Assinatura Digital (SHA-256) OK');
 
