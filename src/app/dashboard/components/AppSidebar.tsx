@@ -51,6 +51,8 @@ export function AppSidebar() {
                             fill
                             className="object-contain p-2"
                             priority
+                            sizes="(max-width: 280px) 100vw, 280px"
+                            quality={100}
                         />
                     </div>
                     <div className="text-center">
