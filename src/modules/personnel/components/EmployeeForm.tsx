@@ -312,7 +312,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
         const end = new Date(start);
         end.setDate(end.getDate() + totalDays);
-        return { date: end.toLocaleDateString(), error: false };
+        return { date: formatSafeDate(end), error: false };
     };
 
     const contractEndData = calculateContractEnd();
@@ -332,7 +332,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
 
         const nextDate = new Date(baseDate);
         nextDate.setMonth(nextDate.getMonth() + parseInt(String(asoPeriodicity)));
-        return nextDate.toLocaleDateString();
+        return formatSafeDate(nextDate);
     };
 
     const nextAsoDate = calculateNextAso();
@@ -1852,7 +1852,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                                     </div>
                                                 </td>
                                                 <td className="p-5 text-center">
-                                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{new Date(record.lastAsoDate).toLocaleDateString()}</span>
+                                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{formatSafeDate(record.lastAsoDate)}</span>
                                                 </td>
                                                 <td className="p-5 text-center">
                                                     <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest py-1 px-3 bg-teal-500/10 rounded-full border border-teal-500/20">{record.periodicity} MESES</span>

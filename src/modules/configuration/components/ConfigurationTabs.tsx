@@ -12,7 +12,7 @@ import { HolidayManager } from './HolidayManager';
 import { Card, CardContent } from '@/shared/components/ui/card';
 
 export function ConfigurationTabs() {
-    const [activeTab, setActiveTab] = useState<'company' | 'users' | 'tables' | 'audit' | 'holidays'>('company');
+    const [activeTab, setActiveTab] = useState<'company' | 'users' | 'tables' | 'audit' | 'holidays' | 'parameters'>('company');
 
     return (
         <div className="space-y-12 animate-in fade-in duration-700">
@@ -23,7 +23,8 @@ export function ConfigurationTabs() {
                     { id: 'users', label: 'Contas & Segurança', icon: '👥' },
                     { id: 'tables', label: 'Cargos & Setores', icon: '📚' },
                     { id: 'audit', label: 'Rastro Digital', icon: '🛡️' },
-                    { id: 'holidays', label: 'Calendário Oficial', icon: '📅' }
+                    { id: 'holidays', label: 'Calendário Oficial', icon: '📅' },
+                    { id: 'parameters', label: 'Parâmetros', icon: '⚙️' }
                 ].map((tab) => (
                     <button
                         key={tab.id}
@@ -80,6 +81,21 @@ export function ConfigurationTabs() {
 
                 {activeTab === 'holidays' && (
                     <HolidayManager />
+                )}
+
+                {activeTab === 'parameters' && (
+                    <div className="flex flex-col items-center justify-center p-20 text-center border border-border border-dashed rounded-[2.5rem] bg-surface/50">
+                        <div className="w-24 h-24 bg-brand-orange/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                            <span className="text-5xl">🚧</span>
+                        </div>
+                        <h3 className="text-3xl font-black text-text-primary uppercase tracking-tighter mb-4">
+                            Módulo em <span className="text-brand-orange">Desenvolvimento</span>
+                        </h3>
+                        <p className="text-text-muted text-xs font-black uppercase tracking-widest max-w-lg mx-auto leading-relaxed border border-border bg-surface-secondary p-4 rounded-xl">
+                            A interface de parametrização avançada do sistema está sendo construída.
+                            Em breve, controles de banco de horas, limites operacionais e integrações estarão disponíveis aqui.
+                        </p>
+                    </div>
                 )}
             </div>
         </div>

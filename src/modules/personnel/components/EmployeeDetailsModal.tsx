@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { approveSelfOnboarding } from '../actions/employees';
 import { SignatureCapture } from './SignatureCapture';
 import { signDocument } from '../actions/signatures';
+import { formatSafeDate } from '@/shared/utils/date-utils';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
@@ -593,7 +594,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                                                 </div>
                                             </td>
                                             <td className="p-5 text-center">
-                                                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">{new Date(record.lastAsoDate).toLocaleDateString()}</span>
+                                                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">{formatSafeDate(record.lastAsoDate)}</span>
                                             </td>
                                             <td className="p-5 text-center">
                                                 <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest py-1 px-3 bg-teal-500/10 rounded-full border border-teal-500/20">{record.periodicity} MESES</span>

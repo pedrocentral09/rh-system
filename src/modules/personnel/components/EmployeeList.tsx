@@ -19,6 +19,7 @@ import { MinimumWageUpdateButton } from './MinimumWageUpdateButton';
 import { MobileEmployeeCard } from './MobileEmployeeCard';
 import { ExportButton } from '@/shared/components/ui/export-button';
 import { exportToExcel, exportToPDF, formatDateForExport } from '@/shared/utils/export-utils';
+import { formatSafeDate } from '@/shared/utils/date-utils';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Building2, Briefcase, Calendar, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, ChevronRight, User, Truck, Palmtree, Ban, RotateCcw, UserPlus, Link as LinkIcon, Pencil } from 'lucide-react';
@@ -453,7 +454,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                                     </div>
                                     <div className="flex items-center gap-3 mt-1.5 opacity-80">
                                         <Calendar className="h-3 w-3 opacity-60 text-text-secondary" />
-                                        <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Adm. {emp.contract?.admissionDate ? new Date(emp.contract.admissionDate).toLocaleDateString('pt-BR') : '--/--/--'}</p>
+                                        <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Adm. {emp.contract?.admissionDate ? formatSafeDate(emp.contract.admissionDate) : '--/--/--'}</p>
                                     </div>
                                 </div>
 
