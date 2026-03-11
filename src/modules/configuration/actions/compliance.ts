@@ -23,14 +23,14 @@ export async function getMyComplianceStatus() {
         const user = await getCurrentUser();
         if (!user) return { success: false, error: 'Não autenticado.' };
 
-        const dbUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            select: { employeeId: true }
+        const employee = await prisma.employee.findUnique({
+            where: { userId: user.id },
+            select: { id: true }
         });
 
-        if (!dbUser || !dbUser.employeeId) return { success: false, error: 'Usuário não vinculado a colaborador.' };
+        if (!employee) return { success: false, error: 'Usuário não vinculado a colaborador.' };
 
-        return await ComplianceService.getEmployeeCompliance(dbUser.employeeId);
+        return await ComplianceService.getEmployeeCompliance(employee.id);
     } catch (error) {
         return { success: false, error: 'Erro ao buscar conformidade pessoal.' };
     }
