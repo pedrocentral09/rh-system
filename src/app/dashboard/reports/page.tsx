@@ -15,10 +15,10 @@ export default async function ReportsPage() {
                         <div className="h-0.5 w-8 bg-brand-orange" />
                         <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.3em]">Célula de Inteligência</span>
                     </div>
-                    <h1 className="text-5xl font-black text-text-primary tracking-tighter uppercase leading-none italic">
+                    <h1 className="text-3xl lg:text-5xl font-black text-text-primary tracking-tighter uppercase leading-tight italic">
                         Relatórios <span className="text-brand-orange">Corporativos</span>
                     </h1>
-                    <p className="text-text-muted font-bold tracking-tight text-[11px] mt-4 uppercase tracking-[0.1em] opacity-80">
+                    <p className="text-text-muted font-bold tracking-tight text-[10px] lg:text-[11px] mt-4 uppercase tracking-[0.1em] opacity-80">
                         Auditagem de Ativos, Projeções Financeiras e Conformidade Legal
                     </p>
                 </div>

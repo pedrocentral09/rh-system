@@ -2,175 +2,245 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/modules/core/actions/auth';
-import { ChevronRight } from 'lucide-react';
+import { 
+    ChevronRight, 
+    Home, 
+    BarChart3, 
+    Users, 
+    Folder, 
+    Calendar, 
+    Megaphone, 
+    Clock, 
+    Palmtree, 
+    Scale, 
+    Banknote, 
+    Trees, 
+    MessageSquare, 
+    ClipboardList, 
+    ShieldCheck, 
+    Settings, 
+    LogOut,
+    Menu,
+    X,
+    Coins
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface AppSidebarProps {
-    // We can add props here if needed
-}
 
 export function AppSidebar() {
     const [isHovered, setIsHovered] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const pathname = usePathname();
+
+    // Close mobile sidebar on route change
+    useEffect(() => {
+        setIsMobileOpen(false);
+    }, [pathname]);
+
+    const sidebarContent = (
+        <div className="flex flex-col h-full">
+            <div className="p-8 flex flex-col items-center">
+                <div className="relative w-full aspect-[2/1] mb-6 bg-white rounded-3xl p-4 shadow-xl shadow-black/10 overflow-hidden group border border-border/50">
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <Image
+                        src="/logo.jpg"
+                        alt="Logo Familia Supermercados"
+                        fill
+                        className="object-contain p-2"
+                        priority
+                        sizes="(max-width: 280px) 100vw, 280px"
+                        quality={75}
+                    />
+                </div>
+                <div className="text-center">
+                    <span className="text-sm font-black tracking-[0.2em] text-text-primary uppercase bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent">FAMÍLIA RH</span>
+                    <div className="flex items-center justify-center gap-2 mt-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse shadow-[0_0_8px_rgba(255,102,0,0.6)]" />
+                        <span className="text-[9px] text-text-muted uppercase font-black tracking-widest leading-none opacity-70">Console de Gestão</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto py-4 px-4 space-y-1 custom-scrollbar">
+                <div className="px-4 py-2 mt-2">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-50">Visão Geral</p>
+                </div>
+
+                <SidebarLink href="/dashboard" icon={<Home size={18} />} label="Início" />
+                <SidebarLink href="/dashboard/reports" icon={<BarChart3 size={18} />} label="Relatórios" />
+
+                <div className="pt-6 pb-2 px-4">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-50">Pessoas & Operação</p>
+                </div>
+
+                <SidebarLink href="/dashboard/personnel" icon={<Users size={18} />} label="Colaboradores" />
+                <SidebarLink href="/dashboard/documents" icon={<Folder size={18} />} label="Documentação" />
+                <SidebarLink href="/dashboard/scales" icon={<Calendar size={18} />} label="Escalas" />
+                <SidebarLink href="/dashboard/recruitment" icon={<Megaphone size={18} />} label="Recrutamento" />
+                <SidebarLink href="/dashboard/time-tracking" icon={<Clock size={18} />} label="Controle de Ponto" />
+                <SidebarLink href="/dashboard/vacations" icon={<Palmtree size={18} />} label="Férias & Licenças" />
+                <SidebarLink href="/dashboard/disciplinary" icon={<Scale size={18} />} label="Disciplinar" />
+
+                <div className="pt-6 pb-2 px-4">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-50">Financeiro & Carreira</p>
+                </div>
+
+                <SidebarLink href="/dashboard/payroll" icon={<Banknote size={18} />} label="Folha de Pagamento" />
+                <SidebarLink href="/dashboard/career" icon={<Trees size={18} />} label="Plano de Carreira" />
+                <SidebarLink href="/dashboard/performance/cycles" icon={<BarChart3 size={18} />} label="Ciclos de Desempenho" />
+                <SidebarLink href="/dashboard/rewards/catalog" icon={<Coins size={18} />} label="Família Coins" />
+
+                <div className="pt-6 pb-2 px-4">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-50">Comunicação</p>
+                </div>
+                
+                <SidebarLink href="/dashboard/whatsapp-bot" icon={<MessageSquare size={18} />} label="WhatsApp Bot" />
+                <SidebarLink href="/dashboard/communications" icon={<MessageSquare size={18} />} label="Atendimento" />
+
+                <div className="pt-6 pb-2 px-4">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-50">Utilidades</p>
+                </div>
+
+                <SidebarLink href="/dashboard/tools/admission-form" icon={<ClipboardList size={18} />} label="Ficha Admissão" />
+                <SidebarLink href="/dashboard/security/audit" icon={<ShieldCheck size={18} />} label="Audit. Segurança" />
+            </nav>
+
+            <div className="p-6 border-t border-border space-y-3 bg-surface-secondary/20">
+                <Link
+                    href="/dashboard/configuration"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all duration-300 group"
+                >
+                    <Settings 
+                        size={18} 
+                        className="group-hover:rotate-90 transition-transform duration-500" 
+                    />
+                    <span className="font-bold text-[11px] uppercase tracking-wider">Configurações</span>
+                </Link>
+                <form action={logoutAction}>
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 bg-rose-500/5 hover:bg-rose-500 text-rose-500 hover:text-white py-4 rounded-2xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest border border-rose-500/10 group active:scale-95">
+                        <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        Sair do Sistema
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
 
     return (
-        <aside
-            className="fixed left-0 top-0 h-full z-50 flex"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            style={{ width: isHovered ? '280px' : '60px' }} // Increased width to see icons when collapsed?
-        // Actually user wanted "OCULTAR" (hide). I'll keep it very small.
-        >
-            {/* Trigger Strip (Visible interactive area) */}
-            {!isHovered && (
-                <div className="h-full w-4 bg-gradient-to-r from-brand-orange/5 to-transparent flex items-center justify-center cursor-pointer group">
-                    <div className="h-24 w-1 rounded-full bg-brand-orange/20 group-hover:bg-brand-orange group-hover:h-40 transition-all duration-700 shadow-[0_0_15px_rgba(255,102,0,0.5)]" />
-                </div>
-            )}
+        <>
+            {/* Desktop Hover Trigger */}
+            <div className="hidden lg:block fixed left-0 top-0 h-full z-[60] w-2 transition-colors hover:bg-brand-orange/20" onMouseEnter={() => setIsHovered(true)} />
 
-            {/* Actual Sidebar Content */}
-            <motion.div
-                initial={false}
-                animate={{
-                    x: isHovered ? 0 : -300,
-                    opacity: isHovered ? 1 : 0,
-                    scale: isHovered ? 1 : 0.95
-                }}
-                transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                className="w-[280px] h-full bg-surface/90 backdrop-blur-2xl border-r border-border flex flex-col shadow-[20px_0_50px_-20px_rgba(0,0,0,0.5)] dark:shadow-black/50"
+            {/* Mobile Header Toggle */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 px-6 bg-surface/80 backdrop-blur-xl border-b border-border z-[60] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white p-1">
+                        <Image src="/logo.jpg" alt="Logo" width={32} height={32} className="object-contain" />
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-text-primary">FAMÍLIA RH</span>
+                </div>
+                <button 
+                    onClick={() => setIsMobileOpen(!isMobileOpen)}
+                    className="p-2 rounded-xl bg-surface-secondary border border-border text-text-primary active:scale-90 transition-all"
+                >
+                    {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+            </div>
+
+            {/* Desktop Hover Sidebar */}
+            <aside
+                className="hidden lg:block fixed left-0 top-0 h-full z-50 flex"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
-                <div className="p-8 flex flex-col items-center">
-                    <div className="relative w-full aspect-[2/1] mb-6 bg-white rounded-2xl p-4 shadow-2xl shadow-black/50 overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <Image
-                            src="/logo.jpg"
-                            alt="Logo Familia Supermercados"
-                            fill
-                            className="object-contain p-2"
-                            priority
-                            sizes="(max-width: 280px) 100vw, 280px"
-                            quality={100}
+                <motion.div
+                    initial={false}
+                    animate={{
+                        x: isHovered ? 0 : -320,
+                        opacity: isHovered ? 1 : 0,
+                    }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 150 }}
+                    className="w-[300px] h-full bg-surface/95 backdrop-blur-3xl border-r border-border flex flex-col shadow-[40px_0_80px_-40px_rgba(0,0,0,0.5)] dark:shadow-black/70"
+                >
+                    {sidebarContent}
+                </motion.div>
+            </aside>
+
+            {/* Mobile Sidebar (Drawer) */}
+            <AnimatePresence>
+                {isMobileOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileOpen(false)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] lg:hidden"
                         />
-                    </div>
-                    <div className="text-center">
-                        <span className="text-sm font-black tracking-[0.2em] text-text-primary uppercase bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent">Sistema RH</span>
-                        <div className="flex items-center justify-center gap-2 mt-1">
-                            <div className="h-1 w-1 rounded-full bg-brand-orange animate-pulse" />
-                            <span className="text-[9px] text-text-muted uppercase font-black tracking-widest leading-none">Console de Gestão</span>
-                        </div>
-                    </div>
-                </div>
-
-                <nav className="flex-1 overflow-y-auto py-4 px-4 space-y-1 custom-scrollbar">
-                    <div className="px-4 py-2">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Visão Geral</p>
-                    </div>
-
-                    <SidebarLink href="/dashboard" icon="🏠" label="Início" />
-                    <SidebarLink href="/dashboard/reports" icon="📊" label="Relatórios" />
-
-                    <div className="pt-6 pb-2 px-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Pessoas & Operação</p>
-                    </div>
-
-                    <SidebarLink href="/dashboard/personnel" icon="👥" label="Colaboradores" />
-                    <SidebarLink href="/dashboard/documents" icon="📁" label="Documentação" />
-                    <SidebarLink href="/dashboard/scales" icon="🗓️" label="Escalas de Trabalho" />
-                    <SidebarLink href="/dashboard/recruitment" icon="📢" label="Recrutamento" />
-                    <SidebarLink href="/dashboard/time-tracking" icon="⏰" label="Controle de Ponto" />
-                    <SidebarLink href="/dashboard/vacations" icon="🏖️" label="Férias & Licenças" />
-                    <SidebarLink href="/dashboard/disciplinary" icon="⚖️" label="Disciplinar" />
-
-                    <div className="pt-6 pb-2 px-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Financeiro & Carreira</p>
-                    </div>
-
-                    <SidebarLink href="/dashboard/payroll" icon="💰" label="Folha de Pagamento" />
-                    <SidebarLink href="/dashboard/career" icon="🌳" label="Plano de Carreira" />
-                    <SidebarLink href="/dashboard/performance/cycles" icon="📊" label="Ciclos de Desempenho" />
-                    <SidebarLink href="/dashboard/rewards/catalog" icon="🪙" label="Família Coins" color="text-amber-500" />
-
-                    <div className="pt-6 pb-2 px-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Comunicação</p>
-                    </div>
-
-                    <SidebarLink href="/dashboard/communications" icon="💬" label="Atendimento" />
-
-                    <div className="pt-6 pb-2 px-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Utilidades</p>
-                    </div>
-
-                    <SidebarLink href="/dashboard/tools/admission-form" icon="📋" label="Ficha Admissão" />
-                    <SidebarLink href="/dashboard/security/audit" icon="🛡️" label="Audit. Segurança" />
-                </nav>
-
-                <div className="p-6 border-t border-border space-y-3">
-                    <Link
-                        href="/dashboard/configuration"
-                        className="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all duration-300 group"
-                    >
-                        <span className="text-lg group-hover:rotate-90 transition-transform duration-500">⚙️</span>
-                        <span className="font-bold text-[11px] uppercase tracking-wider">Configurações</span>
-                    </Link>
-                    <form action={logoutAction}>
-                        <button type="submit" className="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white py-3 rounded-xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest border border-rose-500/20 group">
-                            <span className="group-hover:-translate-x-1 transition-transform">🚪</span>
-                            Sair do Sistema
-                        </button>
-                    </form>
-                </div>
-            </motion.div>
-        </aside>
+                        <motion.aside
+                            initial={{ x: '-100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '-100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 180 }}
+                            className="fixed left-0 top-0 bottom-0 w-[80%] max-w-[280px] bg-surface z-[80] lg:hidden border-r border-border shadow-2xl"
+                        >
+                            {sidebarContent}
+                        </motion.aside>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 
-function SidebarLink({ href, icon, label, color = "text-text-secondary" }: { href: string, icon: string, label: string, color?: string }) {
+function SidebarLink({ href, icon, label }: { href: string, icon: React.ReactNode, label: string }) {
     const pathname = usePathname();
-    const isActive = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
+    const isActive = pathname === href;
 
     return (
         <Link
             href={href}
             className={cn(
-                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-500 group relative overflow-hidden active:scale-95",
-                isActive ? "bg-brand-orange/10 text-text-primary shadow-[inset_0_0_20px_rgba(255,120,0,0.05)]" : "hover:bg-surface-secondary/80"
+                "group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
+                isActive 
+                    ? "text-brand-orange" 
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
             )}
         >
-            <motion.div
-                initial={false}
-                animate={{
-                    opacity: isActive ? 1 : 0,
-                    height: isActive ? '60%' : '0%'
-                }}
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-brand-orange rounded-r-full shadow-[0_0_15px_rgba(255,102,0,0.8)] z-10"
-            />
+            {isActive && (
+                <motion.div
+                    layoutId="sidebar-active"
+                    className="absolute inset-0 bg-brand-orange/5 border border-brand-orange/10 rounded-2xl -z-10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+            )}
+            
+            <div className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-500",
+                isActive 
+                    ? "bg-brand-orange text-white shadow-[0_10px_20px_-5px_rgba(255,120,0,0.5)] scale-110" 
+                    : "bg-surface-secondary text-text-muted group-hover:bg-brand-orange group-hover:text-white group-hover:rotate-6 group-hover:scale-110"
+            )}>
+                {icon}
+            </div>
 
             <span className={cn(
-                "text-lg transition-all duration-500 group-hover:scale-125 group-hover:rotate-6",
-                isActive && "scale-110 rotate-3 animate-pulse"
-            )}>{icon}</span>
-
-            <span className={cn(
-                "font-black text-[10px] uppercase tracking-widest transition-colors flex-1",
-                isActive ? "text-brand-orange" : color,
-                "group-hover:text-text-primary"
+                "text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-1",
+                isActive ? "translate-x-1" : "group-hover:translate-x-1"
             )}>
                 {label}
             </span>
 
-            <ChevronRight className={cn(
-                "h-3 w-3 transition-all duration-500",
-                isActive ? "text-brand-orange translate-x-0 opacity-100" : "text-text-muted opacity-0 group-hover:opacity-100 group-hover:translate-x-1"
-            )} />
-
             {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/5 via-transparent to-transparent pointer-events-none" />
+                <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_10px_#FF7800]" 
+                />
             )}
-
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         </Link>
     );
 }

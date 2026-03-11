@@ -9,13 +9,8 @@ export default async function ScalesPage() {
     const { data: shifts } = await getShiftTypes();
 
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-800">🗓️ Gestão de Escalas</h2>
-                    <p className="text-slate-500">Planeje a jornada de trabalho da equipe.</p>
-                </div>
-            </div>
+        <div className="space-y-6 pb-24">
+
 
             <Tabs
                 defaultValue="builder"

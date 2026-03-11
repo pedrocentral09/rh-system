@@ -38,7 +38,16 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         dateOfBirth: '',
         gender: '',
         maritalStatus: '',
+        placeOfBirth: '',
+        mothersName: '',
+        fathersName: '',
+        educationLevel: '',
+        militaryCertificate: '',
+        cnh: '',
+        birthDate: '',
         rg: '',
+        issuingBody: '',
+        rgDate: '',
         cpf: employee.cpf || '',
         street: '',
         number: '',
@@ -77,8 +86,8 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
     const handleNext = () => {
         // Strict validation per step
         if (step === 1) {
-            if (!formData.name) {
-                toast.error('Informe seu nome completo para continuar');
+            if (!formData.name || !formData.rg || !formData.issuingBody || !formData.rgDate) {
+                toast.error('Preencha os dados de identificação obrigatórios');
                 return;
             }
         }
@@ -439,6 +448,68 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
                                         />
                                     </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
+                                        <div className="space-y-4">
+                                            <Label htmlFor="issuingBody" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">ÓRGÃO EMISSOR *</Label>
+                                            <Input
+                                                id="issuingBody"
+                                                value={formData.issuingBody}
+                                                onChange={(e) => updateField('issuingBody', e.target.value.toUpperCase())}
+                                                placeholder="Ex: SSP/SP"
+                                                className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <Label htmlFor="rgDate" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">DATA DE EMISSÃO *</Label>
+                                            <Input
+                                                id="rgDate"
+                                                type="date"
+                                                value={formData.rgDate}
+                                                onChange={(e) => updateField('rgDate', e.target.value)}
+                                                className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">GÊNERO / SEXO *</Label>
+                                        <select
+                                            className="w-full h-20 bg-surface border border-border rounded-2xl px-8 text-xl font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 appearance-none shadow-inner uppercase tracking-widest"
+                                            value={formData.gender}
+                                            onChange={(e) => updateField('gender', e.target.value)}
+                                        >
+                                            <option value="">Selecione...</option>
+                                            <option value="MALE">Masculino</option>
+                                            <option value="FEMALE">Feminino</option>
+                                            <option value="OTHER">Outros / Prefiro não informar</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NACIONALIDADE / NATURALIDADE (CIDADE/UF) *</Label>
+                                        <Input
+                                            value={formData.placeOfBirth}
+                                            onChange={(e) => updateField('placeOfBirth', e.target.value.toUpperCase())}
+                                            placeholder="SÃO PAULO - SP"
+                                            className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
+                                        />
+                                    </div>
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NOME DA MÃE *</Label>
+                                        <Input
+                                            value={formData.mothersName}
+                                            onChange={(e) => updateField('mothersName', e.target.value.toUpperCase())}
+                                            placeholder="NOME COMPLETO DA GENITORA"
+                                            className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
+                                        />
+                                    </div>
+                                    <div className="space-y-4 pt-6 border-t border-border">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NOME DO PAI</Label>
+                                        <Input
+                                            value={formData.fathersName}
+                                            onChange={(e) => updateField('fathersName', e.target.value.toUpperCase())}
+                                            placeholder="NOME COMPLETO DO GENITOR"
+                                            className="bg-surface border-border text-xl font-black h-20 px-8 rounded-2xl focus:ring-brand-orange/20 focus:border-brand-orange/40 uppercase tracking-tight shadow-inner"
+                                        />
+                                    </div>
                                     <div className="space-y-4 pt-6 border-t border-border">
                                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2 opacity-70">CPF CONFIRMADO PELO PROTOCOLO</Label>
                                         <div className="bg-surface border border-border p-8 rounded-2xl flex items-center justify-between group shadow-inner">
@@ -528,6 +599,43 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <option value="Viuvo">Viúvo(a)</option>
                                             </select>
                                         </div>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">ESCOLARIDADE / NÍVEL DE INSTRUÇÃO *</Label>
+                                            <select
+                                                className="w-full h-16 bg-surface border border-border rounded-2xl px-6 text-lg font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 appearance-none shadow-inner uppercase tracking-widest"
+                                                value={formData.educationLevel}
+                                                onChange={(e) => updateField('educationLevel', e.target.value)}
+                                            >
+                                                <option value="">Selecione...</option>
+                                                <option value="ENSINO_FUNDAMENTAL_INCOMPLETO">Ensino Fundamental Incompleto</option>
+                                                <option value="ENSINO_FUNDAMENTAL_COMPLETO">Ensino Fundamental Completo</option>
+                                                <option value="ENSINO_MEDIO_INCOMPLETO">Ensino Médio Incompleto</option>
+                                                <option value="ENSINO_MEDIO_COMPLETO">Ensino Médio Completo</option>
+                                                <option value="ENSINO_SUPERIOR_INCOMPLETO">Ensino Superior Incompleto</option>
+                                                <option value="ENSINO_SUPERIOR_COMPLETO">Ensino Superior Completo</option>
+                                                <option value="POS_GRADUACAO_MESTRADO_DOUTORADO">Pós / Mestrado / Doutorado</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">CNH (CARTEIRA NACIONAL DE HABILITAÇÃO)</Label>
+                                            <Input
+                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner uppercase"
+                                                placeholder="NÚMERO E CATEGORIA"
+                                                value={formData.cnh}
+                                                onChange={(e) => updateField('cnh', e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+                                        {formData.gender === 'MALE' && (
+                                            <div className="space-y-4">
+                                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">CERTIFICADO DE RESERVISTA (MILITAR)</Label>
+                                                <Input
+                                                    className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner uppercase"
+                                                    placeholder="NÚMERO DO CERTIFICADO"
+                                                    value={formData.militaryCertificate}
+                                                    onChange={(e) => updateField('militaryCertificate', e.target.value.toUpperCase())}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="py-2"><hr className="border-border opacity-50" /></div>
                                         <div className="space-y-4">
                                             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NOME DO CONTATO DE EMERGÊNCIA *</Label>
@@ -813,17 +921,88 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar VersO</span>
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+
+                                {/* CNH - Opcional */}
+                                <div className="space-y-4">
+                                    <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">CARTEIRA DE HABILITAÇÃO (CNH)</Label>
+                                    <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'CNH') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
+                                        {uploadingSlots['CNH'] ? (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
+                                            </div>
+                                        ) : (formData.previews['CNH'] || formData.documents.find(d => d.type === 'CNH')) ? (
+                                            <div className="relative w-full h-full group">
+                                                <img src={formData.previews['CNH'] || formData.documents.find(d => d.type === 'CNH').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="CNH" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                    <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                    </div>
+                                                    <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center p-8">
+                                                <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                    <Camera className="h-8 w-8 text-brand-blue" />
+                                                </div>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar CNH</span>
+                                            </div>
+                                        )}
                                         <input
                                             type="file"
                                             accept="image/*"
                                             capture="environment"
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             onClick={(e) => (e.currentTarget.value = '')}
-                                            onChange={e => handleFileUpload(e, 'IDENTIDADE_VERSO')}
-                                            disabled={uploadingSlots['IDENTIDADE_VERSO']}
+                                            onChange={e => handleFileUpload(e, 'CNH')}
+                                            disabled={uploadingSlots['CNH']}
                                         />
                                     </div>
                                 </div>
+
+                                {/* Certificado de Reservista - Somente se Masculino */}
+                                {formData.gender === 'MALE' && (
+                                    <div className="space-y-4">
+                                        <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">CERTIFICADO DE RESERVISTA</Label>
+                                        <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
+                                            {uploadingSlots['CERTIFICADO_RESERVISTA'] ? (
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                    <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
+                                                </div>
+                                            ) : (formData.previews['CERTIFICADO_RESERVISTA'] || formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA')) ? (
+                                                <div className="relative w-full h-full group">
+                                                    <img src={formData.previews['CERTIFICADO_RESERVISTA'] || formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Reservista" />
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                        <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                        </div>
+                                                        <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center p-8">
+                                                    <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                        <Camera className="h-8 w-8 text-brand-blue" />
+                                                    </div>
+                                                    <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar Reservista</span>
+                                                </div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                capture="environment"
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                onClick={(e) => (e.currentTarget.value = '')}
+                                                onChange={e => handleFileUpload(e, 'CERTIFICADO_RESERVISTA')}
+                                                disabled={uploadingSlots['CERTIFICADO_RESERVISTA']}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Comp Residência */}
                                 <div className="space-y-4">

@@ -73,7 +73,7 @@ export function BIRatiosGrid({ data }: BIRatiosGridProps) {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.1 }}
-                    className="group relative bg-surface border border-border p-8 rounded-[2.5rem] shadow-xl overflow-hidden hover:border-brand-orange/30 transition-all duration-500"
+                    className="group relative bg-surface border border-border p-6 sm:p-8 rounded-[2.5rem] shadow-xl overflow-hidden hover:border-brand-orange/30 transition-all duration-500"
                 >
                     <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bg} blur-3xl opacity-20 group-hover:opacity-40 transition-opacity`} />
 

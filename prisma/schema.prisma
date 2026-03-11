@@ -57,12 +57,20 @@ model Employee {
   email                        String?                 @unique
   cpf                          String?                 @unique
   rg                           String?
+  issuingBody                  String?
+  rgDate                       DateTime?
   dateOfBirth                  DateTime?
   gender                       String?
   maritalStatus                String?
   pis                          String?
   ctps                         String?
   voterTitle                   String?
+  placeOfBirth                 String?
+  mothersName                  String?
+  fathersName                  String?
+  educationLevel               String?
+  militaryCertificate          String?
+  cnh                          String?
   phone                        String?
   landline                     String?
   photoUrl                     String?
@@ -311,6 +319,19 @@ model DocumentTemplate {
   @@map("personnel_document_templates")
 }
 
+model ReportTemplate {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  fieldIds      String[]
+  filters       Json?
+  groupBy       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("bi_report_templates")
+}
+
 model TransferHistory {
   id            String   @id @default(uuid())
   employeeId    String
@@ -420,8 +441,22 @@ model JobRole {
   careerLevels  CareerLevel[]
   asPreviousRole CareerHistory[] @relation("PreviousRole")
   asNewRole      CareerHistory[] @relation("NewRole")
+  mandatoryDocuments MandatoryDocument[]
 
   @@map("config_job_roles")
+}
+
+model MandatoryDocument {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  category    String   // ADMISSION, PERIODIC, TERMINATION, TRAINING
+  jobRoleId   String
+  jobRole     JobRole  @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("config_mandatory_documents")
 }
 
 model CareerHistory {

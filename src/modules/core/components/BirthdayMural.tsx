@@ -15,7 +15,7 @@ interface BirthdayMuralProps {
 
 export function BirthdayMural({ birthdays }: BirthdayMuralProps) {
     return (
-        <div className="bg-surface border border-white/5 rounded-[2.5rem] p-10 relative overflow-hidden h-full group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)]">
+        <div className="bg-surface border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden h-full group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)]">
             <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/[0.03] blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
             <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-pink-500/[0.02] blur-[80px] rounded-full" />
 

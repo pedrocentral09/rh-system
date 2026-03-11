@@ -24,7 +24,7 @@ export function EventMural({ events }: EventMuralProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-surface border border-white/5 rounded-[2.5rem] p-10 overflow-hidden relative group shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)]">
+        <div className="flex flex-col h-full bg-surface border border-white/5 rounded-[2.5rem] p-6 sm:p-10 overflow-hidden relative group shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)]">
             {/* Ambient Background Light */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/[0.03] blur-[120px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
             <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-white/[0.01] blur-[80px] rounded-full" />

@@ -23,6 +23,8 @@ import { approveSelfOnboarding } from '../actions/employees';
 import { SignatureCapture } from './SignatureCapture';
 import { signDocument } from '../actions/signatures';
 import { formatSafeDate } from '@/shared/utils/date-utils';
+import { TerminationSimulator } from './TerminationSimulator';
+import { CostProvision } from './CostProvision';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
@@ -703,6 +705,16 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                     </div>
                 </div>
             )
+        },
+        {
+            id: 'details_termination',
+            label: '📉 Rescisão',
+            content: <TerminationSimulator employee={displayEmployee} />
+        },
+        {
+            id: 'details_costs',
+            label: '💎 Custo Real',
+            content: <CostProvision employee={displayEmployee} />
         }
     ];
 

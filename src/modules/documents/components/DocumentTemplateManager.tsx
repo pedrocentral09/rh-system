@@ -1,8 +1,11 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Plus, Search, Layers, Settings2, Trash2, Edit3, Save, HelpCircle, BadgeCheck, Loader2 } from 'lucide-react';
+import { FileText, Plus, Search, Layers, Settings2, Trash2, Edit3, Save, HelpCircle, BadgeCheck, Loader2, Sparkles, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { getTemplatesAction, createTemplateAction, updateTemplateAction, deleteTemplateAction } from '../actions/templates';
+import { extractTemplateTextAction } from '../actions/ai-extraction';
 
 interface Template {
     id: string;
@@ -21,6 +24,8 @@ export function DocumentTemplateManager() {
     const [loading, setLoading] = useState(true);
     const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [templateContent, setTemplateContent] = useState('');
+    const [isExtracting, setIsExtracting] = useState(false);
 
     const categories = [
         { id: 'ALL', label: 'Todos os Documentos' },
@@ -35,6 +40,15 @@ export function DocumentTemplateManager() {
     useEffect(() => {
         loadTemplates();
     }, []);
+
+    // Update state when editing starts
+    useEffect(() => {
+        if (editingTemplate) {
+            setTemplateContent(editingTemplate.content);
+        } else {
+            setTemplateContent('');
+        }
+    }, [editingTemplate]);
 
     const loadTemplates = async () => {
         setLoading(true);
@@ -51,6 +65,8 @@ export function DocumentTemplateManager() {
         e.preventDefault();
         setIsSaving(true);
         const formData = new FormData(e.currentTarget);
+        // Ensure content from state is used if textarea is controlled
+        formData.set('content', templateContent);
 
         const res = editingTemplate
             ? await updateTemplateAction(editingTemplate.id, formData)
@@ -76,6 +92,34 @@ export function DocumentTemplateManager() {
             loadTemplates();
         } else {
             toast.error(res.error);
+        }
+    };
+
+    const handleAIAnexar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsExtracting(true);
+        toast.info('IA analisando documento...');
+
+        try {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64 = event.target?.result as string;
+                const res = await extractTemplateTextAction(base64, file.type);
+
+                if (res.success) {
+                    setTemplateContent(res.data || '');
+                    toast.success('Texto extraído com sucesso! Agora ajuste as TAGs.');
+                } else {
+                    toast.error(res.error);
+                }
+                setIsExtracting(false);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            toast.error('Erro ao ler arquivo.');
+            setIsExtracting(false);
         }
     };
 
@@ -230,7 +274,7 @@ export function DocumentTemplateManager() {
                             initial={{ scale: 0.9, y: 30 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 30 }}
-                            className="bg-surface border border-border rounded-[3rem] w-full max-w-4xl shadow-2xl relative overflow-hidden"
+                            className="bg-surface border border-border rounded-[3rem] w-full max-w-5xl shadow-2xl relative overflow-hidden"
                         >
                             <div className="p-10 flex flex-col gap-10">
                                 <div className="flex items-center justify-between">
@@ -278,16 +322,31 @@ export function DocumentTemplateManager() {
                                                 <option value="PAYSLIP">FINANCEIRO</option>
                                             </select>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Breve Descrição</label>
-                                            <textarea
-                                                name="description"
-                                                defaultValue={editingTemplate?.description || ''}
-                                                rows={2}
-                                                placeholder="Para que serve este documento..."
-                                                className="w-full bg-surface-secondary border border-border rounded-xl p-6 text-xs font-bold focus:ring-2 focus:ring-brand-orange/20 outline-none resize-none"
+
+                                        <div className="p-6 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10 space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <Sparkles className="h-5 w-5 text-emerald-400" />
+                                                <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Extração Inteligente (IA)</h4>
+                                            </div>
+                                            <p className="text-[9px] text-emerald-400/60 font-bold uppercase tracking-tight leading-relaxed">Anexe um documento existente e a IA irá transcrever o texto para você editar as tags.</p>
+
+                                            <input
+                                                type="file"
+                                                id="ai-upload"
+                                                className="hidden"
+                                                accept="image/*,.pdf"
+                                                onChange={handleAIAnexar}
+                                                disabled={isExtracting}
                                             />
+                                            <label
+                                                htmlFor="ai-upload"
+                                                className="w-full h-12 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-400 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                                            >
+                                                {isExtracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                {isExtracting ? 'Processando...' : 'Anexar Documento via IA'}
+                                            </label>
                                         </div>
+
                                         <div className="space-y-2 pt-2">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Variáveis Automáticas</label>
@@ -319,9 +378,10 @@ export function DocumentTemplateManager() {
                                         <textarea
                                             name="content"
                                             required
-                                            defaultValue={editingTemplate?.content}
+                                            value={templateContent}
+                                            onChange={(e) => setTemplateContent(e.target.value)}
                                             placeholder="Digite o conteúdo aqui..."
-                                            className="flex-1 min-h-[300px] w-full bg-surface-secondary border border-border rounded-2xl p-8 text-sm font-medium leading-relaxed focus:ring-2 focus:ring-brand-orange/20 outline-none resize-none shadow-inner no-scrollbar"
+                                            className="flex-1 min-h-[450px] w-full bg-surface-secondary border border-border rounded-2xl p-8 text-sm font-medium leading-relaxed focus:ring-2 focus:ring-brand-orange/20 outline-none resize-none shadow-inner no-scrollbar"
                                         />
                                     </div>
                                 </div>
@@ -336,7 +396,7 @@ export function DocumentTemplateManager() {
                                         className="h-14 px-10 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary transition-all"
                                     >Cancelar</button>
                                     <button
-                                        disabled={isSaving}
+                                        disabled={isSaving || isExtracting}
                                         type="submit"
                                         className="h-14 px-12 rounded-2xl bg-emerald-600 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 border-b-4 border-black/20 disabled:opacity-50"
                                     >
@@ -352,4 +412,3 @@ export function DocumentTemplateManager() {
         </div>
     );
 }
-

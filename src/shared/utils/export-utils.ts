@@ -63,7 +63,8 @@ export function exportToPDF<T extends Record<string, any>>(
         );
 
         // Generate table
-        autoTable(doc, {
+        const autoTableFunc = typeof autoTable === 'function' ? autoTable : (autoTable as any).default;
+        autoTableFunc(doc, {
             head: [tableColumns],
             body: tableRows,
             startY: 28,

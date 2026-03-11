@@ -21,6 +21,32 @@ export async function getVacationData(employeeId: string) {
     }
 }
 
+export async function getExpiredVacationPeriods(employeeId: string) {
+    try {
+        const periods = await prisma.vacationPeriod.findMany({
+            where: {
+                employeeId,
+                status: { in: ['OPEN', 'EXPIRED'] }
+            },
+            include: { requests: true }
+        });
+
+        const expiredCount = periods.reduce((acc, p) => {
+            const used = p.requests.reduce((rAcc, r) => rAcc + r.daysCount + r.soldDays, 0);
+            if (used < 30) {
+                // If it's EXPIRED status, usually it means double payment, but for simulation let's count as 1 period
+                // We could refine this to calculate 2 periods if status === 'EXPIRED'
+                return acc + 1;
+            }
+            return acc;
+        }, 0);
+
+        return { success: true, count: expiredCount };
+    } catch (error) {
+        return { success: false, error: 'Failed to calc expired vacations' };
+    }
+}
+
 // Check and Create Vesting Periods based on Hire Date
 export async function checkVacationRights(employeeId: string, shouldRevalidate: boolean = true) {
     try {

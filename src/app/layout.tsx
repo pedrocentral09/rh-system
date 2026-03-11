@@ -15,7 +15,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Família RH | Sistema de Gestão Inteligente",
-  description: "Portal do Colaborador e Gestão de Pessoas - Família RH",
+  description: "Plataforma avançada de gestão de pessoas e portal do colaborador. Eficiência, transparência e tecnologia para sua empresa.",
+  keywords: ["RH", "Gestão de Pessoas", "Recursos Humanos", "Portal do Colaborador", "Família RH"],
+  authors: [{ name: "Família RH" }],
+  openGraph: {
+    title: "Família RH | Sistema de Gestão Inteligente",
+    description: "Plataforma avançada de gestão de pessoas e portal do colaborador.",
+    url: "https://rh.familiaderly.com.br",
+    siteName: "Família RH",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Família RH | Sistema de Gestão Inteligente",
+    description: "Plataforma avançada de gestão de pessoas e portal do colaborador.",
+  },
   appleWebApp: {
     title: "Família RH",
     statusBarStyle: "default",
@@ -24,7 +39,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#0f1115",
+  width: "device-width",
+  initialScale: 1,
 };
 
 import { ThemeProvider } from '@/shared/providers/ThemeProvider';

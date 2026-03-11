@@ -118,6 +118,8 @@ export class EmployeeService extends BaseService {
                 email: rawData.email,
                 cpf: rawData.cpf,
                 rg: rawData.rg,
+                issuingBody: rawData.issuingBody,
+                rgDate: parseDate(rawData.rgDate),
                 dateOfBirth: parseDate(rawData.dateOfBirth),
                 gender: rawData.gender || '',
                 maritalStatus: rawData.maritalStatus || '',
@@ -138,6 +140,12 @@ export class EmployeeService extends BaseService {
             if (rawData.pis) data.pis = rawData.pis;
             if (rawData.ctps) data.ctps = rawData.ctps;
             if (rawData.voterTitle) data.voterTitle = rawData.voterTitle;
+            if (rawData.placeOfBirth) data.placeOfBirth = rawData.placeOfBirth;
+            if (rawData.mothersName) data.mothersName = rawData.mothersName;
+            if (rawData.fathersName) data.fathersName = rawData.fathersName;
+            if (rawData.educationLevel) data.educationLevel = rawData.educationLevel;
+            if (rawData.militaryCertificate) data.militaryCertificate = rawData.militaryCertificate;
+            if (rawData.cnh) data.cnh = rawData.cnh;
 
             // Relations - Only create if relevant data is present
             if (rawData.street || rawData.zipCode) {
@@ -316,6 +324,10 @@ export class EmployeeService extends BaseService {
             if (rawData.email !== undefined) data.email = rawData.email?.trim() || null;
             if (rawData.cpf !== undefined) data.cpf = rawData.cpf;
             if (rawData.rg !== undefined) data.rg = rawData.rg;
+            if (rawData.issuingBody !== undefined) data.issuingBody = rawData.issuingBody;
+            if (rawData.rgDate !== undefined) {
+                data.rgDate = parseDate(rawData.rgDate);
+            }
             if (rawData.dateOfBirth !== undefined) {
                 data.dateOfBirth = parseDate(rawData.dateOfBirth);
             }
@@ -343,6 +355,12 @@ export class EmployeeService extends BaseService {
             if (rawData.pis !== undefined) data.pis = rawData.pis;
             if (rawData.ctps !== undefined) data.ctps = rawData.ctps;
             if (rawData.voterTitle !== undefined) data.voterTitle = rawData.voterTitle;
+            if (rawData.placeOfBirth !== undefined) data.placeOfBirth = rawData.placeOfBirth;
+            if (rawData.mothersName !== undefined) data.mothersName = rawData.mothersName;
+            if (rawData.fathersName !== undefined) data.fathersName = rawData.fathersName;
+            if (rawData.educationLevel !== undefined) data.educationLevel = rawData.educationLevel;
+            if (rawData.militaryCertificate !== undefined) data.militaryCertificate = rawData.militaryCertificate;
+            if (rawData.cnh !== undefined) data.cnh = rawData.cnh;
 
             // Handle Address
             if (rawData.street || rawData.zipCode || rawData.city) {

@@ -245,45 +245,67 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
     return (
         <div className="space-y-6">
             {/* Header Controls */}
-            <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center space-x-2">
-                    <Button variant="outline" onClick={handlePrevWeek} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50">◀ Anterior</Button>
+            <div className="flex flex-col lg:flex-row items-center justify-between bg-surface/40 backdrop-blur-2xl p-6 sm:p-8 rounded-[2.5rem] border border-border shadow-2xl gap-8 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl pointer-events-none" />
+                
+                <div className="text-center lg:text-left w-full lg:w-auto order-first">
+                    <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
+                        <h4 className="text-[10px] font-black text-brand-orange uppercase tracking-[0.4em] italic">Planejamento</h4>
+                    </div>
+                    <h2 className="text-xl sm:text-3xl font-[1000] text-text-primary uppercase tracking-tighter italic leading-none truncate">
+                        🗓️ Escala de <span className="text-brand-orange">Operação</span>
+                    </h2>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2 flex items-center justify-center lg:justify-start gap-2">
+                        {format(weekStart, "dd/MM")} <span className="opacity-30">→</span> {format(addDays(weekStart, 6), "dd/MM")}
+                        <span className="px-2 py-0.5 bg-surface-secondary border border-border rounded text-[9px] lowercase font-mono">
+                            {format(weekStart, "MMMM", { locale: ptBR })}
+                        </span>
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 w-full lg:w-auto">
+                    <Button 
+                        variant="outline" 
+                        onClick={handlePrevWeek} 
+                        disabled={loading} 
+                        className="h-10 px-4 rounded-xl border-border bg-surface/50 text-text-primary hover:bg-surface-hover text-[10px] font-black uppercase tracking-widest"
+                    >
+                        ◀ <span className="hidden sm:inline ml-1">Anterior</span>
+                    </Button>
                     {!isEditing && (
                         <>
-                            <Button variant="outline" onClick={handleClone} disabled={loading} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50" title="Copiar escala da semana passada">
-                                📋 Copiar Anterior
+                            <Button 
+                                variant="outline" 
+                                onClick={handleClone} 
+                                disabled={loading} 
+                                className="h-10 px-4 rounded-xl border-brand-orange/20 bg-brand-orange/5 text-brand-orange hover:bg-brand-orange/10 text-[10px] font-black uppercase tracking-widest"
+                                title="Copiar escala da semana passada"
+                            >
+                                <span className="sm:hidden text-lg">📋</span>
+                                <span className="hidden sm:inline">📋 Copiar Anterior</span>
                             </Button>
-                            <div className="flex items-center space-x-2 border-r pr-2 border-slate-200">
-                                <span className="text-xs font-medium text-slate-500">Padrão:</span>
-                                <select
-                                    className="text-xs border-slate-300 rounded-md bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-900 dark:text-white p-1 outline-none"
-                                    value={scalePattern}
-                                    onChange={(e) => setScalePattern(e.target.value as any)}
+                            <div className="flex items-center gap-2 px-3 h-10 bg-surface/50 border border-border rounded-xl">
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-tighter">5x2</span>
+                                <div className="h-4 w-px bg-border" />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={handleAutoGenerate} 
+                                    disabled={loading} 
+                                    className="h-6 px-2 text-emerald-500 hover:bg-emerald-500/10 text-[10px] font-black uppercase tracking-widest"
                                 >
-                                    <option value="5x2">5x2</option>
-                                    <option value="6x1">6x1</option>
-                                </select>
-                                <Button variant="outline" onClick={handleAutoGenerate} disabled={loading} className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 h-8" title="Gerar escala automática para os filtrados">
-                                    🤖 Gerar
+                                    🤖 <span className="hidden sm:inline ml-1">Gerar</span>
                                 </Button>
                             </div>
-                            <Button variant="outline" onClick={() => window.print()} disabled={loading} className="text-slate-600 border-slate-300 hover:bg-slate-50 h-8" title="Imprimir escala">
-                                🖨️ Imprimir
+                            <Button variant="outline" onClick={() => window.print()} disabled={loading} className="h-10 px-4 rounded-xl border-border bg-surface/50 text-text-muted hover:bg-surface-hover text-[10px] font-black uppercase tracking-widest" title="Imprimir escala">
+                                🖨️ <span className="hidden sm:inline ml-1">Imprimir</span>
                             </Button>
                         </>
                     )}
                 </div>
 
-                <div className="text-center">
-                    <h3 className="text-slate-800 dark:text-white font-bold text-lg capitalize">
-                        {format(weekStart, "MMMM yyyy", { locale: ptBR })}
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                        Semana de {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 6), "dd/MM")}
-                    </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center gap-3 w-full lg:w-auto">
                     {isEditing ? (
                         <>
                             <Button
@@ -295,28 +317,35 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                     }
                                 }}
                                 disabled={loading}
-                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                className="h-10 px-4 rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-widest"
                             >
-                                Cancelar
+                                Descartar
                             </Button>
                             <Button
                                 onClick={saveChanges}
                                 disabled={loading || Object.keys(pendingChanges).length === 0}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                className="h-10 px-6 rounded-xl bg-brand-orange hover:bg-orange-600 text-white shadow-lg shadow-brand-orange/20 text-[10px] font-black uppercase tracking-widest"
                             >
-                                {loading ? 'Salvando...' : 'Gravar Alterações'}
+                                {loading ? 'Gravando...' : 'Salvar'}
                             </Button>
                         </>
                     ) : (
                         <Button
                             onClick={() => setIsEditing(true)}
                             disabled={loading}
-                            className="bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900"
+                            className="h-10 px-6 rounded-xl bg-brand-orange hover:bg-orange-600 text-white shadow-lg shadow-brand-orange/20 text-[10px] font-black uppercase tracking-widest"
                         >
-                            ✏️ Editar Escala
+                            ✏️ Editar <span className="hidden sm:inline">Escala</span>
                         </Button>
                     )}
-                    <Button variant="outline" onClick={handleNextWeek} disabled={loading} className="text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">Próxima ▶</Button>
+                    <Button 
+                        variant="outline" 
+                        onClick={handleNextWeek} 
+                        disabled={loading} 
+                        className="h-10 px-4 rounded-xl border-border bg-surface/50 text-text-primary hover:bg-surface-hover text-[10px] font-black uppercase tracking-widest"
+                    >
+                        <span className="hidden sm:inline mr-1">Próxima</span> ▶
+                    </Button>
                 </div>
             </div>
 
@@ -361,12 +390,16 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
             </div>
 
             {/* Matrix Table */}
-            <div className={`overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-md bg-white dark:bg-slate-800 ${isEditing ? 'ring-2 ring-indigo-500 ring-opacity-50' : ''}`}>
+            <div className="flex items-center justify-between px-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest sm:hidden">← Deslize para ver a semana →</p>
+                <div className="flex-1" />
+            </div>
+            <div className={`overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-md bg-white dark:bg-slate-800 ${isEditing ? 'ring-2 ring-indigo-500 ring-opacity-50' : ''}`}>
                 <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900">
                         <tr>
-                            <th className="px-3 py-3 sticky left-0 bg-slate-50 dark:bg-slate-900 z-10 w-72 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-b border-slate-200 dark:border-slate-700">
-                                Colaborador
+                            <th className="px-4 py-4 sticky left-0 bg-surface-secondary dark:bg-slate-900/90 backdrop-blur-md z-20 w-[120px] sm:w-[280px] shadow-[4px_0_10px_rgba(0,0,0,0.2)] border-b border-border">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Colaborador</span>
                             </th>
                             {weekDays.map(day => (
                                 <th key={day.toISOString()} className={`px-1 py-3 text-center min-w-[110px] border-b border-slate-200 dark:border-slate-700 ${isSameDay(day, new Date()) ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : ''}`}>
@@ -388,8 +421,8 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                                     const hasViols = daysWorked === 7;
 
                                     return (
-                                        <td className={`px-3 py-3 font-medium text-slate-800 dark:text-slate-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-slate-200 dark:border-slate-700 ${hasViols ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-800'}`}>
-                                            <div className="truncate w-56 font-bold" title={emp.name}>{emp.name}</div>
+                                        <td className={`px-4 py-4 font-medium sticky left-0 z-20 shadow-[4px_0_10px_rgba(0,0,0,0.2)] border-r border-border transition-colors ${hasViols ? 'bg-rose-500/10' : 'bg-surface dark:bg-slate-800'}`}>
+                                            <div className="truncate w-[100px] sm:w-[240px] font-black text-text-primary uppercase tracking-tighter text-xs" title={emp.name}>{emp.name}</div>
                                             <div className="flex items-center gap-2">
                                                 <div className="text-xs text-slate-500 dark:text-slate-400 truncate text-[10px]">{emp.jobTitle || emp.contract?.sectorDef?.name}</div>
                                                 {hasViols && (
@@ -466,14 +499,16 @@ export function WeeklyScaleBuilder({ shiftTypes }: { shiftTypes: ShiftType[] }) 
                 </table >
             </div >
             {isEditing && (
-                <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-white dark:bg-slate-800 p-3 rounded-full shadow-2xl border border-indigo-200 dark:border-indigo-900 animate-in fade-in slide-in-from-bottom-4">
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 ml-2">
+                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-slate-800 p-4 sm:p-3 rounded-3xl sm:rounded-full shadow-2xl border border-indigo-200 dark:border-indigo-900 animate-in fade-in slide-in-from-bottom-4">
+                    <span className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300 ml-0 sm:ml-2">
                         {Object.values(pendingChanges).reduce((acc, curr) => acc + Object.keys(curr).length, 0)} alterações pendentes
                     </span>
-                    <Button variant="ghost" size="sm" onClick={() => { if (confirm('Descartar alterações?')) { setPendingChanges({}); setIsEditing(false); } }} className="text-red-600 hover:bg-red-50 rounded-full">Descartar</Button>
-                    <Button size="sm" onClick={saveChanges} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-full shadow-lg shadow-indigo-200 dark:shadow-none">
-                        {loading ? 'Salvando...' : 'Gravar Tudo'}
-                    </Button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Button variant="ghost" size="sm" onClick={() => { if (confirm('Descartar alterações?')) { setPendingChanges({}); setIsEditing(false); } }} className="flex-1 sm:flex-none text-red-600 hover:bg-red-50 rounded-full text-[10px] sm:text-xs">Descartar</Button>
+                        <Button size="sm" onClick={saveChanges} disabled={loading} className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-full shadow-lg shadow-indigo-200 dark:shadow-none text-[10px] sm:text-xs whitespace-nowrap">
+                            {loading ? 'Salvando...' : 'Gravar Tudo'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>

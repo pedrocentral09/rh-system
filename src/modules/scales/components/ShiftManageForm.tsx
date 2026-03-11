@@ -33,12 +33,12 @@ export function ShiftManageForm({ existingShifts }: { existingShifts: ShiftType[
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-1 sm:p-0">
             {/* Create Form */}
-            <Card className="shadow-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 h-fit">
+            <Card className="bg-surface/40 backdrop-blur-xl border-border rounded-[2.5rem] shadow-2xl overflow-hidden h-fit group">
                 <CardHeader>
-                    <CardTitle className="text-xl text-slate-800 dark:text-white">Novo Turno</CardTitle>
-                    <CardDescription className="text-slate-500 dark:text-slate-400">Cadastre um horário de trabalho padrão.</CardDescription>
+                <CardTitle className="text-xl font-[1000] text-text-primary uppercase tracking-tighter italic">Novo <span className="text-brand-orange">Turno</span></CardTitle>
+                <CardDescription className="text-text-muted text-[10px] font-black uppercase tracking-widest mt-1">Cadastre um horário de trabalho padrão.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,7 +60,7 @@ export function ShiftManageForm({ existingShifts }: { existingShifts: ShiftType[
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Intervalo (minutos)</label>
                             <Input type="number" name="breakDuration" defaultValue="60" required />
                         </div>
-                        <Button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4">
+                        <Button type="submit" disabled={loading} className="w-full h-12 bg-brand-orange hover:bg-orange-600 text-white rounded-2xl shadow-lg shadow-brand-orange/20 text-[10px] font-black uppercase tracking-widest mt-6">
                             {loading ? 'Salvando...' : '➕ Criar Turno'}
                         </Button>
                     </form>
@@ -68,10 +68,10 @@ export function ShiftManageForm({ existingShifts }: { existingShifts: ShiftType[
             </Card>
 
             {/* List */}
-            <Card className="shadow-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <Card className="bg-surface/40 backdrop-blur-xl border-border rounded-[2.5rem] shadow-2xl overflow-hidden group">
                 <CardHeader>
-                    <CardTitle className="text-xl text-slate-800 dark:text-white">Turnos Cadastrados</CardTitle>
-                    <CardDescription className="text-slate-500 dark:text-slate-400">Horários disponíveis para escala.</CardDescription>
+                <CardTitle className="text-xl font-[1000] text-text-primary uppercase tracking-tighter italic">Turnos <span className="text-brand-orange">Ativos</span></CardTitle>
+                <CardDescription className="text-text-muted text-[10px] font-black uppercase tracking-widest mt-1">Configurações para escalas vigentes.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -79,11 +79,11 @@ export function ShiftManageForm({ existingShifts }: { existingShifts: ShiftType[
                             <p className="text-slate-500 text-center py-4">Nenhum turno cadastrado.</p>
                         )}
                         {existingShifts.map((shift) => (
-                            <div key={shift.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/30 transition-colors">
+                            <div key={shift.id} className="flex items-center justify-between p-6 rounded-[1.8rem] bg-surface-secondary/40 border border-border/5 hover:border-brand-orange/30 hover:bg-surface transition-all duration-500 group/item">
                                 <div>
-                                    <h4 className="text-slate-800 dark:text-slate-200 font-medium">{shift.name}</h4>
-                                    <p className="text-sm text-indigo-600 dark:text-indigo-400 font-mono">
-                                        {shift.startTime} - {shift.endTime} <span className="text-slate-500 dark:text-slate-600 mx-1">|</span> {shift.breakDuration}m intervalo
+                                    <h4 className="text-text-primary font-black uppercase tracking-tighter text-sm italic group-hover/item:text-brand-orange transition-colors">{shift.name}</h4>
+                                    <p className="text-[10px] text-brand-orange font-black uppercase tracking-widest mt-1">
+                                        {shift.startTime} <span className="opacity-30 mx-1">→</span> {shift.endTime} <span className="text-text-muted/20 mx-2">|</span> {shift.breakDuration}m pausa
                                     </p>
                                 </div>
                                 <Button

@@ -33,7 +33,7 @@ export function PendingRequestsWidget({ pendingVacations, pendingSignatures }: P
     ];
 
     return (
-        <div className="bg-surface border border-white/5 rounded-[2.5rem] p-10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] relative overflow-hidden h-full group">
+        <div className="bg-surface border border-white/5 rounded-[2.5rem] p-6 sm:p-10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] relative overflow-hidden h-full group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/[0.03] blur-[100px] pointer-events-none" />
             <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-emerald-500/[0.02] blur-[80px] rounded-full" />
 

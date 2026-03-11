@@ -12,11 +12,12 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/shared/components/ui/button';
 import { Printer, ShieldAlert, BadgeCheck, Clock, User, ArrowRight, Calendar, Stethoscope } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface VacationDashboardClientProps {
     summary: any[];
     pendingRequests: any[];
-    allVacations: any[]; // For the calendar and history
+    allVacations: any[]; 
 }
 
 export function VacationDashboardClient({ summary, pendingRequests, allVacations }: VacationDashboardClientProps) {
@@ -27,59 +28,51 @@ export function VacationDashboardClient({ summary, pendingRequests, allVacations
     const expiredCount = summary.filter(s => s.status === 'EXPIRED').length;
     const openCount = summary.filter(s => s.status === 'OPEN').length;
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="space-y-6">
+        <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="space-y-6 pb-12"
+        >
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-surface border-none shadow-sm overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Férias Vencidas</p>
-                            <div className="text-3xl font-black text-red-600 dark:text-red-400">{expiredCount}</div>
-                        </div>
-                        <div className="bg-red-500/10 p-3 rounded-2xl group-hover:scale-110 transition-transform">
-                            <ShieldAlert className="h-6 w-6 text-red-600 dark:text-red-400" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-surface border-none shadow-sm overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Saldos Abertos</p>
-                            <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{openCount}</div>
-                        </div>
-                        <div className="bg-emerald-500/10 p-3 rounded-2xl group-hover:scale-110 transition-transform">
-                            <BadgeCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-surface border-none shadow-sm overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Solicitações</p>
-                            <div className="text-3xl font-black text-brand-blue">{pendingRequests.length}</div>
-                        </div>
-                        <div className="bg-brand-blue/10 p-3 rounded-2xl group-hover:scale-110 transition-transform">
-                            <Clock className="h-6 w-6 text-brand-blue" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-surface border-none shadow-sm overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Programadas</p>
-                            <div className="text-3xl font-black text-text-primary">
-                                {allVacations.filter(v => new Date(v.startDate) > new Date()).length}
-                            </div>
-                        </div>
-                        <div className="bg-surface-secondary p-3 rounded-2xl group-hover:scale-110 transition-transform">
-                            <Calendar className="h-6 w-6 text-text-muted" />
-                        </div>
-                    </CardContent>
-                </Card>
+                {[
+                    { label: 'Férias Vencidas', value: expiredCount, icon: ShieldAlert, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500/10' },
+                    { label: 'Saldos Abertos', value: openCount, icon: BadgeCheck, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
+                    { label: 'Solicitações', value: pendingRequests.length, icon: Clock, color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
+                    { label: 'Programadas', value: allVacations.filter(v => new Date(v.startDate) > new Date()).length, icon: Calendar, color: 'text-text-muted', bg: 'bg-surface-secondary' }
+                ].map((stat, i) => (
+                    <motion.div key={i} variants={itemVariants}>
+                        <Card className="bg-surface border-none shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300">
+                            <CardContent className="p-5 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">{stat.label}</p>
+                                    <div className={`text-3xl font-black ${stat.color}`}>{stat.value}</div>
+                                </div>
+                                <div className={`${stat.bg} p-3 rounded-2xl group-hover:scale-110 transition-transform`}>
+                                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6" onValueChange={setActiveTab}>
-                <div className="flex justify-between items-center">
+                <motion.div variants={itemVariants} className="flex justify-between items-center">
                     <TabsList className="bg-surface p-1 border border-border rounded-xl shadow-inner">
                         <TabsTrigger value="overview" className="rounded-lg font-black text-[10px] uppercase px-6 text-text-muted data-[state=active]:bg-surface-secondary data-[state=active]:text-text-primary">
                             Gestão de Férias
@@ -99,149 +92,133 @@ export function VacationDashboardClient({ summary, pendingRequests, allVacations
                             🩺 Depto Médico
                         </TabsTrigger>
                     </TabsList>
-                </div>
+                </motion.div>
 
-                <TabsContent value="overview" className="space-y-6 outline-none">
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        {/* Vacation Summary Table */}
-                        <Card className="border-none shadow-sm bg-surface overflow-hidden lg:col-span-2">
-                            <CardHeader className="border-b border-border py-4 px-6">
-                                <CardTitle className="text-sm font-black text-text-primary uppercase tracking-tight">Colaboradores e Saldos</CardTitle>
-                                <CardDescription className="text-xs text-text-muted font-medium">Clique no colaborador para gerenciar agendamentos.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-text-primary/5 text-[10px] font-black uppercase text-text-muted border-b border-border">
-                                            <tr>
-                                                <th className="px-6 py-4">Colaborador</th>
-                                                <th className="px-6 py-4">Departamento</th>
-                                                <th className="px-6 py-4">Saldo Total</th>
-                                                <th className="px-6 py-4">Status</th>
-                                                <th className="px-6 py-4 text-right">Ação</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {summary.map((emp) => (
-                                                <tr key={emp.id} className="hover:bg-surface-secondary transition-all cursor-pointer group" onClick={() => setSelectedEmployee({ id: emp.id, name: emp.name })}>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-xl bg-text-primary/5 flex items-center justify-center border border-border">
-                                                                <User className="h-4 w-4 text-text-muted" />
-                                                            </div>
-                                                            <div className="font-bold text-text-primary">{emp.name}</div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-text-muted font-medium">{emp.department}</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="text-lg font-black text-text-primary">{emp.totalBalance}</span>
-                                                            <span className="text-[10px] font-bold text-text-muted uppercase">Dias</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${emp.status === 'EXPIRED' ? 'bg-red-500/10 text-red-500 dark:text-red-400' :
-                                                            emp.status === 'OPEN' ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400' : 'bg-surface-secondary text-text-muted'
-                                                            }`}>
-                                                            {emp.status === 'EXPIRED' ? 'Vencido' : emp.status === 'OPEN' ? 'Disponível' : 'Em Dia'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <Button variant="ghost" size="sm" className="bg-text-primary/5 hover:bg-brand-blue hover:text-white rounded-lg group-hover:translate-x-1 transition-all">
-                                                            <ArrowRight className="h-4 w-4" />
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card className="border-none shadow-sm bg-surface overflow-hidden">
-                        <CardHeader className="border-b border-border py-4 px-6">
-                            <CardTitle className="text-sm font-black text-text-primary uppercase tracking-tight">Histórico Geral</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-text-primary/5 text-[10px] font-black uppercase text-text-muted border-b border-border">
-                                        <tr>
-                                            <th className="px-6 py-4">Colaborador</th>
-                                            <th className="px-6 py-4">Período</th>
-                                            <th className="px-6 py-4">Dias</th>
-                                            <th className="px-6 py-4">Abono</th>
-                                            <th className="px-6 py-4">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {allVacations.slice(0, 10).map((v: any) => (
-                                            <tr key={v.id} className="hover:bg-surface-secondary transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-text-primary">{v.employee?.name}</div>
-                                                    <div className="text-[10px] text-text-muted font-medium">{v.employee?.department}</div>
-                                                </td>
-                                                <td className="px-6 py-4 text-text-secondary font-bold">
-                                                    {format(new Date(v.startDate), 'dd/MM/yy', { locale: ptBR })} à {format(new Date(v.endDate), 'dd/MM/yy', { locale: ptBR })}
-                                                </td>
-                                                <td className="px-6 py-4 font-black text-text-primary">{v.daysCount} d</td>
-                                                <td className="px-6 py-4 text-text-muted">{v.soldDays > 0 ? `${v.soldDays}d` : '-'}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-500/10 text-emerald-500 dark:text-emerald-300 uppercase border border-emerald-500/20">
-                                                        Aprovado
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <TabsContent value="overview" className="space-y-6 outline-none mt-0">
+                            <div className="grid gap-6 lg:grid-cols-2">
+                                <Card className="border-none shadow-sm bg-surface overflow-hidden lg:col-span-2">
+                                    <CardHeader className="border-b border-border py-4 px-6">
+                                        <CardTitle className="text-sm font-black text-text-primary uppercase tracking-tight">Colaboradores e Saldos</CardTitle>
+                                        <CardDescription className="text-xs text-text-muted font-medium">Gerencie o descanso remunerado da sua equipe.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-text-primary/5 text-[10px] font-black uppercase text-text-muted border-b border-border">
+                                                    <tr>
+                                                        <th className="px-6 py-4">Colaborador</th>
+                                                        <th className="px-6 py-4">Departamento</th>
+                                                        <th className="px-6 py-4">Saldo Total</th>
+                                                        <th className="px-6 py-4">Status</th>
+                                                        <th className="px-6 py-4 text-right">Ação</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-border">
+                                                    {summary.map((emp) => (
+                                                        <tr 
+                                                            key={emp.id} 
+                                                            className="hover:bg-surface-secondary transition-all cursor-pointer group" 
+                                                            onClick={() => setSelectedEmployee({ id: emp.id, name: emp.name })}
+                                                        >
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded-2xl bg-brand-orange/5 flex items-center justify-center border border-brand-orange/10 group-hover:bg-brand-orange group-hover:text-white transition-all">
+                                                                        <User className="h-5 w-5" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-bold text-text-primary group-hover:text-brand-orange transition-colors">{emp.name}</div>
+                                                                        <div className="text-[10px] text-text-muted font-black uppercase">{emp.registration}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-text-muted font-black uppercase text-[10px] tracking-widest">{emp.department}</td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-xl font-black text-text-primary">{emp.totalBalance}</span>
+                                                                    <span className="text-[10px] font-bold text-text-muted uppercase">Dias</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-sm ${
+                                                                    emp.status === 'EXPIRED' ? 'bg-red-500/10 text-red-500 border border-red-500/10' :
+                                                                    emp.status === 'OPEN' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10' : 
+                                                                    'bg-surface-secondary text-text-muted border border-border'
+                                                                }`}>
+                                                                    {emp.status === 'EXPIRED' ? 'Vencido' : emp.status === 'OPEN' ? 'Disponível' : 'Em Dia'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl bg-text-primary/5 flex items-center justify-center group-hover:bg-brand-orange group-hover:text-white transition-all">
+                                                                    <ArrowRight className="h-4 w-4" />
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                        </TabsContent>
 
-                <TabsContent value="requests" className="outline-none">
-                    <Card className="border-none shadow-sm bg-surface overflow-hidden">
-                        <CardHeader className="bg-brand-blue dark:bg-surface-secondary text-white dark:text-text-primary p-6">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-brand-orange" />
-                                Portal de Solicitações
-                            </CardTitle>
-                            <CardDescription className="text-white/60 dark:text-text-muted text-xs font-medium">Aguardando implementação do Portal do Colaborador.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-12 text-center space-y-4">
-                            <div className="bg-surface-secondary w-20 h-20 rounded-3xl flex items-center justify-center mx-auto border-2 border-dashed border-border">
-                                <Clock className="h-8 w-8 text-text-muted/40" />
-                            </div>
-                            <div>
-                                <h3 className="text-text-primary font-black uppercase tracking-tight">Nenhuma solicitação pendente</h3>
-                                <p className="text-text-muted text-xs max-w-xs mx-auto mt-2 leading-relaxed font-medium">
-                                    Pedidos realizados por colaboradores através do portal aparecerão aqui para aprovação do RH.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                        <TabsContent value="requests" className="outline-none mt-0">
+                            {/* Requests content remains but styled more consistently */}
+                            <Card className="border-none shadow-sm bg-surface overflow-hidden">
+                                <CardHeader className="bg-[#161B29] text-white p-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-2xl bg-brand-orange/20 flex items-center justify-center">
+                                            <Clock className="h-6 w-6 text-brand-orange" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg font-black uppercase tracking-tight">Portal de Solicitações</CardTitle>
+                                            <CardDescription className="text-white/40 text-xs font-bold uppercase tracking-widest">Controle de pedidos pendentes</CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-20 text-center space-y-6">
+                                    <div className="bg-text-primary/5 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto border-2 border-dashed border-border group-hover:border-brand-orange transition-all duration-500">
+                                        <Clock className="h-10 w-10 text-text-muted/20" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-black text-text-primary italic uppercase">Nada por aqui ainda</h3>
+                                        <p className="text-text-muted text-xs max-w-sm mx-auto leading-relaxed font-medium">
+                                            Quando seus colaboradores realizarem solicitações pelo Portal da Família, elas aparecerão listadas aqui para sua aprovação.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
-                <TabsContent value="calendar" className="outline-none">
-                    <VacationCalendar vacations={allVacations} />
-                </TabsContent>
+                        <TabsContent value="calendar" className="outline-none mt-0">
+                            <VacationCalendar vacations={allVacations} />
+                        </TabsContent>
 
-                <TabsContent value="medical" className="outline-none">
-                    <MedicalDashboard />
-                </TabsContent>
+                        <TabsContent value="medical" className="outline-none mt-0">
+                            <MedicalDashboard />
+                        </TabsContent>
+                    </motion.div>
+                </AnimatePresence>
             </Tabs>
 
-            {selectedEmployee && (
-                <VacationDetailModal
-                    isOpen={!!selectedEmployee}
-                    onClose={() => setSelectedEmployee(null)}
-                    employeeId={selectedEmployee.id}
-                    employeeName={selectedEmployee.name}
-                />
-            )}
-        </div>
+            <AnimatePresence>
+                {selectedEmployee && (
+                    <VacationDetailModal
+                        isOpen={!!selectedEmployee}
+                        onClose={() => setSelectedEmployee(null)}
+                        employeeId={selectedEmployee.id}
+                        employeeName={selectedEmployee.name}
+                    />
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 }

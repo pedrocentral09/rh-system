@@ -14,7 +14,7 @@ export async function extractDataFromDocument(imageUrl: string, type: 'RG' | 'CP
         let prompt = "";
 
         if (type === 'RG' || type === 'CNH') {
-            prompt = "Extract the following data from this Brazilian identity document (RG or CNH): full name, document number, CPF (if present), and date of birth. Return ONLY a valid JSON object in this format: { \"name\": \"string\", \"rg\": \"string\", \"cpf\": \"string\", \"birthDate\": \"YYYY-MM-DD\" }. If any field is not found, return null for it.";
+            prompt = "Extract the following data from this Brazilian identity document (RG or CNH): full name, document number, CPF (if present), date of birth, issuing body (orgão emissor, e.g., SSP/SP), and issuance date (data de emissão). Return ONLY a valid JSON object in this format: { \"name\": \"string\", \"rg\": \"string\", \"cpf\": \"string\", \"birthDate\": \"YYYY-MM-DD\", \"issuingBody\": \"string\", \"rgDate\": \"YYYY-MM-DD\" }. If any field is not found, return null for it.";
         } else if (type === 'CPF') {
             prompt = "Extract the following data from this Brazilian CPF document: full name, CPF number, and date of birth. Return ONLY a valid JSON object in this format: { \"name\": \"string\", \"cpf\": \"string\", \"birthDate\": \"YYYY-MM-DD\" }. If any field is not found, return null for it.";
         } else if (type === 'ENDERECO') {

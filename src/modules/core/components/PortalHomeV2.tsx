@@ -19,6 +19,7 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ClimateSurveyWidget } from '@/modules/performance/components/ClimateSurveyWidget';
+import { ComplianceWidget } from './ComplianceWidget';
 
 interface PortalHomeV2Props {
     employeeName: string;
@@ -92,6 +93,8 @@ export default function PortalHomeV2({
                     <div className="absolute top-4 right-4 h-2.5 w-2.5 rounded-full bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,1)] border-2 border-[#0A0F1C]" />
                 </motion.div>
             </div>
+
+            <ComplianceWidget />
 
             {/* 2. Main Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

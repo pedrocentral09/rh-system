@@ -1,72 +1,101 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Users2, Clock, UserCheck, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
-interface StatsGridProps {
+interface StatsProps {
     stats: {
         totalEmployees: number;
         activeEmployees: number;
         storeCount: number;
         sectorCount: number;
+        totalHours?: string;
+        presentToday?: number;
+        avgPerformance?: number;
     };
 }
 
-export function DashboardStatsGrid({ stats }: StatsGridProps) {
+export function DashboardStatsGrid({ stats }: StatsProps) {
     const items = [
-        { label: 'Colaboradores', value: stats.totalEmployees, color: 'text-brand-orange', bg: 'bg-brand-orange/[0.03]', glow: 'shadow-brand-orange/20', sub: 'Rede Unificada', icon: '🫂' },
-        { label: 'Ativos Agora', value: stats.activeEmployees, color: 'text-emerald-400', bg: 'bg-emerald-400/[0.03]', glow: 'shadow-emerald-400/20', sub: 'Status Operacional', icon: '⚡' },
-        { label: 'Unidades', value: stats.storeCount, color: 'text-sky-400', bg: 'bg-sky-400/[0.03]', glow: 'shadow-sky-400/20', sub: 'Matriz e Filiais', icon: '🏢' },
-        { label: 'Divisões', value: stats.sectorCount, color: 'text-amber-400', bg: 'bg-amber-400/[0.03]', glow: 'shadow-amber-400/20', sub: 'Centros de Custo', icon: '🎯' }
+        { 
+            label: 'Colaboradores', 
+            value: stats.totalEmployees, 
+            trend: '+12%', 
+            isPositive: true, 
+            icon: <Users2 className="w-5 h-5" />, 
+            color: 'emerald' 
+        },
+        { 
+            label: 'Banco de Horas', 
+            value: stats.totalHours || '1.240h', 
+            trend: '-5%', 
+            isPositive: false, 
+            icon: <Clock className="w-5 h-5" />, 
+            color: 'orange' 
+        },
+        { 
+            label: 'Presentes Hoje', 
+            value: stats.presentToday || 142, 
+            trend: '88%', 
+            isPositive: true, 
+            icon: <UserCheck className="w-5 h-5" />, 
+            color: 'blue' 
+        },
+        { 
+            label: 'Produtividade', 
+            value: (stats.avgPerformance || 94) + '%', 
+            trend: '+2%', 
+            isPositive: true, 
+            icon: <TrendingUp className="w-5 h-5" />, 
+            color: 'indigo' 
+        },
     ];
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {items.map((item, i) => (
                 <motion.div
                     key={item.label}
-                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: i * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ y: -10, scale: 1.02 }}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ 
+                        duration: 0.8, 
+                        delay: i * 0.1, 
+                        ease: [0.16, 1, 0.3, 1] 
+                    }}
+                    className="relative group h-full"
                 >
-                    <div className={`relative group h-52 overflow-hidden bg-surface border border-white/5 rounded-[3rem] p-10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] transition-all duration-700 hover:border-brand-orange/30`}>
-                        {/* High-end Lighting and Accents */}
-                        <div className={`absolute top-0 right-0 w-48 h-48 ${item.bg.replace('0.03', '0.08')} blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-full`} />
-                        <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-white/[0.02] blur-[80px] rounded-full" />
-
-                        <div className="relative z-10 flex flex-col justify-between h-full">
-                            <div>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className={`h-1.5 w-1.5 rounded-full ${item.color.replace('text-', 'bg-')} shadow-[0_0_12px_currentColor] animate-pulse`} />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.4em] group-hover:text-text-primary transition-colors">
-                                        {item.label}
-                                    </p>
-                                </div>
-                                <div className={`text-6xl font-[1000] ${item.color} tracking-tighter italic leading-none group-hover:scale-110 transition-transform duration-700 origin-left`}>
-                                    {item.value}
-                                </div>
+                    <div className="h-full bg-surface/40 backdrop-blur-md border border-border/60 rounded-[2rem] p-5 sm:p-7 transition-all duration-500 hover:border-brand-orange/30 hover:-translate-y-1 hover:shadow-2xl">
+                        <div className="flex items-start justify-between mb-6">
+                            <div className="w-12 h-12 bg-surface-secondary border border-border rounded-2xl flex items-center justify-center text-text-muted group-hover:bg-brand-orange group-hover:text-white group-hover:border-transparent transition-all duration-500 shadow-sm">
+                                {item.icon}
                             </div>
-
-                            <div className="flex items-center gap-4">
-                                <div className="h-[1px] flex-1 bg-white/5 relative overflow-hidden">
-                                    <motion.div
-                                        initial={{ x: "-100%" }}
-                                        animate={{ x: "100%" }}
-                                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                        className={`absolute inset-y-0 w-20 bg-gradient-to-r from-transparent via-brand-orange to-transparent`}
-                                    />
-                                </div>
-                                <span className="text-[9px] text-text-muted font-black uppercase tracking-[0.3em] opacity-40 group-hover:opacity-100 transition-opacity">
-                                    {item.sub}
-                                </span>
+                            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase ${item.isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                                {item.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                {item.trend}
                             </div>
                         </div>
 
-                        {/* Decoration Icon */}
-                        <span className="absolute -right-4 -bottom-4 text-8xl opacity-[0.02] group-hover:opacity-[0.05] transition-opacity duration-1000 rotate-12 group-hover:rotate-0 pointer-events-none select-none">
-                            {item.icon}
-                        </span>
+                        <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 group-hover:text-brand-orange transition-colors">
+                            {item.label}
+                        </h2>
+
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-text-primary uppercase tracking-tighter leading-none">
+                                {item.value}
+                            </span>
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t border-border/50">
+                            <div className="w-full h-1 bg-surface-secondary rounded-full overflow-hidden">
+                                <motion.div 
+                                    className="h-full bg-brand-orange" 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: i === 0 ? '75%' : i === 1 ? '45%' : i === 2 ? '88%' : '94%' }}
+                                    transition={{ duration: 1.5, delay: 0.5 + (i * 0.1) }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
             ))}

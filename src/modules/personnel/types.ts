@@ -15,6 +15,12 @@ export const CreateEmployeeSchema = z.object({
     pis: z.string().optional(),
     ctps: z.string().optional(),
     voterTitle: z.string().optional(),
+    placeOfBirth: z.string().optional(),
+    mothersName: z.string().optional(),
+    fathersName: z.string().optional(),
+    educationLevel: z.string().optional(),
+    militaryCertificate: z.string().optional(),
+    cnh: z.string().optional(),
 
     hireDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
         message: "Data de admissão inválida",

@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
+import { User, Pencil, Truck, Clock, Palmtree, ChevronRight, Building2, MapPin } from "lucide-react";
 
 interface Employee {
     id: string;
@@ -33,53 +34,54 @@ export function MobileEmployeeCard({
 }: MobileEmployeeCardProps) {
     return (
         <Card
-            className="mb-4 shadow-xl active:scale-[0.98] transition-all cursor-pointer border-l-4 border-l-brand-blue bg-surface text-text-primary rounded-2xl overflow-hidden hover:shadow-2xl"
+            className="mb-4 shadow-xl active:scale-[0.98] transition-all cursor-pointer border border-border bg-surface text-text-primary rounded-3xl overflow-hidden hover:shadow-2xl relative"
             onClick={onClick}
         >
-            <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                        {employee.photoUrl ? (
-                            <img src={employee.photoUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-border" />
-                        ) : (
-                            <div className="w-12 h-12 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-sm font-black text-text-secondary uppercase">
-                                {employee.name.charAt(0)}
-                            </div>
-                        )}
-                        <div>
-                            <h3 className="text-sm font-black text-text-primary uppercase tracking-tight truncate max-w-[150px]">{employee.name}</h3>
-                            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest truncate max-w-[150px] opacity-80">{employee.jobTitle || (employee as any).jobRole?.name || 'Sem cargo'}</p>
+            <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                        <div className="relative">
+                            {employee.photoUrl ? (
+                                <img src={employee.photoUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border shadow-md" />
+                            ) : (
+                                <div className="w-14 h-14 rounded-2xl bg-surface-secondary border border-border flex items-center justify-center">
+                                    <User className="h-6 w-6 text-text-secondary" />
+                                </div>
+                            )}
+                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-surface ${employee.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-text-muted'}`} />
+                        </div>
+                        <div className="min-w-0">
+                            <h3 className="text-[13px] font-black text-text-primary uppercase tracking-tight truncate">{employee.name}</h3>
+                            <p className="text-[9px] text-brand-orange font-bold uppercase tracking-[0.15em] mt-1 opacity-90">{employee.jobTitle || (employee as any).jobRole?.name || 'Sem cargo'}</p>
                         </div>
                     </div>
-                    <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border
-                        ${employee.status === 'ACTIVE'
-                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
-                            : 'bg-surface-secondary border-border text-text-secondary opacity-70'}`}>
-                        {translateStatus(employee.status)}
-                    </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-[10px] text-text-secondary uppercase font-black mb-5 bg-surface-secondary/50 p-4 rounded-xl border border-border shadow-inner">
-                    <div className="border-r border-border pr-2">
-                        <span className="block text-text-secondary opacity-60 mb-1 tracking-tighter">LOJA / FILIAL</span>
-                        <span className="font-black text-text-primary tracking-tight">{(employee as any).contract?.store?.name || '-'}</span>
+                <div className="grid grid-cols-2 gap-px bg-border rounded-2xl overflow-hidden border border-border mb-6">
+                    <div className="bg-surface-secondary/40 p-4">
+                        <div className="flex items-center gap-2 mb-1 opacity-70">
+                            <Building2 className="h-3 w-3" />
+                            <span className="text-[8px] font-black uppercase tracking-wider">UNIDADE</span>
+                        </div>
+                        <span className="block text-[10px] font-black text-text-primary truncate uppercase">{(employee as any).contract?.store?.name || '-'}</span>
                     </div>
-                    <div className="pl-2">
-                        <span className="block text-text-secondary opacity-60 mb-1 tracking-tighter">DEPARTAMENTO</span>
-                        <span className="font-black text-text-primary tracking-tight">{(employee as any).contract?.sectorDef?.name || employee.department || '-'}</span>
+                    <div className="bg-surface-secondary/40 p-4">
+                        <div className="flex items-center gap-2 mb-1 opacity-70">
+                            <MapPin className="h-3 w-3" />
+                            <span className="text-[8px] font-black uppercase tracking-wider">SETOR</span>
+                        </div>
+                        <span className="block text-[10px] font-black text-text-primary truncate uppercase">{(employee as any).contract?.sectorDef?.name || employee.department || '-'}</span>
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-border">
+                <div className="flex justify-between items-center pt-2">
                     <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-sm" onClick={onEdit} title="Editar">✏️</Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-orange hover:bg-brand-orange hover:text-white transition-all shadow-sm" onClick={onTransfer} title="Transferir">🚚</Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-sm" onClick={onTimeTracking} title="Ponto">⏰</Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 bg-surface-secondary border border-border rounded-lg text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm" onClick={onVacation} title="Férias">🌴</Button>
+                        <button onClick={onEdit} className="w-10 h-10 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all active:scale-90" title="Editar"><Pencil className="h-4 w-4" /></button>
+                        <button onClick={onTransfer} className="w-10 h-10 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all active:scale-90" title="Transferir"><Truck className="h-4 w-4" /></button>
+                        <button onClick={onTimeTracking} className="w-10 h-10 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-text-secondary hover:bg-text-primary hover:text-white transition-all active:scale-90" title="Ponto"><Clock className="h-4 w-4" /></button>
+                        <button onClick={onVacation} className="w-10 h-10 rounded-xl bg-surface-secondary border border-border flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all active:scale-90" title="Férias"><Palmtree className="h-4 w-4" /></button>
                     </div>
-                    <span className="text-[10px] text-brand-blue font-black uppercase tracking-widest flex items-center gap-1 active:translate-x-1 transition-transform">
-                        Detalhes ➜
-                    </span>
+                    <ChevronRight className="h-5 w-5 text-text-secondary opacity-30" />
                 </div>
             </CardContent>
         </Card>

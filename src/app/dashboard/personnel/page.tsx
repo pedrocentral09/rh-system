@@ -16,9 +16,9 @@ export default function PersonnelPage() {
     const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
 
     return (
-        <div className="space-y-12 max-w-[1600px] mx-auto pb-20 animate-in fade-in duration-700">
+        <div className="space-y-6 lg:space-y-12 max-w-[1600px] mx-auto pb-10 lg:pb-20 animate-in fade-in duration-700">
             {/* Premium Page Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 bg-surface p-10 rounded-[3rem] border border-border shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 bg-surface p-6 lg:p-10 rounded-3xl lg:rounded-[3rem] border border-border shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-blue/[0.03] blur-[120px] rounded-full pointer-events-none" />
 
                 <div className="flex items-center gap-6 relative z-10">
@@ -26,8 +26,8 @@ export default function PersonnelPage() {
                         <Users className="h-8 w-8 text-brand-blue dark:text-blue-400" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter leading-none mb-2">Governança de <span className="text-brand-blue dark:text-blue-400">Capital Humano</span></h1>
-                        <p className="text-[11px] font-black text-text-muted uppercase tracking-[0.4em] italic text-center md:text-left">Arquitetura de Talentos & Conformidade Organizacional</p>
+                        <h1 className="text-2xl lg:text-4xl font-black text-text-primary uppercase tracking-tighter leading-tight mb-2">Governança de <span className="text-brand-blue dark:text-blue-400">Capital Humano</span></h1>
+                        <p className="text-[10px] lg:text-[11px] font-black text-text-muted uppercase tracking-[0.2em] lg:tracking-[0.4em] italic text-left">Arquitetura de Talentos & Conformidade Organizacional</p>
                     </div>
                 </div>
             </div>

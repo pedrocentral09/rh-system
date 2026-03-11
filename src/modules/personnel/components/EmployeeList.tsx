@@ -218,29 +218,29 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                     <p className="text-[10px] text-text-secondary font-black uppercase tracking-[0.3em] opacity-80">Gestão Estratégica de Capital Humano & Talento</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                     <MinimumWageUpdateButton />
 
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="h-14 px-8 rounded-2xl bg-brand-orange text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-orange/20 flex items-center gap-3 border-b-4 border-black/20"
+                        className="h-12 sm:h-14 px-4 sm:px-8 rounded-2xl bg-brand-orange text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-orange/20 flex items-center gap-3 border-b-4 border-black/20 shrink-0"
                     >
-                        <UserPlus className="h-5 w-5" />
-                        Adicionar Colaborador
+                        <UserPlus className="h-4 sm:h-5 w-4 sm:w-5" />
+                        <span className="hidden xs:inline">Adicionar Colaborador</span>
+                        <span className="xs:hidden">Adicionar</span>
                     </button>
-
-
 
                     <button
                         onClick={() => setIsOnboardingRequestOpen(true)}
-                        className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-surface transition-all shadow-md flex items-center gap-3 border-b-4 border-black/5"
+                        className="h-12 sm:h-14 px-4 sm:px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-surface transition-all shadow-md flex items-center gap-3 border-b-4 border-black/5 shrink-0"
                     >
-                        <LinkIcon className="h-5 w-5 text-brand-orange" />
-                        Autocadastro Digital
+                        <LinkIcon className="h-4 sm:h-5 w-4 sm:w-5 text-brand-orange" />
+                        <span className="hidden xs:inline">Autocadastro Digital</span>
+                        <span className="xs:hidden">Autocadastro</span>
                     </button>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-6">
+                <div className="flex flex-wrap items-center gap-4 lg:gap-6">
                     <ExportButton
                         data={filteredEmployees}
                         filename="funcionarios"
@@ -248,7 +248,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                         onExportPDF={handleExportPDF}
                     />
 
-                    <div className="bg-surface-secondary/50 backdrop-blur-md border border-border p-1.5 rounded-[1.5rem] flex items-center gap-1 shadow-inner">
+                    <div className="bg-surface-secondary/50 backdrop-blur-md border border-border p-1 rounded-2xl sm:rounded-[1.5rem] flex items-center gap-1 shadow-inner overflow-x-auto max-w-full custom-scrollbar">
                         {[
                             { id: 'active', label: 'Efetivos', color: 'brand-orange', count: employees.filter(e => e.status === 'ACTIVE').length },
                             { id: 'approval', label: 'Pendentes', color: 'brand-blue', count: employees.filter(e => e.status === 'PENDING_APPROVAL' || e.status === 'WAITING_ONBOARDING').length },
@@ -257,14 +257,14 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative ${activeTab === tab.id
+                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative whitespace-nowrap ${activeTab === tab.id
                                     ? 'bg-surface text-text-primary shadow-xl ring-1 ring-border'
                                     : 'text-text-secondary hover:text-text-primary hover:bg-surface/40'
                                     }`}
                             >
-                                <span className="flex items-center gap-3">
+                                <span className="flex items-center gap-2 sm:gap-3">
                                     {tab.label}
-                                    <span className={`px-2 py-0.5 rounded-lg font-black bg-brand-orange/10 text-brand-orange text-[9px] min-w-[20px] shadow-inner`}>
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-lg font-black bg-brand-orange/10 text-brand-orange text-[8px] sm:text-[9px] min-w-[18px] sm:min-w-[20px] shadow-inner`}>
                                         {tab.count}
                                     </span>
                                 </span>
@@ -278,7 +278,7 @@ export function EmployeeList({ refreshTrigger }: EmployeeListProps) {
             </div>
 
             {/* Premium Filter Bar */}
-            <div className="bg-surface-secondary/30 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 lg:p-10 shadow-2xl relative overflow-hidden group">
+            <div className="bg-surface-secondary/30 backdrop-blur-xl border border-border rounded-3xl lg:rounded-[2.5rem] p-6 lg:p-10 shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[80px] rounded-full -mr-32 -mt-32 pointer-events-none group-hover:bg-brand-orange/10 transition-all duration-1000" />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 relative">
