@@ -82,6 +82,7 @@ model Employee {
   jobRoleId                    String?
   department                   String?
   status                       String                  @default("ACTIVE")
+  journeyStatus                String                  @default("ACTIVE") // ADMISSION, INTEGRATION, ACTIVE, OFFBOARDING, TERMINATED
   userId                       String?                 @unique
   createdAt                    DateTime                @default(now())
   nextEvaluationDate           DateTime?
@@ -253,6 +254,7 @@ model Contract {
   isExperienceContract    Boolean            @default(false)
   experienceDays          Int?
   isExperienceExtended    Boolean            @default(false)
+  isExperienceExtended2   Boolean            @default(false)
   hasTransportVoucher     Boolean            @default(false)
   transportVoucherValue   Decimal?
   mealVoucherValue        Decimal?
@@ -274,6 +276,7 @@ model Contract {
   monthlyBonus            Decimal?
   otherBenefits           String?
   experienceExtensionDays Int?
+  experienceExtension2Days Int?
   company                 Company?           @relation(fields: [companyId], references: [id])
   employee                Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   jobRole                 JobRole?           @relation(fields: [jobRoleId], references: [id])
@@ -289,6 +292,7 @@ model Document {
   id                    String    @id @default(uuid())
   employeeId            String
   type                  String
+  category              String    @default("ADMISSAO") // ADMISSAO, FINANCEIRO, FERIAS, AFASTAMENTO
   fileUrl               String
   fileName              String
   status                String    @default("PENDING") // PENDING, SIGNED, EXPIRED

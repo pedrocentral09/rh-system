@@ -82,6 +82,8 @@ export const CreateEmployeeSchema = z.object({
     experienceDays: z.coerce.number().optional(),
     isExperienceExtended: z.coerce.boolean().optional(),
     experienceExtensionDays: z.coerce.number().optional(),
+    isExperienceExtended2: z.coerce.boolean().optional(),
+    experienceExtension2Days: z.coerce.number().optional(),
 
     // Benefits Values
     hasTransportVoucher: z.coerce.boolean().optional(),

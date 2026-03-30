@@ -12,8 +12,9 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, CloudUpload, FileText, Lock, Users, Phone, MapPin, Briefcase, CreditCard, HeartPulse, GraduationCap, CheckCircle2, ArrowRightCircle, ChevronLeft, Calendar as CalendarIcon, User, Home, Building2, Banknote, ShieldPlus, FolderOpen, Key, Star, Plus, X, Trash2 } from 'lucide-react';
 import { uploadEmployeePhoto, uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
+import { cn } from "@/lib/utils";
 import { formatSafeDate, parseSafeDate } from '@/shared/utils/date-utils';
-import { useHorizontalScroll } from '@/shared/hooks/use-horizontal-scroll';
+import React from 'react';
 
 interface EmployeeFormProps {
     onSuccess?: () => void;
@@ -95,7 +96,35 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const [success, setSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState(defaultTab || 'personal');
     const [currentId, setCurrentId] = useState<string | null>(employeeId || null);
-    const { scrollRef, onMouseMove, onMouseLeave } = useHorizontalScroll();
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+    const [canScrollRight, setCanScrollRight] = React.useState(true);
+
+    const checkScroll = React.useCallback(() => {
+        if (scrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        checkScroll();
+        window.addEventListener('resize', checkScroll);
+        setTimeout(checkScroll, 100);
+        return () => window.removeEventListener('resize', checkScroll);
+    }, [checkScroll]);
+
+    const scrollTabs = (direction: 'left' | 'right') => {
+        if (scrollRef.current) {
+            const scrollAmount = scrollRef.current.clientWidth / 2;
+            scrollRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+            setTimeout(checkScroll, 350);
+        }
+    };
 
     // Form States for masked inputs
     const [cpf, setCpf] = useState(initialData?.cpf || '');
@@ -299,11 +328,13 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
     const [expDays, setExpDays] = useState(initialData?.contract?.experienceDays || 45);
     const [isExtended, setIsExtended] = useState(initialData?.contract?.isExperienceExtended || false);
     const [extDays, setExtDays] = useState(initialData?.contract?.experienceExtensionDays || 45);
+    const [isExtended2, setIsExtended2] = useState(initialData?.contract?.isExperienceExtended2 || false);
+    const [ext2Days, setExt2Days] = useState(initialData?.contract?.experienceExtension2Days || 45);
 
     const calculateContractEnd = () => {
         if (!hireDate) return null;
         const start = new Date(hireDate);
-        const totalDays = expDays + (isExtended ? extDays : 0);
+        const totalDays = expDays + (isExtended ? extDays : 0) + (isExtended2 ? ext2Days : 0);
 
         // Validation for max 90 days
         if (totalDays > 90) {
@@ -1316,6 +1347,44 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                     )}
                                 </motion.div>
                             )}
+
+                            {isExtended && (
+                                <>
+                                    <div className="flex items-center gap-4 bg-text-primary/5 px-6 rounded-2xl border border-border h-14 col-span-1 md:col-span-2 lg:col-span-1">
+                                        <input
+                                            type="checkbox"
+                                            name="isExperienceExtended2"
+                                            checked={isExtended2}
+                                            onChange={(e) => setIsExtended2(e.target.checked)}
+                                            id="expExtended2"
+                                            className="w-5 h-5 rounded-lg border-white/20 bg-text-primary/5 text-indigo-500 focus:ring-0 cursor-pointer"
+                                        />
+                                        <label htmlFor="expExtended2" className="text-[10px] font-black text-text-primary uppercase tracking-widest cursor-pointer">
+                                            2ª Prorrogação de Vínculo
+                                        </label>
+                                    </div>
+
+                                    {isExtended2 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            className="space-y-2 overflow-hidden"
+                                        >
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-4">2ª Prorrogação (Dias)</label>
+                                            <select
+                                                name="experienceExtension2Days"
+                                                value={ext2Days}
+                                                onChange={(e) => setExt2Days(parseInt(e.target.value))}
+                                                className={`w-full h-14 bg-text-primary/5 border rounded-2xl px-6 text-[11px] font-black text-text-primary uppercase tracking-widest transition-all cursor-pointer appearance-none outline-none ${contractEndData?.error ? 'border-red-500/50 focus:border-red-500' : 'border-border focus:border-indigo-500/50'}`}
+                                            >
+                                                <option value={15} className="bg-surface">+ 15 DIAS CORRIDOS</option>
+                                                <option value={30} className="bg-surface">+ 30 DIAS CORRIDOS</option>
+                                                <option value={45} className="bg-surface">+ 45 DIAS CORRIDOS</option>
+                                            </select>
+                                        </motion.div>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         {/* Info Banner for Contract End */}
@@ -2112,12 +2181,24 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                         )}
                     </div>
 
-                    <div
-                        className="flex items-center gap-3 overflow-x-auto pb-6 no-scrollbar px-2 relative z-10 cursor-grab active:cursor-grabbing"
-                        ref={scrollRef}
-                        onMouseMove={onMouseMove}
-                        onMouseLeave={onMouseLeave}
-                    >
+                    <div className="relative group/form-tabs flex items-center w-full mb-8">
+                        <div className={cn("absolute left-0 top-0 bottom-6 w-24 bg-gradient-to-r from-surface via-surface/90 to-transparent z-20 flex items-center justify-start transition-opacity duration-300 pl-1 -ml-4", canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none")}>
+                            <button type="button" onClick={() => scrollTabs('left')} className="h-10 w-10 rounded-full bg-surface-secondary border border-border shadow-md flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all active:scale-95 z-30">
+                                <ChevronLeft className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className={cn("absolute right-0 top-0 bottom-6 w-24 bg-gradient-to-l from-surface via-surface/90 to-transparent z-20 flex items-center justify-end transition-opacity duration-300 pr-1 -mr-4", canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none")}>
+                            <button type="button" onClick={() => scrollTabs('right')} className="h-10 w-10 rounded-full bg-surface-secondary border border-border shadow-md flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-all active:scale-95 z-30">
+                                <ChevronLeft className="h-5 w-5 rotate-180" />
+                            </button>
+                        </div>
+                        
+                        <div
+                            className="flex items-center gap-3 overflow-x-auto pb-6 no-scrollbar px-2 relative z-10 w-full"
+                            ref={scrollRef}
+                            onScroll={checkScroll}
+                        >
                         {visibleTabs.map((tab) => {
                             const isTabActive = activeTab === tab.id;
                             const Icon =
@@ -2148,6 +2229,7 @@ export function EmployeeForm({ onSuccess, onCancel, initialData, employeeId, def
                                 </button>
                             );
                         })}
+                        </div>
                     </div>
                 </div>
 

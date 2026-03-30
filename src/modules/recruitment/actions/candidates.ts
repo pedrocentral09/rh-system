@@ -157,3 +157,66 @@ export async function getJobDetails(jobId: string) {
         return { success: false, error: 'Failed to fetch job details' };
     }
 }
+
+/**
+ * Hires a candidate, converting them to an employee and starting the onboarding process.
+ */
+export async function approveApplicationAndHired(applicationId: string) {
+    const user = await requireAuth(['ADMIN', 'HR']);
+
+    try {
+        const application = await prisma.jobApplication.findUnique({
+            where: { id: applicationId },
+            include: { candidate: true, job: true }
+        });
+
+        if (!application || !application.candidate) {
+            return { success: false, error: 'Candidatura não encontrada' };
+        }
+
+        const candidate = application.candidate;
+
+        // Start Transaction
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Update Application Status
+            await tx.jobApplication.update({
+                where: { id: applicationId },
+                data: { status: 'HIRED' }
+            });
+
+            // 2. Create Employee
+            const employee = await tx.employee.create({
+                data: {
+                    name: candidate.name,
+                    email: candidate.email,
+                    phone: candidate.phone,
+                    status: 'WAITING_ONBOARDING',
+                    journeyStatus: 'ADMISSION',
+                    jobTitle: application.job.title,
+                    department: application.job.department,
+                    isIncomplete: true
+                }
+            });
+
+            // 3. Create Onboarding Process
+            await tx.onboardingProcess.create({
+                data: {
+                    employeeId: employee.id,
+                    candidateId: candidate.id,
+                    status: 'IN_PROGRESS'
+                }
+            });
+
+            return employee;
+        });
+
+        await logAction('UPDATE', 'Candidate', { id: candidate.id, status: 'HIRED' }, user.id);
+        revalidatePath('/dashboard/recruitment');
+        revalidatePath('/dashboard/personnel');
+        
+        return { success: true, data: result };
+    } catch (error: any) {
+        console.error('Error hiring candidate:', error);
+        return { success: false, error: error.message || 'Erro ao contratar candidato' };
+    }
+}

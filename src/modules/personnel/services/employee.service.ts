@@ -421,6 +421,11 @@ export class EmployeeService extends BaseService {
                 }
                 if (rawData.experienceExtensionDays) contractData.experienceExtensionDays = parseInt(rawData.experienceExtensionDays);
 
+                if (rawData.isExperienceExtended2 !== undefined) {
+                    contractData.isExperienceExtended2 = rawData.isExperienceExtended2 === 'on' || rawData.isExperienceExtended2 === 'true' || rawData.isExperienceExtended2 === true;
+                }
+                if (rawData.experienceExtension2Days) contractData.experienceExtension2Days = parseInt(rawData.experienceExtension2Days);
+
                 // Benefits
                 if (rawData.hasTransportVoucher !== undefined) {
                     contractData.hasTransportVoucher = rawData.hasTransportVoucher === 'on' || rawData.hasTransportVoucher === 'true' || rawData.hasTransportVoucher === true;
@@ -713,7 +718,7 @@ export class EmployeeService extends BaseService {
         }
     }
 
-    static async initiateSelfOnboarding(cpf: string, performingUserId?: string): Promise<ServiceResult<any>> {
+    static async initiateSelfOnboarding(cpf: string, performingUserId?: string, name?: string, phone?: string): Promise<ServiceResult<any>> {
         try {
             const cleanCpf = cpf.replace(/\D/g, '');
             if (!cleanCpf || cleanCpf.length !== 11) return this.error(null, 'CPF inválido para cadastro.');
@@ -722,10 +727,13 @@ export class EmployeeService extends BaseService {
             const existing = await prisma.employee.findFirst({ where: { cpf: cleanCpf } });
             if (existing) return this.error(null, 'Este CPF já está cadastrado no sistema.');
 
+            const employeeName = name?.trim() || 'Novo Colaborador (Aguardando Cadastro)';
+
             const employee = await prisma.employee.create({
                 data: {
-                    name: 'Novo Colaborador (Aguardando Cadastro)',
+                    name: employeeName,
                     cpf: cleanCpf,
+                    phone: phone?.trim() || undefined,
                     status: 'WAITING_ONBOARDING',
                     isIncomplete: true
                 }
@@ -737,7 +745,7 @@ export class EmployeeService extends BaseService {
                 module: 'PERSONNEL',
                 resource: 'Employee',
                 resourceId: employee.id,
-                newData: { cpf: cleanCpf, status: 'WAITING_ONBOARDING' }
+                newData: { cpf: cleanCpf, name: employeeName, status: 'WAITING_ONBOARDING' }
             });
 
             const serialized = JSON.parse(JSON.stringify(employee));
@@ -1217,4 +1225,74 @@ export class EmployeeService extends BaseService {
         }
     }
 
+    static async updateJourneyStatus(id: string, status: string, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            const oldEmployee = await prisma.employee.findUnique({
+                where: { id },
+                select: { journeyStatus: true, status: true }
+            });
+
+            if (!oldEmployee) return this.error(null, 'Colaborador não encontrado');
+
+            // Map journey status to main employee status if appropriate
+            const updateData: any = { journeyStatus: status };
+            
+            if (status === 'TERMINATED') {
+                updateData.status = 'TERMINATED';
+            }
+
+            const employee = await prisma.employee.update({
+                where: { id },
+                data: updateData
+            });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'UPDATE_JOURNEY',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: id,
+                oldData: { journeyStatus: oldEmployee.journeyStatus },
+                newData: { journeyStatus: status }
+            });
+
+            return this.success(JSON.parse(JSON.stringify(employee)));
+        } catch (error) {
+            console.error('EmployeeService.updateJourneyStatus ERROR:', error);
+            return this.error(error, 'Erro ao atualizar fase da jornada');
+        }
+    }
+
+    static async uploadDocument(employeeId: string, data: { type: string, category: string, fileUrl: string, fileName: string }, performingUserId?: string): Promise<ServiceResult<any>> {
+        try {
+            const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+            if (!employee) return this.error(null, 'Colaborador não encontrado');
+
+            const newDoc = await prisma.document.create({
+                data: {
+                    employeeId,
+                    type: data.type,
+                    // @ts-ignore
+                    category: data.category || 'ADMISSAO',
+                    fileUrl: data.fileUrl,
+                    fileName: data.fileName,
+                    status: 'PENDING',
+                }
+            });
+
+            await AuditService.log({
+                userId: performingUserId,
+                action: 'UPDATE',
+                module: 'PERSONNEL',
+                resource: 'Employee',
+                resourceId: employeeId,
+                newData: newDoc
+            });
+
+            return this.success(JSON.parse(JSON.stringify(newDoc)));
+        } catch (error) {
+            console.error('EmployeeService.uploadDocument error:', error);
+            return this.error(error, 'Erro ao salvar novo documento do colaborador');
+        }
+    }
 }

@@ -77,6 +77,7 @@ export function AppSidebar() {
                 </div>
 
                 <SidebarLink href="/dashboard/personnel" icon={<Users size={18} />} label="Colaboradores" />
+                <SidebarLink href="/dashboard/reports/probation" icon={<Clock size={18} />} label="Controle de Experiência" />
                 <SidebarLink href="/dashboard/documents" icon={<Folder size={18} />} label="Documentação" />
                 <SidebarLink href="/dashboard/scales" icon={<Calendar size={18} />} label="Escalas" />
                 <SidebarLink href="/dashboard/recruitment" icon={<Megaphone size={18} />} label="Recrutamento" />
@@ -132,7 +133,7 @@ export function AppSidebar() {
     return (
         <>
             {/* Desktop Hover Trigger */}
-            <div className="hidden lg:block fixed left-0 top-0 h-full z-[60] w-2 transition-colors hover:bg-brand-orange/20" onMouseEnter={() => setIsHovered(true)} />
+            <div className="hidden lg:block fixed left-0 top-0 h-full z-[60] w-[2px] transition-colors hover:bg-brand-orange/20" onMouseEnter={() => setIsHovered(true)} />
 
             {/* Mobile Header Toggle */}
             <div className="lg:hidden fixed top-0 left-0 right-0 h-16 px-6 bg-surface/80 backdrop-blur-xl border-b border-border z-[60] flex items-center justify-between">
@@ -152,11 +153,14 @@ export function AppSidebar() {
 
             {/* Desktop Hover Sidebar */}
             <aside
-                className="hidden lg:block fixed left-0 top-0 h-full z-50 flex"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                className={cn(
+                    "hidden lg:block fixed left-0 top-0 h-full z-50",
+                    isHovered ? "pointer-events-auto" : "pointer-events-none"
+                )}
             >
                 <motion.div
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
                     initial={false}
                     animate={{
                         x: isHovered ? 0 : -320,

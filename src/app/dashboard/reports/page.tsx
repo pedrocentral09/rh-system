@@ -1,6 +1,7 @@
 import { ReportGeneratorWizard } from '@/modules/reports/components/ReportGeneratorWizard';
 import { requireAuth } from '@/modules/core/actions/auth';
-import { BarChart3, ShieldCheck, Download, Zap } from 'lucide-react';
+import { BarChart3, ShieldCheck, Download, Zap, Users } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function ReportsPage() {
     // Audit check: Only Admins can see this page
@@ -50,6 +51,15 @@ export default async function ReportsPage() {
                         <BarChart3 className="h-12 w-12 text-text-muted opacity-20 mb-4" />
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">O Gerador opera com latência <br /> zero sobre o banco de dados oficial.</p>
                     </div>
+
+                    <Link href="/dashboard/reports/probation" className="block bg-indigo-500/10 rounded-[2.5rem] p-8 relative overflow-hidden group border border-indigo-500/20 shadow-2xl hover:bg-indigo-500/20 transition-all">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-3xl group-hover:bg-indigo-500/30 transition-all" />
+                        <Users className="h-10 w-10 text-indigo-400 mb-6 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-lg font-black uppercase tracking-tight italic mb-4 text-indigo-100">Controle de Experiência</h4>
+                        <p className="text-xs font-bold text-indigo-200/60 leading-relaxed uppercase tracking-wider">
+                            Monitore os <span className="text-indigo-400">vencimentos</span> e as prorrogações ativas do período probatório.
+                        </p>
+                    </Link>
                 </div>
             </div>
         </div>

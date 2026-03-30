@@ -17,8 +17,8 @@ export function useHorizontalScroll() {
         stopScrolling();
         scrollInterval.current = setInterval(() => {
             if (scrollRef.current) {
-                const maxStep = 50; // Increased to 50 for ultra-responsive feel
-                const step = maxStep * intensity;
+                const maxStep = 15; // Balanced speed
+                const step = maxStep * Math.pow(intensity, 1.5); // Smoother acceleration
                 scrollRef.current.scrollLeft += direction === 'right' ? step : -step;
             }
         }, 16);
@@ -31,7 +31,7 @@ export function useHorizontalScroll() {
         const rect = container.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const width = rect.width;
-        const threshold = 150; // Increased threshold for better feel
+        const threshold = 100; // Balanced edge threshold
 
         if (x < threshold && x > 0) {
             const intensity = (threshold - x) / threshold;

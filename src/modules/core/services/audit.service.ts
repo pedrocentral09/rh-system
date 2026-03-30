@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { BaseService } from '@/lib/BaseService';
 
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT' | 'TERMINATE' | 'REHIRE' | 'INITIATE_ONBOARDING' | 'SUBMIT_ONBOARDING' | 'APPROVE_ONBOARDING' | 'RESET_ONBOARDING';
+export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT' | 'TERMINATE' | 'REHIRE' | 'INITIATE_ONBOARDING' | 'SUBMIT_ONBOARDING' | 'APPROVE_ONBOARDING' | 'RESET_ONBOARDING' | 'UPDATE_JOURNEY';
 export type AuditModule = 'CORE' | 'PERSONNEL' | 'PAYROLL' | 'CONFIGURATION';
 
 export class AuditService extends BaseService {

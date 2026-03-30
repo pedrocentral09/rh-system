@@ -43,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, width = 'md', hideHead
         '4xl': 'max-w-4xl',
         '5xl': 'max-w-5xl',
         '6xl': 'max-w-6xl',
-        'full': 'max-w-full mx-4',
+        'full': 'max-w-full',
     };
 
     return (

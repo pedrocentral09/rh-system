@@ -18,9 +18,18 @@ interface EmployeeOnboardingRequestModalProps {
 
 export function EmployeeOnboardingRequestModal({ isOpen, onClose, onSuccess }: EmployeeOnboardingRequestModalProps) {
     const [cpf, setCpf] = useState('');
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+
+    const maskPhone = (v: string) => {
+        const digits = v.replace(/\D/g, '').slice(0, 11);
+        if (digits.length <= 2) return `(${digits}`;
+        if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    };
 
     const handleGenerate = async () => {
         const cleanCpf = cpf.replace(/\D/g, '');
@@ -28,10 +37,14 @@ export function EmployeeOnboardingRequestModal({ isOpen, onClose, onSuccess }: E
             toast.error('Informe um CPF válido com 11 dígitos');
             return;
         }
+        if (!name.trim()) {
+            toast.error('Informe o nome do colaborador');
+            return;
+        }
 
         setLoading(true);
         try {
-            const result = await initiateSelfOnboarding(cleanCpf);
+            const result = await initiateSelfOnboarding(cleanCpf, name.trim().toUpperCase(), phone.replace(/\D/g, ''));
             if (result.success && result.data?.id) {
                 const baseUrl = window.location.origin;
                 const link = `${baseUrl}/onboarding/${result.data.id}`;
@@ -60,6 +73,8 @@ export function EmployeeOnboardingRequestModal({ isOpen, onClose, onSuccess }: E
 
     const handleReset = () => {
         setCpf('');
+        setName('');
+        setPhone('');
         setGeneratedLink(null);
     };
 
@@ -92,18 +107,37 @@ export function EmployeeOnboardingRequestModal({ isOpen, onClose, onSuccess }: E
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-10">
                             <div className="bg-surface-secondary border border-border p-8 rounded-3xl space-y-6 shadow-inner">
                                 <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest leading-relaxed opacity-100">
-                                    Informe o CPF matricial do novo colaborador para gerar um protocolo exclusivo de autocadastro.
+                                    Informe os dados do novo colaborador para gerar um protocolo exclusivo de autocadastro.
                                     O fluxo de captura documental será habilitado via web.
                                 </p>
                                 <div className="space-y-4">
-                                    <label htmlFor="cpf" className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted ml-4 italic">CPF do Colaborador</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted ml-4 italic">Nome Completo do Colaborador *</label>
                                     <input
-                                        id="cpf"
-                                        placeholder="000.000.000-00"
-                                        value={cpf}
-                                        onChange={(e) => setCpf(e.target.value)}
-                                        className="w-full h-20 bg-surface border border-border text-text-primary rounded-[1.25rem] text-3xl text-center font-black tracking-[0.2em] focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner placeholder:text-text-muted/10 outline-none"
+                                        placeholder="NOME COMPLETO"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value.toUpperCase())}
+                                        className="w-full h-16 bg-surface border border-border text-text-primary rounded-[1.25rem] text-lg text-center font-black tracking-widest focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner placeholder:text-text-muted/10 outline-none uppercase"
                                     />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted ml-4 italic">CPF do Colaborador *</label>
+                                        <input
+                                            placeholder="000.000.000-00"
+                                            value={cpf}
+                                            onChange={(e) => setCpf(e.target.value)}
+                                            className="w-full h-16 bg-surface border border-border text-text-primary rounded-[1.25rem] text-xl text-center font-black tracking-[0.2em] focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner placeholder:text-text-muted/10 outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted ml-4 italic">Celular (WhatsApp)</label>
+                                        <input
+                                            placeholder="(00) 00000-0000"
+                                            value={phone}
+                                            onChange={(e) => setPhone(maskPhone(e.target.value))}
+                                            className="w-full h-16 bg-surface border border-border text-text-primary rounded-[1.25rem] text-xl text-center font-black tracking-[0.2em] focus:border-brand-blue/50 focus:bg-surface transition-all shadow-inner placeholder:text-text-muted/10 outline-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

@@ -11,7 +11,7 @@ import {
     User, MapPin, Briefcase, CreditCard,
     Users, Camera, CheckCircle2, ChevronRight,
     ChevronLeft, Loader2, Sparkles, Heart,
-    Info, InfoIcon
+    Info, InfoIcon, FileText
 } from 'lucide-react';
 import { submitSelfOnboarding } from '../actions/employees';
 import { uploadEmployeeDocument, uploadEmployeePhoto } from '@/lib/firebase/storage-utils';
@@ -26,13 +26,17 @@ const maskCPF = (v: string) => v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$
 const maskPhone = (v: string) => v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})\d+?$/, '$1');
 const maskCEP = (v: string) => v.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{3})\d+?$/, '$1');
 
+// Helper to detect if a preview URL or file is a PDF
+const isPdfFile = (url: string) => url.endsWith('.pdf') || url.includes('application/pdf') || url.includes('.pdf');
+const isPdfBlob = (url: string) => url.startsWith('blob:');
+
 export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        name: '',
+        name: (employee.name && !employee.name.includes('Aguardando Cadastro')) ? employee.name : '',
         email: '',
-        phone: '',
+        phone: employee.phone || '',
         emergencyContactName: '',
         emergencyContactPhone: '',
         dateOfBirth: '',
@@ -205,11 +209,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Track if this is a PDF for preview purposes
+        const fileIsPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
         // Create local preview immediately
         const localUrl = URL.createObjectURL(file);
         setFormData(prev => ({
             ...prev,
-            previews: { ...prev.previews, [type]: localUrl }
+            previews: { ...prev.previews, [type]: fileIsPdf ? `pdf:${file.name}` : localUrl }
         }));
 
         setUploadingSlots(prev => ({ ...prev, [type]: true }));
@@ -470,18 +477,34 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-4 pt-6 border-t border-border">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">GÊNERO / SEXO *</Label>
-                                        <select
-                                            className="w-full h-20 bg-surface border border-border rounded-2xl px-8 text-xl font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 appearance-none shadow-inner uppercase tracking-widest"
-                                            value={formData.gender}
-                                            onChange={(e) => updateField('gender', e.target.value)}
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="MALE">Masculino</option>
-                                            <option value="FEMALE">Feminino</option>
-                                            <option value="OTHER">Outros / Prefiro não informar</option>
-                                        </select>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">DATA DE NASCIMENTO *</Label>
+                                            <Input
+                                                type="date"
+                                                className="bg-surface border-border h-20 px-8 rounded-2xl text-xl font-black text-text-primary focus:ring-brand-orange/20 focus:border-brand-orange/40 shadow-inner uppercase tracking-widest"
+                                                value={formData.dateOfBirth}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    updateField('dateOfBirth', val);
+                                                    const age = new Date().getFullYear() - new Date(val).getFullYear();
+                                                    setIsMinor(age < 18);
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">GÊNERO / SEXO *</Label>
+                                            <select
+                                                className="w-full h-20 bg-surface border border-border rounded-2xl px-8 text-xl font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange/40 appearance-none shadow-inner uppercase tracking-widest"
+                                                value={formData.gender}
+                                                onChange={(e) => updateField('gender', e.target.value)}
+                                            >
+                                                <option value="">Selecione...</option>
+                                                <option value="MALE">Masculino</option>
+                                                <option value="FEMALE">Feminino</option>
+                                                <option value="OTHER">Outros / Prefiro não informar</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div className="space-y-4 pt-6 border-t border-border">
                                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange ml-2">NACIONALIDADE / NATURALIDADE (CIDADE/UF) *</Label>
@@ -548,20 +571,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                             <div className="grid grid-cols-1 gap-4">
                                 <Card className="bg-surface-secondary border-border rounded-[2.5rem] shadow-xl overflow-hidden">
                                     <CardContent className="p-10 space-y-8">
-                                        <div className="space-y-4">
-                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">DATA DE NASCIMENTO *</Label>
-                                            <Input
-                                                type="date"
-                                                className="bg-surface border-border h-16 rounded-2xl text-lg font-black text-text-primary focus:ring-brand-blue/20 shadow-inner"
-                                                value={formData.dateOfBirth}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    updateField('dateOfBirth', val);
-                                                    const age = new Date().getFullYear() - new Date(val).getFullYear();
-                                                    setIsMinor(age < 18);
-                                                }}
-                                            />
-                                        </div>
+
                                         <div className="space-y-4">
                                             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary ml-2">CELULAR (PARA WHATSAPP) *</Label>
                                             <Input
@@ -754,7 +764,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 newDeps[idx].name = e.target.value.toUpperCase();
                                                 updateField('dependents', newDeps);
                                             }} />
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                 <Input placeholder="CPF" className="bg-surface-secondary border-border h-16 rounded-2xl font-black text-text-primary shadow-inner" value={dep.cpf} onChange={e => {
                                                     const newDeps = [...formData.dependents];
                                                     newDeps[idx].cpf = maskCPF(e.target.value);
@@ -765,6 +775,36 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                     newDeps[idx].birthDate = e.target.value;
                                                     updateField('dependents', newDeps);
                                                 }} />
+                                                <select
+                                                    className="w-full h-16 bg-surface-secondary border border-border rounded-2xl px-4 font-black text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange/20 appearance-none shadow-inner uppercase text-[12px] md:text-sm"
+                                                    value={dep.relationship || 'Filho(a)'}
+                                                    onChange={e => {
+                                                        const newDeps = [...formData.dependents];
+                                                        newDeps[idx].relationship = e.target.value;
+                                                        updateField('dependents', newDeps);
+                                                    }}
+                                                >
+                                                    <option value="Filho(a)">Filho(a)</option>
+                                                    <option value="Enteado(a)">Enteado(a)</option>
+                                                    <option value="Outro">Outro</option>
+                                                </select>
+                                                <div className="relative h-16 border-2 border-dashed border-border rounded-2xl flex items-center justify-center overflow-hidden bg-surface-secondary transition-all hover:bg-surface-hover hover:border-brand-orange/40">
+                                                    {uploadingSlots[`DEPENDENTE_${idx}`] ? (
+                                                        <Loader2 className="animate-spin text-brand-orange h-5 w-5" />
+                                                    ) : formData.documents.find(d => d.type === `DEPENDENTE_${idx}`) ? (
+                                                        <span className="text-[10px] text-emerald-500 font-black uppercase tracking-widest flex items-center gap-2"><CheckCircle2 className="h-4 w-4"/> Anexado ✓</span>
+                                                    ) : (
+                                                        <span className="text-[10px] text-text-secondary font-black uppercase opacity-60 tracking-wider flex items-center gap-2 px-2 text-center">+ Doc / Foto</span>
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*,.pdf,application/pdf"
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                        disabled={uploadingSlots[`DEPENDENTE_${idx}`]}
+                                                        onClick={(e) => (e.currentTarget.value = '')}
+                                                        onChange={e => handleFileUpload(e, `DEPENDENTE_${idx}`)}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -866,7 +906,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             </div>
                                         ) : (formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE')) ? (
                                             <div className="relative w-full h-full group">
-                                                <img src={formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                {formData.previews['IDENTIDADE_FRENTE']?.startsWith('pdf:') ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                        <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                        <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['IDENTIDADE_FRENTE'].replace('pdf:', '')}</span>
+                                                    </div>
+                                                ) : (
+                                                    <img src={formData.previews['IDENTIDADE_FRENTE'] || formData.documents.find(d => d.type === 'IDENTIDADE_FRENTE').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                )}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                     <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
                                                         <CheckCircle2 className="h-8 w-8 text-emerald-500" />
@@ -884,8 +931,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                         )}
                                         <input
                                             type="file"
-                                            accept="image/*"
-                                            capture="environment"
+                                            accept="image/*,.pdf,application/pdf"
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             onClick={(e) => (e.currentTarget.value = '')}
                                             onChange={e => handleFileUpload(e, 'IDENTIDADE_FRENTE')}
@@ -905,7 +951,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             </div>
                                         ) : (formData.previews['IDENTIDADE_VERSO'] || formData.documents.find(d => d.type === 'IDENTIDADE_VERSO')) ? (
                                             <div className="relative w-full h-full group">
-                                                <img src={formData.previews['IDENTIDADE_VERSO'] || formData.documents.find(d => d.type === 'IDENTIDADE_VERSO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                {formData.previews['IDENTIDADE_VERSO']?.startsWith('pdf:') ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                        <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                        <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['IDENTIDADE_VERSO'].replace('pdf:', '')}</span>
+                                                    </div>
+                                                ) : (
+                                                    <img src={formData.previews['IDENTIDADE_VERSO'] || formData.documents.find(d => d.type === 'IDENTIDADE_VERSO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="RG" />
+                                                )}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                     <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
                                                         <CheckCircle2 className="h-8 w-8 text-emerald-500" />
@@ -918,9 +971,17 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
                                                     <Camera className="h-8 w-8 text-brand-blue" />
                                                 </div>
-                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar VersO</span>
+                                                <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar Verso</span>
                                             </div>
                                         )}
+                                        <input
+                                            type="file"
+                                            accept="image/*,.pdf,application/pdf"
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                            onClick={(e) => (e.currentTarget.value = '')}
+                                            onChange={e => handleFileUpload(e, 'IDENTIDADE_VERSO')}
+                                            disabled={uploadingSlots['IDENTIDADE_VERSO']}
+                                        />
                                     </div>
                                 </div>
 
@@ -935,7 +996,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             </div>
                                         ) : (formData.previews['CNH'] || formData.documents.find(d => d.type === 'CNH')) ? (
                                             <div className="relative w-full h-full group">
-                                                <img src={formData.previews['CNH'] || formData.documents.find(d => d.type === 'CNH').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="CNH" />
+                                                {formData.previews['CNH']?.startsWith('pdf:') ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                        <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                        <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['CNH'].replace('pdf:', '')}</span>
+                                                    </div>
+                                                ) : (
+                                                    <img src={formData.previews['CNH'] || formData.documents.find(d => d.type === 'CNH').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="CNH" />
+                                                )}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                     <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
                                                         <CheckCircle2 className="h-8 w-8 text-emerald-500" />
@@ -953,8 +1021,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                         )}
                                         <input
                                             type="file"
-                                            accept="image/*"
-                                            capture="environment"
+                                            accept="image/*,.pdf,application/pdf"
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             onClick={(e) => (e.currentTarget.value = '')}
                                             onChange={e => handleFileUpload(e, 'CNH')}
@@ -962,6 +1029,53 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Documento do Responsável Legal (se menor) */}
+                                {isMinor && (
+                                    <div className="space-y-4">
+                                        <Label className="text-text-primary font-black uppercase text-[10px] tracking-widest ml-2">DOCUMENTO DO RESPONSÁVEL LEGAL (FRENTE E VERSO OU CNH)</Label>
+                                        <div className={`h-64 rounded-[2rem] border-2 border-dashed flex items-center justify-center relative overflow-hidden group transition-all shadow-inner ${formData.documents.find(d => d.type === 'DOC_RESPONSAVEL') ? 'border-emerald-500/50 bg-emerald-500/5' : 'bg-surface border-border'}`}>
+                                            {uploadingSlots['DOC_RESPONSAVEL'] ? (
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+                                                    <span className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Sincronizando...</span>
+                                                </div>
+                                            ) : (formData.previews['DOC_RESPONSAVEL'] || formData.documents.find(d => d.type === 'DOC_RESPONSAVEL')) ? (
+                                                <div className="relative w-full h-full group">
+                                                    {formData.previews['DOC_RESPONSAVEL']?.startsWith('pdf:') ? (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                            <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                            <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['DOC_RESPONSAVEL'].replace('pdf:', '')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <img src={formData.previews['DOC_RESPONSAVEL'] || formData.documents.find(d => d.type === 'DOC_RESPONSAVEL').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Doc Responsável" />
+                                                    )}
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                        <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
+                                                            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                                                        </div>
+                                                        <span className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-4">Protocolo Confirmado</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center p-8">
+                                                    <div className="h-16 w-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-blue/20">
+                                                        <Camera className="h-8 w-8 text-brand-blue" />
+                                                    </div>
+                                                    <span className="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-black">Digitalizar Doc Responsável</span>
+                                                </div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*,.pdf,application/pdf"
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                onClick={(e) => (e.currentTarget.value = '')}
+                                                onChange={e => handleFileUpload(e, 'DOC_RESPONSAVEL')}
+                                                disabled={uploadingSlots['DOC_RESPONSAVEL']}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Certificado de Reservista - Somente se Masculino */}
                                 {formData.gender === 'MALE' && (
@@ -975,7 +1089,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                                 </div>
                                             ) : (formData.previews['CERTIFICADO_RESERVISTA'] || formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA')) ? (
                                                 <div className="relative w-full h-full group">
-                                                    <img src={formData.previews['CERTIFICADO_RESERVISTA'] || formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Reservista" />
+                                                    {formData.previews['CERTIFICADO_RESERVISTA']?.startsWith('pdf:') ? (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                            <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                            <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['CERTIFICADO_RESERVISTA'].replace('pdf:', '')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <img src={formData.previews['CERTIFICADO_RESERVISTA'] || formData.documents.find(d => d.type === 'CERTIFICADO_RESERVISTA').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Reservista" />
+                                                    )}
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                         <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
                                                             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
@@ -993,8 +1114,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             )}
                                             <input
                                                 type="file"
-                                                accept="image/*"
-                                                capture="environment"
+                                                accept="image/*,.pdf,application/pdf"
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                                 onClick={(e) => (e.currentTarget.value = '')}
                                                 onChange={e => handleFileUpload(e, 'CERTIFICADO_RESERVISTA')}
@@ -1015,7 +1135,14 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             </div>
                                         ) : (formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO')) ? (
                                             <div className="relative w-full h-full group">
-                                                <img src={formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Comprovante de Residência" />
+                                                {formData.previews['ENDERECO']?.startsWith('pdf:') ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
+                                                        <FileText className="h-12 w-12 text-red-500 mb-3" />
+                                                        <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest truncate max-w-[200px]">{formData.previews['ENDERECO'].replace('pdf:', '')}</span>
+                                                    </div>
+                                                ) : (
+                                                    <img src={formData.previews['ENDERECO'] || formData.documents.find(d => d.type === 'ENDERECO').fileUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="Comprovante de Residência" />
+                                                )}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                     <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg">
                                                         <CheckCircle2 className="h-8 w-8 text-emerald-500" />
@@ -1033,8 +1160,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                         )}
                                         <input
                                             type="file"
-                                            accept="image/*"
-                                            capture="environment"
+                                            accept="image/*,.pdf,application/pdf"
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                             onClick={(e) => (e.currentTarget.value = '')}
                                             onChange={e => handleFileUpload(e, 'ENDERECO')}
@@ -1056,7 +1182,7 @@ export function SelfOnboardingForm({ employee }: SelfOnboardingFormProps) {
                                             </span>
                                             <p className="text-[9px] text-text-secondary opacity-60 font-black uppercase tracking-widest mt-2">+ Adicionar Documentação Adicional</p>
                                         </div>
-                                        <input type="file" accept="image/*" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'OUTROS')} />
+                                        <input type="file" accept="image/*,.pdf,application/pdf" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'OUTROS')} />
                                     </div>
                                 </div>
                             </div>

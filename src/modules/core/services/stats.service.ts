@@ -58,6 +58,8 @@ export class StatsService extends BaseService {
                                     experienceDays: true,
                                     isExperienceExtended: true,
                                     experienceExtensionDays: true,
+                                    isExperienceExtended2: true,
+                                    experienceExtension2Days: true,
                                     sectorDef: {
                                         select: { name: true }
                                     }
@@ -140,7 +142,8 @@ export class StatsService extends BaseService {
                         const admission = new Date(e.contract!.admissionDate);
                         const daysInitial = e.contract!.experienceDays || 45;
                         const daysExtension = e.contract!.isExperienceExtended ? (e.contract!.experienceExtensionDays || 0) : 0;
-                        const totalDays = daysInitial + daysExtension;
+                        const daysExtension2 = e.contract!.isExperienceExtended2 ? (e.contract!.experienceExtension2Days || 0) : 0;
+                        const totalDays = daysInitial + daysExtension + daysExtension2;
 
                         const expirationDate = new Date(admission);
                         expirationDate.setDate(admission.getDate() + totalDays);
@@ -154,7 +157,7 @@ export class StatsService extends BaseService {
                                 name: e.name,
                                 photoUrl: e.photoUrl,
                                 days: diffDays,
-                                period: e.contract!.isExperienceExtended ? '2º Período (Final)' : `1º Período (${daysInitial}d)`,
+                                period: e.contract!.isExperienceExtended2 ? '3º Período (Final)' : (e.contract!.isExperienceExtended ? '2º Período' : `1º Período (${daysInitial}d)`),
                                 expirationDate
                             };
                         }

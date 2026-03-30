@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "pre-check": "prisma generate && npm run lint && npm run build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

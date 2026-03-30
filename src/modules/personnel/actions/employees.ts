@@ -63,9 +63,9 @@ export async function bulkImportEmployees(employeesList: any[]) {
     return result;
 }
 
-export async function initiateSelfOnboarding(cpf: string) {
+export async function initiateSelfOnboarding(cpf: string, name?: string, phone?: string) {
     const user = await getCurrentUser();
-    const result = await EmployeeService.initiateSelfOnboarding(cpf, user?.id);
+    const result = await EmployeeService.initiateSelfOnboarding(cpf, user?.id, name, phone);
     if (result.success) revalidatePath('/dashboard/personnel');
     return result;
 }
@@ -111,6 +111,28 @@ export async function deleteEmployeeHealthRecord(recordId: string) {
 export async function addEmployeeHealthRecord(employeeId: string, data: any) {
     const user = await getCurrentUser();
     const result = await EmployeeService.addHealthRecord(employeeId, data, user?.id);
+    if (result.success) {
+        try {
+            revalidatePath('/dashboard/personnel');
+        } catch (e) { }
+    }
+    return result;
+}
+
+export async function updateEmployeeJourneyStatus(id: string, status: string) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.updateJourneyStatus(id, status, user?.id);
+    if (result.success) {
+        try {
+            revalidatePath('/dashboard/personnel');
+        } catch (e) { }
+    }
+    return result;
+}
+
+export async function uploadEmployeeDocumentAction(employeeId: string, data: { type: string, category: string, fileUrl: string, fileName: string }) {
+    const user = await getCurrentUser();
+    const result = await EmployeeService.uploadDocument(employeeId, data, user?.id);
     if (result.success) {
         try {
             revalidatePath('/dashboard/personnel');

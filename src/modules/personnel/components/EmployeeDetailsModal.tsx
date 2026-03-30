@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import EmployeeTransferModal from './EmployeeTransferModal';
 import { EmployeeEditModal } from './EmployeeEditModal';
 import { getTransferHistory, getEmployee } from '../actions';
-import { Loader2, ShieldAlert, KeyRound, Copy, CheckCircle, CheckCircle2, AlertCircle, Heart, HeartPulse, MapPin, User, CreditCard, Sparkles, ChevronRight, Search, FileText, Camera, BadgeCheck, Pencil, PencilLine, UserPlus, Phone, Mail, Calendar, Building2, UserCircle, Briefcase, Plus, Send } from 'lucide-react';
+import { Loader2, ShieldAlert, KeyRound, Copy, CheckCircle, CheckCircle2, AlertCircle, Heart, HeartPulse, MapPin, User, CreditCard, Sparkles, ChevronRight, Search, FileText, Camera, BadgeCheck, Pencil, PencilLine, UserPlus, Phone, Mail, Calendar, Building2, UserCircle, Briefcase, Plus, Send, Upload } from 'lucide-react';
 import { getTemplatesAction } from '@/modules/documents/actions/templates';
 import { generateDocumentFromTemplateAction } from '@/modules/documents/actions/generate';
 import { EmployeeTerminationModal } from './EmployeeTerminationModal';
@@ -25,6 +25,9 @@ import { signDocument } from '../actions/signatures';
 import { formatSafeDate } from '@/shared/utils/date-utils';
 import { TerminationSimulator } from './TerminationSimulator';
 import { CostProvision } from './CostProvision';
+import { EmployeeJourney } from './EmployeeJourney';
+import { uploadEmployeeDocument } from '@/lib/firebase/storage-utils';
+import { uploadEmployeeDocumentAction } from '../actions/employees';
 
 interface EmployeeDetailsModalProps {
     isOpen: boolean;
@@ -48,6 +51,55 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
     const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
     const [templates, setTemplates] = useState<any[]>([]);
     const [isTemplateSelectOpen, setIsTemplateSelectOpen] = useState(false);
+    const [activeDocumentFolder, setActiveDocumentFolder] = useState<string>('ADMISSAO');
+    const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+
+    const DOCUMENT_FOLDERS = [
+        { id: 'ADMISSAO', label: 'Admissão', icon: '📄' },
+        { id: 'FINANCEIRO', label: 'Financeiro', icon: '💰' },
+        { id: 'FERIAS', label: 'Férias', icon: '🏖️' },
+        { id: 'AFASTAMENTO', label: 'Afastamentos', icon: '🩺' },
+    ];
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string) => {
+        const file = e.target.files?.[0];
+        if (!file || !displayEmployee) return;
+
+        setIsUploadingDoc(true);
+        const toastId = toast.loading('Upload do documento em andamento...');
+
+        try {
+            // Build the employee storage identifier used in SelfOnboardingForm
+            const employeeConfig = { id: displayEmployee.id, name: displayEmployee.name };
+            const type = file.name.split('.')[0].substring(0, 30); // Use filename prefix as logical type
+
+            // Upload to Firebase
+            const result = await uploadEmployeeDocument(file, displayEmployee.id, displayEmployee.name, category);
+
+            // Save to DB
+            const res = await uploadEmployeeDocumentAction(displayEmployee.id, {
+                type,
+                category,
+                fileUrl: result.fileUrl,
+                fileName: file.name
+            });
+
+            if (res.success) {
+                toast.success('Documento arquivado com sucesso!', { id: toastId });
+                // Re-fetch employee data to show new document
+                const empRes = await getEmployee(displayEmployee.id);
+                if (empRes.success) setFullEmployee(empRes.data);
+            } else {
+                toast.error(res.error || 'Erro ao registrar no banco de dados', { id: toastId });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro no upload de documento. Tente novamente.', { id: toastId });
+        } finally {
+            setIsUploadingDoc(false);
+            e.target.value = ''; // Reset input
+        }
+    };
 
     useEffect(() => {
         if (isOpen && employee?.id) {
@@ -99,6 +151,19 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
     };
 
     const tabs = [
+        {
+            id: 'details_journey',
+            label: '🚀 Jornada',
+            content: (
+                <EmployeeJourney 
+                    employee={displayEmployee} 
+                    onUpdate={async () => {
+                        const empRes = await getEmployee(displayEmployee.id);
+                        if (empRes.success) setFullEmployee(empRes.data);
+                    }} 
+                />
+            )
+        },
         {
             id: 'details_personal',
             label: '👤 Pessoal',
@@ -421,10 +486,10 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
         },
         {
             id: 'details_documents',
-            label: '📁 Documentos',
+            label: '📁 Prontuário',
             content: (
                 <div className="space-y-8 py-4">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
                         <div>
                             <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Gestão de Prontuário Digital</h4>
                             <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1 opacity-60 italic">Arquivos oficiais e conformidade legal</p>
@@ -449,11 +514,31 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                         </button>
                     </div>
 
+                    {/* Pastas (Tabs) */}
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                        {DOCUMENT_FOLDERS.map(folder => (
+                            <button
+                                key={folder.id}
+                                onClick={() => setActiveDocumentFolder(folder.id)}
+                                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm border whitespace-nowrap flex items-center gap-2
+                                    ${activeDocumentFolder === folder.id
+                                        ? 'bg-brand-blue text-white border-transparent'
+                                        : 'bg-surface-secondary text-text-muted border-border hover:border-brand-blue/30'}`}
+                            >
+                                <span className="text-sm">{folder.icon}</span>
+                                {folder.label}
+                                <span className="ml-1 opacity-70 bg-black/10 px-2 py-0.5 rounded-full">
+                                    {displayEmployee.documents?.filter((d: any) => (d.category || 'ADMISSAO') === folder.id).length || 0}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
                     {isTemplateSelectOpen && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: -20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            className="bg-surface-secondary border border-brand-orange/20 p-8 rounded-[2.5rem] mb-10 shadow-2xl relative overflow-hidden"
+                            className="bg-surface-secondary border border-brand-orange/20 p-8 rounded-[2.5rem] mb-10 shadow-2xl relative overflow-hidden mt-4"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl rounded-full" />
                             <div className="flex items-center justify-between mb-6">
@@ -495,59 +580,73 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
                         </motion.div>
                     )}
 
-                    {displayEmployee.documents && displayEmployee.documents.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {displayEmployee.documents.map((doc: any) => (
-                                <div key={doc.id} className="flex items-center justify-between p-6 bg-surface-secondary/40 border border-border rounded-[2rem] hover:border-brand-orange/30 transition-all group shadow-sm relative overflow-hidden">
-                                    <div className="flex items-center gap-5 relative z-10">
-                                        <div className={`h-14 w-14 rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border relative ${doc.status === 'SIGNED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface text-brand-orange border-border'}`}>
-                                            <FileText className="h-6 w-6" />
-                                            {doc.status !== 'SIGNED' && (
-                                                <div className="absolute -top-1 -right-1 h-3 w-3 bg-brand-orange rounded-full border-2 border-white animate-pulse" />
-                                            )}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-black text-text-primary uppercase tracking-tight truncate max-w-[150px] group-hover:text-brand-orange transition-colors">{doc.fileName}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest opacity-60">{doc.type}</p>
-                                                {doc.status === 'SIGNED' && (
-                                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/10">Autenticado</span>
-                                                )}
+                    <div className="bg-surface border border-border rounded-[2rem] p-6 mt-4 relative min-h-[300px]">
+                        <div className="flex justify-between items-center mb-6">
+                            <h5 className="text-xs font-black text-text-primary uppercase tracking-widest border-l-4 border-brand-blue pl-3">
+                                {DOCUMENT_FOLDERS.find(f => f.id === activeDocumentFolder)?.label}
+                            </h5>
+                            <div className="relative">
+                                <button className="h-10 px-5 rounded-xl bg-brand-blue/10 text-brand-blue text-[9px] font-black uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all shadow-sm flex items-center gap-2 relative overflow-hidden group">
+                                    {isUploadingDoc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5 group-hover:-translate-y-1 transition-transform" />}
+                                    Carregar Arquivo
+                                    <input 
+                                        type="file" 
+                                        accept="image/*,.pdf,application/pdf"
+                                        onChange={(e) => handleFileUpload(e, activeDocumentFolder)}
+                                        disabled={isUploadingDoc}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                </button>
+                            </div>
+                        </div>
+
+                        {displayEmployee.documents && displayEmployee.documents.filter((d: any) => (d.category || 'ADMISSAO') === activeDocumentFolder).length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {displayEmployee.documents.filter((d: any) => (d.category || 'ADMISSAO') === activeDocumentFolder).map((doc: any) => (
+                                    <div key={doc.id} className="flex items-center justify-between p-6 bg-surface-secondary/40 border border-border rounded-2xl hover:border-brand-blue/30 transition-all group shadow-sm relative overflow-hidden">
+                                        <div className="flex items-center gap-5 relative z-10">
+                                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-xl shadow-inner border relative ${doc.status === 'SIGNED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface text-brand-blue border-border'}`}>
+                                                <FileText className="h-5 w-5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-black text-text-primary uppercase tracking-tight truncate max-w-[150px] group-hover:text-brand-blue transition-colors">{doc.fileName}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest opacity-60">{doc.type}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 relative z-10">
-                                        {doc.status === 'PENDING' && (
+                                        <div className="flex items-center gap-3 relative z-10">
+                                            {doc.status === 'PENDING' && (
+                                                <button
+                                                    onClick={() => setSigningDocument(doc)}
+                                                    className="h-10 px-4 rounded-xl bg-brand-orange/10 text-brand-orange text-[9px] font-black uppercase tracking-widest hover:bg-brand-orange hover:text-white transition-all shadow-sm active:scale-95 flex items-center gap-2"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
                                             <button
-                                                onClick={() => setSigningDocument(doc)}
-                                                className="h-12 px-6 rounded-2xl bg-brand-orange text-white text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                                                onClick={() => window.open(doc.fileUrl, '_blank')}
+                                                className="h-10 w-10 rounded-xl bg-surface border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-sm hover:scale-110 active:scale-95"
+                                                title="Baixar Documento"
                                             >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                                Assinar
+                                                <ChevronRight className="h-4 w-4" />
                                             </button>
-                                        )}
-                                        <button
-                                            onClick={() => window.open(doc.fileUrl, '_blank')}
-                                            className="h-12 w-12 rounded-2xl bg-surface border border-border flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:scale-110 active:scale-95"
-                                            title="Baixar Documento"
-                                        >
-                                            <ChevronRight className="h-5 w-5" />
-                                        </button>
-                                    </div>
-
-                                    {doc.status === 'SIGNED' && (
-                                        <div className="absolute top-2 right-14 opacity-5 pointer-events-none">
-                                            <BadgeCheck className="h-20 w-20 text-emerald-500" />
                                         </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 bg-surface-secondary rounded-3xl border border-border border-dashed">
-                            <p className="text-text-muted text-xs font-black uppercase tracking-widest">Nenhum documento anexado</p>
-                        </div>
-                    )}
+
+                                        {doc.status === 'SIGNED' && (
+                                            <div className="absolute top-2 right-14 opacity-5 pointer-events-none">
+                                                <BadgeCheck className="h-16 w-16 text-emerald-500" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-16 bg-surface-secondary/50 rounded-2xl border border-border border-dashed">
+                                <p className="text-text-muted text-xs font-black uppercase tracking-widest">Pasta vazia</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )
         },
@@ -719,8 +818,8 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
     ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} hideHeader width="6xl">
-            <div className="flex-1 flex flex-col relative min-h-[85vh]">
+        <Modal isOpen={isOpen} onClose={onClose} hideHeader width="full">
+            <div className="flex-1 flex flex-col relative min-h-[85vh] overflow-x-hidden">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-orange/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-blue/5 blur-[100px] rounded-full -ml-48 -mb-48 pointer-events-none" />
 
@@ -920,63 +1019,63 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
 
                     {/* Dynamic Footer Actions */}
                     {!loading && (
-                        <div className="pt-10 flex flex-wrap justify-center md:justify-between items-center gap-6 border-t border-border mt-auto">
-                            <div className="flex flex-wrap gap-4">
+                        <div className="pt-8 flex flex-wrap xl:flex-nowrap items-center justify-center lg:justify-between gap-4 border-t border-border mt-auto w-full">
+                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2">
                                 <button
                                     onClick={() => setIsTransferModalOpen(true)}
-                                    className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                    className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-brand-blue hover:bg-brand-blue hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                 >
-                                    <span className="text-lg group-hover:scale-125 transition-transform">🚚</span>
+                                    <span className="text-base group-hover:scale-125 transition-transform">🚚</span>
                                     Logística Interna
                                 </button>
                                 <button
                                     onClick={() => setIsEditModalOpen(true)}
-                                    className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-primary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                    className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-text-primary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                 >
-                                    <span className="text-lg group-hover:scale-125 transition-transform">✏️</span>
+                                    <span className="text-base group-hover:scale-125 transition-transform">✏️</span>
                                     Atualizar Matrícula
                                 </button>
 
                                 {displayEmployee.status === 'ACTIVE' && (
                                     <button
                                         onClick={() => setIsVacationModalOpen(true)}
-                                        className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                        className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                     >
-                                        <span className="text-lg group-hover:scale-125 transition-transform">🌴</span>
+                                        <span className="text-base group-hover:scale-125 transition-transform">🌴</span>
                                         Gestão de Férias
                                     </button>
                                 )}
 
                                 <button
                                     onClick={() => setIsTimeTrackingModalOpen(true)}
-                                    className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-text-secondary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                    className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-text-secondary hover:bg-text-primary hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                 >
-                                    <span className="text-lg group-hover:scale-125 transition-transform">⏰</span>
+                                    <span className="text-base group-hover:scale-125 transition-transform">⏰</span>
                                     Cartão de Ponto
                                 </button>
 
                                 {displayEmployee.status === 'ACTIVE' ? (
                                     <button
                                         onClick={() => setIsTerminationModalOpen(true)}
-                                        className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                        className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                     >
-                                        <span className="text-lg group-hover:scale-125 transition-transform">🚫</span>
+                                        <span className="text-base group-hover:scale-125 transition-transform">🚫</span>
                                         Desligamento
                                     </button>
                                 ) : displayEmployee.status === 'PENDING_APPROVAL' ? (
                                     <button
                                         onClick={handleApprove}
-                                        className="h-14 px-10 rounded-2xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-500/20 hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/20"
+                                        className="h-11 px-4 xl:px-6 rounded-xl bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-500/20 hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/20 whitespace-nowrap"
                                     >
-                                        <CheckCircle2 className="h-5 w-5" />
+                                        <span className="text-base">✔️</span>
                                         Homologar Cadastro
                                     </button>
                                 ) : (
                                     <button
                                         onClick={() => setIsRehireModalOpen(true)}
-                                        className="h-14 px-8 rounded-2xl bg-surface-secondary border border-border text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-3 border-b-4 border-black/10 group"
+                                        className="h-11 px-3 xl:px-4 rounded-xl bg-surface-secondary border border-border text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center gap-2 border-b-2 border-black/10 group whitespace-nowrap"
                                     >
-                                        <span className="text-lg group-hover:scale-125 transition-transform">♻️</span>
+                                        <span className="text-base group-hover:scale-125 transition-transform">♻️</span>
                                         Protocolo Recontratação
                                     </button>
                                 )}
@@ -984,7 +1083,7 @@ export function EmployeeDetailsModal({ isOpen, onClose, onSuccess, employee, def
 
                             <button
                                 onClick={onClose}
-                                className="h-14 px-10 rounded-2xl bg-surface border border-border text-[10px] font-black uppercase tracking-widest text-text-secondary hover:text-text-primary hover:bg-surface-secondary transition-all"
+                                className="h-11 px-5 xl:px-8 rounded-xl bg-surface border border-border text-[9px] font-black uppercase tracking-widest text-text-secondary hover:text-text-primary hover:bg-surface-secondary transition-all shrink-0 whitespace-nowrap"
                             >
                                 Fechar Dossiê
                             </button>
