@@ -37,19 +37,37 @@ export async function createSalaryAdvance(data: {
  */
 export async function getAdvancesByPeriod(periodId: string) {
     try {
-        // Como o types do prisma pode estar desatualizado por EPERM, usamos queryRaw
-        const advances: any[] = await prisma.$queryRawUnsafe(`
-            SELECT a.*, e.name as "employeeName"
-            FROM "payroll_salary_advances" a
-            INNER JOIN "personnel_employees" e ON a."employeeId" = e.id
-            WHERE a."periodId" = $1
-            ORDER BY e.name ASC
-        `, periodId);
+        const advances = await prisma.salaryAdvance.findMany({
+            where: { periodId },
+            include: {
+                employee: {
+                    include: {
+                        contract: {
+                            include: {
+                                store: { select: { name: true } },
+                                company: { select: { name: true } }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                employee: { name: 'asc' }
+            }
+        });
 
-        // Converter Decimal para Number para serialização entre Server/Client Components
         const serialized = advances.map(adv => ({
-            ...adv,
-            amount: Number(adv.amount)
+            id: adv.id,
+            employeeId: adv.employeeId,
+            periodId: adv.periodId,
+            amount: Number(adv.amount),
+            description: adv.description,
+            status: adv.status,
+            employeeName: adv.employee.name.toUpperCase(),
+            storeName: adv.employee.contract?.store?.name || 'Geral',
+            companyName: adv.employee.contract?.company?.name || '-',
+            cpf: adv.employee.cpf,
+            rg: adv.employee.rg
         }));
 
         return { success: true, data: serialized };

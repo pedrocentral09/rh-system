@@ -27,7 +27,7 @@ export default async function PayrollDetailPage(props: { params: Promise<{ id: s
     }
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto p-6">
+        <div className="space-y-6 max-w-[1600px] mx-auto p-6">
             <div className="flex items-center justify-between">
                 <div>
                     <div className="flex items-center space-x-2 text-sm text-slate-500 mb-1">
