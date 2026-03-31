@@ -1,21 +1,27 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import Link from 'next/link';
-
-interface PeriodListProps {
-    periods: any[];
-}
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface PeriodListProps {
     periods: any[];
 }
 
 export function PeriodList({ periods }: PeriodListProps) {
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
     };
+
+    const sortedPeriods = [...periods].sort((a, b) => {
+        const dateA = a.year * 100 + a.month;
+        const dateB = b.year * 100 + b.month;
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
 
     if (periods.length === 0) {
         return (
@@ -32,7 +38,18 @@ export function PeriodList({ periods }: PeriodListProps) {
             <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                        <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Competência</th>
+                        <th
+                            className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 cursor-pointer select-none hover:text-indigo-600 transition-colors"
+                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        >
+                            <span className="inline-flex items-center gap-2">
+                                Competência
+                                {sortOrder === 'asc'
+                                    ? <ArrowUp className="w-4 h-4 text-indigo-500" />
+                                    : <ArrowDown className="w-4 h-4 text-indigo-500" />
+                                }
+                            </span>
+                        </th>
                         <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
                         <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Funcionários</th>
                         <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Total Bruto</th>
@@ -41,7 +58,7 @@ export function PeriodList({ periods }: PeriodListProps) {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {periods.map((period) => (
+                    {sortedPeriods.map((period) => (
                         <tr key={period.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                             <td className="px-6 py-4">
                                 <span className="text-lg font-bold text-slate-900 dark:text-slate-100 italic">
